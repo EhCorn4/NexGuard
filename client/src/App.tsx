@@ -87,7 +87,7 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="nexguard-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="nexguard-ui-theme">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Router />
