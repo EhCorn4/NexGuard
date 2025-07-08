@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { GradientText } from "@/components/ui/gradient-text";
+import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
@@ -15,6 +16,14 @@ const Home = memo(function Home() {
         style={{ backgroundImage: `url(${nexguardIcon})` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
+      
+      {/* Floating Shield */}
+      <div className="absolute top-20 right-20 opacity-30 animate-float">
+        <AnimatedShield size={120} />
+      </div>
+      <div className="absolute bottom-32 left-16 opacity-20 animate-float" style={{ animationDelay: '2s' }}>
+        <AnimatedShield size={80} />
+      </div>
       
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
@@ -76,34 +85,7 @@ const Home = memo(function Home() {
         </div>
       </div>
 
-      {/* About Section */}
-      <div className="py-20 px-4 bg-gradient-to-b from-[hsl(var(--nexguard-darker))] to-[hsl(var(--nexguard-dark))]">
-        <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold mb-6">
-              <GradientText>Advanced Discord Protection</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 mb-8">
-              NexGuard is built by Discord enthusiasts for Discord communities. Our AI-powered moderation system learns and adapts to your server's unique culture while providing lightning-fast protection against spam, raids, and unwanted content.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/invite">
-                <Button size="lg" className="bg-[hsl(var(--nexguard-cyan))] hover:bg-[hsl(var(--nexguard-cyan))]/80 text-white px-8 py-4 text-lg font-semibold">
-                  Add to Server
-                </Button>
-              </Link>
-              <Link href="/features">
-                <Button size="lg" variant="outline" className="border-[hsl(var(--nexguard-purple))] text-[hsl(var(--nexguard-purple))] hover:bg-[hsl(var(--nexguard-purple))]/10 px-8 py-4 text-lg font-semibold">
-                  View Features
-                </Button>
-              </Link>
-            </div>
-            <p className="text-sm text-gray-400 mt-6">
-              Free setup • No credit card required • 24/7 support included
-            </p>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 });
