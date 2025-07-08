@@ -28,7 +28,7 @@ function Router() {
   
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] text-foreground transition-colors duration-300">
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300 dark">
         <Navbar />
         <main role="main">
           <Switch>
@@ -87,14 +87,16 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="nexguard-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <div className="dark">
+      <ThemeProvider defaultTheme="dark" storageKey="nexguard-ui-theme">
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Router />
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </div>
   );
 }
 
