@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { GradientText } from "@/components/ui/gradient-text";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,14 +32,10 @@ export default function Developers() {
   return (
     <div className="min-h-screen bg-[hsl(var(--nexguard-darker))] pt-24">
       <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <GradientText>Meet the Developers</GradientText>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            The talented team behind NexGuard, dedicated to creating the best Discord moderation experience.
-          </p>
-        </div>
+        <PageHeader 
+          title="Meet the Developers"
+          description="The talented team behind NexGuard, dedicated to creating the best Discord moderation experience."
+        />
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {isLoading ? (

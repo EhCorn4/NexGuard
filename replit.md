@@ -106,6 +106,8 @@ Changelog:
 - July 08, 2025. Created comprehensive documentation/help center with search functionality
 - July 08, 2025. Updated developer information to show only Caleb Weston as Lead Developer
 - July 08, 2025. Implemented light/dark mode toggle with theme persistence and smooth transitions
+- July 08, 2025. Added NexGuard logo to all page headers with consistent branding
+- July 08, 2025. Implemented smooth scrolling to page tops when navigating between pages
 
 ## User Preferences
 

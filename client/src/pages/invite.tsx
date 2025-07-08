@@ -1,4 +1,5 @@
 import { GradientText } from "@/components/ui/gradient-text";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, Settings, Shield } from "lucide-react";
@@ -12,12 +13,10 @@ export default function Invite() {
     <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] pt-24">
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            <GradientText>Ready to Protect Your Server?</GradientText>
-          </h1>
-          <p className="text-xl text-gray-300 mb-12">
-            Join thousands of servers already using NexGuard to maintain order and enhance their community experience.
-          </p>
+          <PageHeader 
+            title="Ready to Protect Your Server?"
+            description="Join thousands of servers already using NexGuard to maintain order and enhance their community experience."
+          />
           
           <Card className="bg-[hsl(var(--nexguard-darker))]/80 backdrop-blur-sm border-[hsl(var(--nexguard-cyan))]/20 mb-12">
             <CardContent className="p-8">

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
+import { useScrollToTop } from "@/hooks/use-scroll-to-top";
 import { Footer } from "@/components/layout/footer";
 import Home from "@/pages/home";
 import Features from "@/pages/features";
@@ -17,6 +18,9 @@ import Docs from "@/pages/docs";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  // Enable smooth scrolling to top on page navigation
+  useScrollToTop();
+  
   return (
     <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] text-foreground transition-colors duration-300">
       <Navbar />

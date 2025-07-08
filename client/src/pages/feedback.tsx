@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -73,14 +74,10 @@ export default function Feedback() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
-              Feedback & Support
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Help us improve NexGuard by sharing your feedback, reporting bugs, or suggesting new features
-            </p>
-          </div>
+          <PageHeader 
+            title="Feedback & Support"
+            description="Help us improve NexGuard by sharing your feedback, reporting bugs, or suggesting new features"
+          />
 
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Feedback Types */}

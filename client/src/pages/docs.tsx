@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -416,16 +417,13 @@ Use \`/automod config\` to adjust:
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
-              Documentation & Help Center
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-              Everything you need to know about setting up and using NexGuard
-            </p>
+          <PageHeader 
+            title="Documentation & Help Center"
+            description="Everything you need to know about setting up and using NexGuard"
+          />
 
-            {/* Search */}
+          {/* Search */}
+          <div className="text-center mb-12">
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input

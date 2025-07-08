@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { GradientText } from "@/components/ui/gradient-text";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,14 +41,10 @@ export default function Community() {
   return (
     <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] pt-24">
       <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <GradientText>Community Updates</GradientText>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Stay updated with the latest features, improvements, and community highlights from NexGuard.
-          </p>
-        </div>
+        <PageHeader 
+          title="Community Updates"
+          description="Stay updated with the latest features, improvements, and community highlights from NexGuard."
+        />
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {isLoading ? (

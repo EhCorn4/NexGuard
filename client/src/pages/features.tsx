@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { GradientText } from "@/components/ui/gradient-text";
 import { FeatureCard } from "@/components/ui/feature-card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings } from "lucide-react";
@@ -38,14 +39,10 @@ export default function Features() {
   return (
     <div className="min-h-screen bg-[hsl(var(--nexguard-darker))] pt-24">
       <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <GradientText>Powerful Features</GradientText>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            NexGuard combines cutting-edge moderation tools with quality-of-life features to create the perfect Discord server experience.
-          </p>
-        </div>
+        <PageHeader 
+          title="Powerful Features"
+          description="NexGuard combines cutting-edge moderation tools with quality-of-life features to create the perfect Discord server experience."
+        />
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
