@@ -11,16 +11,13 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on request
 function getDiscordRedirectUri(req: any) {
-  // Use the REPLIT_DOMAINS environment variable as the primary source
-  const replitDomain = process.env.REPLIT_DOMAINS;
-  if (replitDomain) {
-    return `https://${replitDomain}/api/auth/discord/callback`;
-  }
+  // Hardcoded for debugging - this should match exactly what's in Discord settings
+  const hardcodedUri = 'https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev/api/auth/discord/callback';
   
-  // Fallback to request-based detection
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-  const host = req.headers.host || req.headers['x-forwarded-host'];
-  return `${protocol}://${host}/api/auth/discord/callback`;
+  console.log('=== DEBUG: Using hardcoded redirect URI ===');
+  console.log('Hardcoded URI:', hardcodedUri);
+  
+  return hardcodedUri;
 }
 
 // Session configuration for Discord OAuth
