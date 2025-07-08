@@ -10,8 +10,9 @@ export default function Invite() {
   const supportServerUrl = "https://discord.gg/wpjZMPXaR";
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] pt-24">
-      <div className="container mx-auto px-4 py-20">
+    <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10 animate-pulse-slow"></div>
+      <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <PageHeader 
             title="Ready to Protect Your Server?"

@@ -91,8 +91,9 @@ export default function Testimonials() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10 animate-pulse-slow"></div>
+      <div className="container mx-auto px-4 py-12 relative z-10">
         <PageHeader 
           title="Community Testimonials"
           description="See what server owners and moderators are saying about NexGuard"
