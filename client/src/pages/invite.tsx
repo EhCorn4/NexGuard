@@ -45,22 +45,22 @@ export default function Invite() {
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-4 flex flex-col items-center">
                 <a 
                   href={discordInviteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block"
+                  className="block"
                 >
                   <Button 
                     size="lg"
-                    className="bg-[hsl(var(--discord-blurple))] hover:bg-[hsl(var(--discord-light))] text-white font-semibold text-xl px-12 py-4 transform hover:scale-105 transition-all duration-300"
+                    className="bg-[hsl(var(--discord-blurple))] hover:bg-[hsl(var(--discord-light))] text-white font-semibold text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300 w-full max-w-md"
                   >
                     <SiDiscord className="mr-3" size={24} />
                     Invite NexGuard to Your Server
                   </Button>
                 </a>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 text-center">
                   Required permissions: Administrator (for full functionality)
                 </p>
               </div>
@@ -68,9 +68,9 @@ export default function Invite() {
           </Card>
           
           <Card className="bg-[hsl(var(--nexguard-darker))]/50 backdrop-blur-sm border-[hsl(var(--nexguard-purple))]/20">
-            <CardContent className="p-6">
+            <CardContent className="p-6 text-center">
               <h3 className="text-xl font-semibold text-white mb-4">Need Help Getting Started?</h3>
-              <p className="text-gray-300 mb-4">Join our support server for setup assistance and community support.</p>
+              <p className="text-gray-300 mb-6">Join our support server for setup assistance and community support.</p>
               <a 
                 href={supportServerUrl}
                 target="_blank"
