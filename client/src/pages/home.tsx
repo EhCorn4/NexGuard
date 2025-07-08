@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
+import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 export default function Home() {
   return (
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20" 
-        style={{ backgroundImage: `url(${nexguardBanner})` }}
+        style={{ backgroundImage: `url(${nexguardIcon})` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10 animate-pulse-slow"></div>
       
@@ -19,8 +20,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
             <img 
-              src={nexguardLogo} 
-              alt="NexGuard Logo" 
+              src={nexguardBanner} 
+              alt="NexGuard Banner" 
               className="w-64 md:w-80 h-auto max-w-full animate-float"
             />
           </div>
