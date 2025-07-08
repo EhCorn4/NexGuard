@@ -121,6 +121,7 @@ Changelog:
 - July 08, 2025. Added Discord OAuth login system for bot dashboard with session management, user authentication, and server management interface
 - July 08, 2025. Updated Discord OAuth system to be user-focused: individual server admins can login to manage their own servers with proper permission validation
 - July 08, 2025. Created comprehensive server configuration system with individual server dashboards, full bot configuration options (moderation, welcome messages, custom commands, economy, roles), and database integration for persistent settings storage
+- July 08, 2025. Added community highlight section to home page featuring BlueLine RolePlay (BLRP) as first active beta testers
 
 ## User Preferences
 
