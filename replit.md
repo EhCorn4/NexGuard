@@ -105,6 +105,7 @@ Changelog:
 - July 08, 2025. Added community feedback and testimonials system with database integration
 - July 08, 2025. Created comprehensive documentation/help center with search functionality
 - July 08, 2025. Updated developer information to show only Caleb Weston as Lead Developer
+- July 08, 2025. Implemented light/dark mode toggle with theme persistence and smooth transitions
 
 ## User Preferences
 
