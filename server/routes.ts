@@ -8,7 +8,7 @@ import connectPg from "connect-pg-simple";
 // Discord OAuth Configuration
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1389775821794705429";
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `${process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:5000"}/api/auth/discord/callback`;
+const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `https://${process.env.REPLIT_DEV_DOMAIN || "localhost:5000"}/api/auth/discord/callback`;
 
 // Session configuration for Discord OAuth
 function setupSession(app: Express) {
@@ -108,6 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.redirect('/dashboard?error=oauth_not_configured');
     }
 
+    console.log('Discord OAuth redirect URI:', DISCORD_REDIRECT_URI);
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       redirect_uri: DISCORD_REDIRECT_URI,
@@ -119,16 +120,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/discord/callback', async (req, res) => {
-    const { code } = req.query;
+    const { code, error } = req.query;
+
+    console.log('Discord callback received:', { code: code ? 'present' : 'missing', error });
+
+    if (error) {
+      console.error('Discord OAuth error in callback:', error);
+      return res.redirect('/dashboard?error=discord_denied');
+    }
 
     if (!code) {
-      return res.status(400).json({ error: 'Authorization code required' });
+      return res.redirect('/dashboard?error=no_code');
     }
 
     if (!DISCORD_CLIENT_SECRET) {
-      return res.status(500).json({ 
-        error: 'Discord OAuth not configured. Please provide DISCORD_CLIENT_SECRET in environment variables.' 
-      });
+      return res.redirect('/dashboard?error=oauth_not_configured');
     }
 
     try {
@@ -149,6 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Session save error:', err);
           return res.redirect('/dashboard?error=session_failed');
         }
+        console.log('Discord OAuth successful, redirecting to dashboard');
         res.redirect('/dashboard');
       });
     } catch (error) {
