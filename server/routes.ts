@@ -8,7 +8,13 @@ import connectPg from "connect-pg-simple";
 // Discord OAuth Configuration
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1389775821794705429";
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `https://${process.env.REPLIT_DEV_DOMAIN || "localhost:5000"}/api/auth/discord/callback`;
+
+// Function to get the correct redirect URI based on request
+function getDiscordRedirectUri(req: any) {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers.host || req.headers['x-forwarded-host'];
+  return `${protocol}://${host}/api/auth/discord/callback`;
+}
 
 // Session configuration for Discord OAuth
 function setupSession(app: Express) {
@@ -33,7 +39,7 @@ function setupSession(app: Express) {
 }
 
 // Discord API helper functions
-async function exchangeCodeForToken(code: string) {
+async function exchangeCodeForToken(code: string, redirectUri: string) {
   const response = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
@@ -44,7 +50,7 @@ async function exchangeCodeForToken(code: string) {
       client_secret: DISCORD_CLIENT_SECRET!,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: DISCORD_REDIRECT_URI,
+      redirect_uri: redirectUri,
     }),
   });
 
@@ -123,10 +129,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.redirect('/dashboard?error=oauth_not_configured');
     }
 
-    console.log('Discord OAuth redirect URI:', DISCORD_REDIRECT_URI);
+    const redirectUri = getDiscordRedirectUri(req);
+    console.log('Discord OAuth redirect URI:', redirectUri);
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
-      redirect_uri: DISCORD_REDIRECT_URI,
+      redirect_uri: redirectUri,
       response_type: 'code',
       scope: 'identify guilds',
     });
@@ -153,7 +160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const tokenData = await exchangeCodeForToken(code as string);
+      const redirectUri = getDiscordRedirectUri(req);
+      const tokenData = await exchangeCodeForToken(code as string, redirectUri);
       const user = await getDiscordUser(tokenData.access_token);
       const guilds = await getDiscordGuilds(tokenData.access_token);
 

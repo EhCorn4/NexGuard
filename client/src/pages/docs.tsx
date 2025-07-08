@@ -3,21 +3,27 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
+import { PageTransition } from "@/components/ui/page-transition";
 import { 
   Search, 
-  BookOpen, 
-  Settings, 
   Shield, 
+  Settings, 
   Users, 
-  Bot, 
-  ChevronDown, 
+  MessageSquare, 
+  Bot,
+  Zap,
+  Heart,
   ChevronRight,
   ExternalLink,
-  MessageSquare,
-  Zap,
-  Lock,
-  Star
+  Book,
+  HelpCircle,
+  Star,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ArrowRight
 } from "lucide-react";
 
 interface DocSection {
@@ -36,293 +42,270 @@ interface DocArticle {
 }
 
 export default function Docs() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expandedSections, setExpandedSections] = useState<string[]>(["getting-started"]);
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => 
-      prev.includes(sectionId) 
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  };
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<DocArticle | null>(null);
 
   const docSections: DocSection[] = [
     {
       id: "getting-started",
       title: "Getting Started",
-      icon: BookOpen,
+      icon: Book,
       articles: [
         {
-          id: "invite-bot",
-          title: "How to Invite NexGuard to Your Server",
-          content: `1. Click the "Invite Bot" button on our website
-2. Select your Discord server from the dropdown
-3. Choose the permissions NexGuard needs (we recommend keeping all permissions for full functionality)
-4. Click "Authorize" to complete the setup
-5. Use /setup command in your server to begin configuration
+          id: "setup",
+          title: "Setting up NexGuard",
+          content: `Welcome to NexGuard! Follow these steps to get started:
 
-After invitation, NexGuard will automatically create necessary channels and roles if they don't exist.`,
-          tags: ["setup", "invitation", "basic"],
+1. **Invite NexGuard to your server**
+   - Use the invite link with proper permissions
+   - Ensure NexGuard has Administrator permissions
+   - Place NexGuard's role above other roles
+
+2. **Initial Configuration**
+   - Run /setup to begin initial setup
+   - Configure basic moderation settings
+   - Set up logging channels
+
+3. **Test the Bot**
+   - Try basic commands like /help
+   - Test moderation features in a test channel
+   - Verify logging is working correctly
+
+**Important Notes:**
+- NexGuard requires specific permissions to function properly
+- Always test new features in a controlled environment
+- Keep your server's rules updated as you configure NexGuard`,
+          tags: ["setup", "invite", "permissions"],
           difficulty: "beginner"
         },
         {
-          id: "basic-setup",
-          title: "Basic Server Setup",
-          content: `After inviting NexGuard, follow these steps:
+          id: "first-steps",
+          title: "First Steps After Installation",
+          content: `Once NexGuard is installed, here's what to do next:
 
-**Step 1: Run Setup Command**
-Use \`/setup\` in any channel to start the configuration wizard.
+**1. Configure Basic Settings**
+- Set up moderation log channel: /config logs set #mod-logs
+- Configure auto-moderation: /automod setup
+- Set welcome messages: /welcome setup
 
-**Step 2: Configure Moderation**
-- Set moderation log channel
-- Choose auto-moderation strictness level
-- Configure warning thresholds
+**2. Create Role Hierarchies**
+- Ensure NexGuard's role is properly positioned
+- Set up moderation team roles
+- Configure auto-roles for new members
 
-**Step 3: Set Up Roles**
-- Define moderator roles
-- Configure auto-role assignment
-- Set up role rewards
+**3. Test Core Features**
+- Test warning system: /warn @user reason
+- Test mute functionality: /mute @user duration
+- Verify logging is working correctly
 
-**Step 4: Test Configuration**
-Use \`/test\` command to verify all settings are working correctly.`,
-          tags: ["setup", "configuration", "commands"],
-          difficulty: "beginner"
-        },
-        {
-          id: "first-commands",
-          title: "Essential Commands to Know",
-          content: `**Basic Commands:**
-- \`/help\` - Shows all available commands
-- \`/setup\` - Initial server configuration
-- \`/config\` - View current settings
-- \`/test\` - Test bot functionality
-
-**Moderation Commands:**
-- \`/warn @user [reason]\` - Warn a user
-- \`/mute @user [time] [reason]\` - Temporarily mute a user
-- \`/ban @user [reason]\` - Ban a user
-- \`/kick @user [reason]\` - Kick a user
-
-**Info Commands:**
-- \`/userinfo @user\` - Get user information
-- \`/serverinfo\` - Get server statistics
-- \`/botinfo\` - Get bot information`,
-          tags: ["commands", "moderation", "basic"],
+**4. Customize for Your Server**
+- Set up custom commands
+- Configure economy system (if desired)
+- Set up reaction roles`,
+          tags: ["configuration", "setup", "commands"],
           difficulty: "beginner"
         }
       ]
     },
     {
       id: "moderation",
-      title: "Moderation Features",
+      title: "Moderation",
       icon: Shield,
       articles: [
         {
-          id: "auto-mod",
-          title: "Auto-Moderation Settings",
-          content: `NexGuard's auto-moderation system can automatically handle common issues:
+          id: "basic-moderation",
+          title: "Basic Moderation Commands",
+          content: `NexGuard provides comprehensive moderation tools:
 
-**Spam Detection:**
-- Message flooding protection
-- Repeated character detection
-- Link spam filtering
-- Mention spam prevention
+**Warning System**
+- /warn @user [reason] - Issue a warning
+- /warnings @user - View user's warnings
+- /clearwarnings @user - Clear all warnings
 
-**Content Filtering:**
-- Profanity filter with customizable word lists
-- NSFW content detection
-- Scam link protection
-- Malicious file scanning
+**Timeout/Mute System**
+- /timeout @user [duration] [reason] - Timeout a user
+- /untimeout @user - Remove timeout
+- /mute @user [duration] [reason] - Mute a user
+- /unmute @user - Unmute a user
 
-**Configuration Options:**
-Use \`/automod config\` to adjust:
-- Sensitivity levels (Low, Medium, High, Custom)
-- Whitelist channels or roles
-- Set custom punishment actions
-- Configure bypass permissions`,
-          tags: ["automod", "spam", "filtering"],
-          difficulty: "intermediate"
-        },
-        {
-          id: "raid-protection",
-          title: "Raid Protection",
-          content: `Protect your server from coordinated attacks:
+**Kick and Ban**
+- /kick @user [reason] - Kick a user
+- /ban @user [duration] [reason] - Ban a user
+- /unban @user - Unban a user
+- /tempban @user [duration] [reason] - Temporary ban
 
-**Anti-Raid Features:**
-- Mass join detection (configurable thresholds)
-- Automatic server lockdown
-- IP address monitoring
-- Account age filtering
-
-**Configuration:**
-1. Use \`/raidprotection setup\`
-2. Set join rate limits (e.g., 5 joins per 10 seconds)
-3. Configure minimum account age (e.g., 7 days)
-4. Set automatic actions (kick, ban, or verify)
-
-**Manual Controls:**
-- \`/lockdown\` - Immediately lock server
-- \`/unlock\` - Remove lockdown
-- \`/raid status\` - Check current threat level`,
-          tags: ["raid", "protection", "security"],
-          difficulty: "advanced"
-        },
-        {
-          id: "warning-system",
-          title: "Warning and Punishment System",
-          content: `Set up automated punishment escalation:
-
-**Warning Levels:**
-1. First offense: Verbal warning
-2. Second offense: 1-hour mute
-3. Third offense: 24-hour mute
-4. Fourth offense: 7-day temporary ban
-5. Fifth offense: Permanent ban
-
-**Configuration:**
-- \`/warnings config\` - Set up punishment ladder
-- \`/warnings view @user\` - Check user's warning history
-- \`/warnings remove @user [id]\` - Remove specific warning
-- \`/warnings clear @user\` - Clear all warnings
-
-**Custom Punishment Actions:**
-- Temporary mutes (minutes to days)
-- Role removals/additions
-- Channel restrictions
-- Custom messages`,
-          tags: ["warnings", "punishment", "moderation"],
-          difficulty: "intermediate"
-        }
-      ]
-    },
-    {
-      id: "dashboard",
-      title: "Web Dashboard",
-      icon: Settings,
-      articles: [
-        {
-          id: "dashboard-overview",
-          title: "Dashboard Overview",
-          content: `Access your server's web dashboard at dashboard.nexguard.bot
-
-**Main Features:**
-- Real-time server statistics
-- Moderation log viewing
-- User management interface
-- Configuration settings panel
-
-**Getting Started:**
-1. Log in with your Discord account
-2. Select your server from the list
-3. Verify you have admin permissions
-4. Start configuring settings
-
-**Key Sections:**
-- **Overview:** Server stats and recent activity
-- **Moderation:** Logs, warnings, and bans
-- **Settings:** Bot configuration options
-- **Users:** Member management tools`,
-          tags: ["dashboard", "web", "overview"],
+**Bulk Actions**
+- /purge [amount] - Delete multiple messages
+- /purge @user [amount] - Delete messages from specific user
+- /lockdown [channel] - Lock channel temporarily`,
+          tags: ["moderation", "commands", "warnings", "bans"],
           difficulty: "beginner"
         },
         {
-          id: "advanced-config",
-          title: "Advanced Configuration",
-          content: `Fine-tune NexGuard for your specific needs:
+          id: "automod",
+          title: "Auto-Moderation Setup",
+          content: `Configure automatic moderation to keep your server clean:
 
-**Custom Commands:**
-- Create server-specific commands
-- Set up auto-responses
-- Configure command aliases
-- Restrict command usage by role
+**Anti-Spam Protection**
+- Message spam detection
+- Duplicate message filtering
+- Rate limiting configuration
+- Punishment escalation
 
-**Channel Management:**
-- Auto-channel creation
-- Channel-specific rules
-- Message archiving
-- Slow mode automation
+**Content Filtering**
+- Profanity filter with custom word lists
+- Link filtering and whitelist
+- Image and attachment scanning
+- Mention spam protection
 
-**Role Management:**
-- Auto-role assignment based on activity
-- Reaction roles setup
-- Role hierarchy respect
-- Custom role permissions
+**Configuration Commands**
+- /automod enable [feature] - Enable auto-mod feature
+- /automod disable [feature] - Disable auto-mod feature
+- /automod settings - View current settings
+- /automod whitelist add/remove - Manage whitelists
 
-**Integration Settings:**
-- Webhook configurations
-- Third-party bot integration
-- API access management
-- Backup and restore options`,
-          tags: ["advanced", "customization", "integration"],
+**Advanced Features**
+- Custom regex patterns
+- Punishment escalation rules
+- Bypass roles and channels
+- Custom violation responses`,
+          tags: ["automod", "spam", "filtering", "automation"],
+          difficulty: "intermediate"
+        }
+      ]
+    },
+    {
+      id: "configuration",
+      title: "Configuration",
+      icon: Settings,
+      articles: [
+        {
+          id: "server-settings",
+          title: "Server Configuration",
+          content: `Customize NexGuard for your server's needs:
+
+**Basic Settings**
+- Server prefix: /config prefix [new_prefix]
+- Moderation logs: /config logs #channel
+- Default punishments: /config punishments
+
+**Welcome/Leave Messages**
+- Welcome channel: /welcome channel #channel
+- Welcome message: /welcome message [message]
+- Leave messages: /leave setup
+- Custom embed styling
+
+**Role Management**
+- Auto-roles: /autorole setup
+- Reaction roles: /reactionrole setup
+- Moderation roles: /config modroles
+
+**Economy Settings**
+- Enable economy: /economy enable
+- Daily rewards: /economy daily-amount [amount]
+- Shop setup: /shop setup
+- Currency name: /economy currency [name]`,
+          tags: ["configuration", "settings", "welcome", "economy"],
+          difficulty: "intermediate"
+        },
+        {
+          id: "permissions",
+          title: "Permission Management",
+          content: `Understanding and configuring NexGuard permissions:
+
+**Required Permissions**
+- Administrator (recommended)
+- Manage Messages
+- Manage Roles
+- Manage Channels
+- Ban Members
+- Kick Members
+
+**Permission Hierarchy**
+- NexGuard's role must be above moderated roles
+- Users with higher roles cannot be moderated
+- Permission overwrites in channels
+
+**Custom Permission Setup**
+- /permissions setup - Configure custom permissions
+- /permissions role @role [command] - Grant command access
+- /permissions user @user [command] - Grant user access
+- /permissions channel #channel [command] - Channel-specific permissions
+
+**Troubleshooting**
+- Common permission errors
+- Role hierarchy issues
+- Channel permission conflicts`,
+          tags: ["permissions", "roles", "hierarchy", "troubleshooting"],
           difficulty: "advanced"
         }
       ]
     },
     {
-      id: "community",
-      title: "Community Features",
-      icon: Users,
+      id: "features",
+      title: "Features",
+      icon: Zap,
       articles: [
         {
-          id: "engagement-tools",
-          title: "Community Engagement Tools",
-          content: `Keep your community active and engaged:
+          id: "custom-commands",
+          title: "Custom Commands",
+          content: `Create custom commands for your server:
 
-**Mini-Games:**
-- Trivia competitions with custom questions
-- Word games and riddles
-- Daily challenges and rewards
-- Leaderboards and achievements
+**Basic Custom Commands**
+- /customcmd create [name] [response] - Create basic command
+- /customcmd edit [name] [response] - Edit existing command
+- /customcmd delete [name] - Delete command
+- /customcmd list - View all custom commands
 
-**Activity Tracking:**
-- Member activity scoring
-- Recognition for active members
-- Weekly/monthly activity reports
-- Custom activity rewards
+**Advanced Features**
+- Variables: {user}, {server}, {channel}
+- Conditional responses
+- Embed formatting
+- Role restrictions
 
-**Events and Announcements:**
-- Scheduled event reminders
-- Automatic role assignments for events
-- Event feedback collection
-- Community polls and surveys
+**Examples**
+- Rules command: /customcmd create rules "Please read #rules"
+- Info command with variables: /customcmd create info "Welcome {user} to {server}!"
+- Embed command: /customcmd create welcome --embed --title "Welcome!" --description "Hello {user}"
 
-**Setup Commands:**
-- \`/games setup\` - Configure mini-games
-- \`/activity config\` - Set up activity tracking
-- \`/events create\` - Schedule community events`,
-          tags: ["engagement", "games", "events"],
+**Best Practices**
+- Use clear command names
+- Keep responses concise
+- Test commands before deploying
+- Regular cleanup of unused commands`,
+          tags: ["custom-commands", "automation", "variables"],
           difficulty: "intermediate"
         },
         {
-          id: "verification",
-          title: "Member Verification System",
-          content: `Ensure your community stays safe with verification:
+          id: "economy-system",
+          title: "Economy System",
+          content: `Set up and manage the economy system:
 
-**Verification Methods:**
-- Phone number verification
-- Email verification
-- CAPTCHA challenges
-- Account age requirements
+**Basic Economy Setup**
+- /economy enable - Enable economy system
+- /economy currency [name] - Set currency name
+- /economy daily-amount [amount] - Set daily reward
+- /economy starting-balance [amount] - Set starting balance
 
-**Setup Process:**
-1. Use \`/verification setup\`
-2. Choose verification methods
-3. Set requirements (account age, phone, etc.)
-4. Configure verified role permissions
-5. Test the verification flow
+**User Commands**
+- /balance [@user] - Check balance
+- /daily - Claim daily reward
+- /pay @user [amount] - Send money to user
+- /leaderboard - View server leaderboard
 
-**Customization Options:**
-- Custom verification messages
-- Multiple verification levels
-- Bypass roles for trusted members
-- Integration with existing role systems
+**Shop System**
+- /shop setup - Initialize shop
+- /shop add [item] [price] [description] - Add shop item
+- /shop remove [item] - Remove shop item
+- /shop buy [item] - Purchase item (user command)
 
-**Benefits:**
-- Reduces spam and bot accounts
-- Improves community quality
-- Provides additional security layer`,
-          tags: ["verification", "security", "members"],
+**Advanced Features**
+- Work commands for earning
+- Gambling commands (if enabled)
+- Role rewards and purchases
+- Custom item effects`,
+          tags: ["economy", "currency", "shop", "rewards"],
           difficulty: "intermediate"
         }
       ]
@@ -330,66 +313,44 @@ Use \`/automod config\` to adjust:
     {
       id: "troubleshooting",
       title: "Troubleshooting",
-      icon: Zap,
+      icon: AlertCircle,
       articles: [
         {
           id: "common-issues",
-          title: "Common Issues and Solutions",
-          content: `**Bot Not Responding:**
-- Check if bot has necessary permissions
-- Verify bot is online (check our status page)
-- Ensure commands are typed correctly
-- Try using commands in different channels
+          title: "Common Issues",
+          content: `Solutions to frequently encountered problems:
 
-**Permissions Issues:**
-- Bot needs Administrator permission for full functionality
-- Check channel-specific permissions
-- Verify role hierarchy (bot role above managed roles)
-- Review Discord's permission system
+**Bot Not Responding**
+- Check if bot is online
+- Verify permissions
+- Check role hierarchy
+- Restart with /restart (admin only)
 
-**Auto-Moderation Not Working:**
-- Check if auto-mod is enabled (\`/automod status\`)
-- Verify channels aren't whitelisted
-- Review sensitivity settings
-- Check if user has bypass permissions
+**Commands Not Working**
+- Check command syntax
+- Verify user permissions
+- Check channel permissions
+- Review command cooldowns
 
-**Commands Not Working:**
-- Ensure proper command syntax
-- Check if command is enabled for the channel
-- Verify user has required permissions
-- Try using commands in DMs with the bot`,
-          tags: ["troubleshooting", "issues", "support"],
+**Moderation Issues**
+- Role hierarchy problems
+- Permission conflicts
+- Auto-mod false positives
+- Logging not working
+
+**Performance Issues**
+- High latency responses
+- Command timeouts
+- Database connection issues
+- Rate limiting problems
+
+**Getting Help**
+- Use /support for immediate assistance
+- Check status page for outages
+- Report bugs via /bugreport
+- Join support server for live help`,
+          tags: ["troubleshooting", "issues", "support", "bugs"],
           difficulty: "beginner"
-        },
-        {
-          id: "performance-optimization",
-          title: "Performance Optimization",
-          content: `Optimize NexGuard for the best performance:
-
-**Server Settings:**
-- Limit auto-moderation to active channels only
-- Configure appropriate log retention periods
-- Use channel whitelists for heavy features
-- Optimize database cleanup schedules
-
-**Large Server Considerations:**
-- Enable batched processing for large member lists
-- Use selective auto-moderation rules
-- Configure tiered permission systems
-- Implement efficient role caching
-
-**Monitoring Tools:**
-- \`/performance stats\` - View bot performance metrics
-- \`/logs errors\` - Check for recent errors
-- \`/health check\` - Comprehensive system check
-
-**Best Practices:**
-- Regular configuration reviews
-- Periodic permission audits
-- Performance monitoring
-- Keep bot updated with latest features`,
-          tags: ["performance", "optimization", "large-servers"],
-          difficulty: "advanced"
         }
       ]
     }
@@ -398,194 +359,185 @@ Use \`/automod config\` to adjust:
   const filteredSections = docSections.map(section => ({
     ...section,
     articles: section.articles.filter(article =>
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     )
   })).filter(section => section.articles.length > 0);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "beginner": return "bg-green-600/20 text-green-300 border-green-600/30";
-      case "intermediate": return "bg-yellow-600/20 text-yellow-300 border-yellow-600/30";
-      case "advanced": return "bg-red-600/20 text-red-300 border-red-600/30";
-      default: return "bg-gray-600/20 text-gray-300 border-gray-600/30";
+      case "beginner": return "bg-green-500/20 text-green-400";
+      case "intermediate": return "bg-yellow-500/20 text-yellow-400";
+      case "advanced": return "bg-red-500/20 text-red-400";
+      default: return "bg-gray-500/20 text-gray-400";
     }
   };
 
+  if (selectedArticle) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
+          <div className="container mx-auto px-4 py-8 relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <Button 
+                onClick={() => setSelectedArticle(null)}
+                variant="ghost"
+                className="text-gray-400 hover:text-white mb-4"
+              >
+                ← Back to Documentation
+              </Button>
+              
+              <Card className="bg-slate-800/80 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-2xl text-white mb-2">
+                        {selectedArticle.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getDifficultyColor(selectedArticle.difficulty)}>
+                          {selectedArticle.difficulty}
+                        </Badge>
+                        {selectedArticle.tags.map(tag => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-invert max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-300 leading-relaxed">
+                      {selectedArticle.content}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
+
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      <div className="container mx-auto px-4 py-12 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <PageHeader 
+    <PageTransition>
+      <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
+        <div className="container mx-auto px-4 py-8 relative z-10">
+          <PageHeader
             title="Documentation & Help Center"
-            description="Everything you need to know about setting up and using NexGuard"
+            description="Everything you need to know about NexGuard"
           />
 
-          {/* Search */}
-          <div className="text-center mb-12">
-            <div className="relative max-w-md mx-auto">
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-12">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Search documentation..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-gray-400"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder-gray-400"
               />
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-            <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-600/20 rounded-lg">
-                    <Bot className="w-6 h-6 text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white">Quick Start</h3>
-                    <p className="text-sm text-gray-400">Get NexGuard running in 5 minutes</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-600/20 rounded-lg">
-                    <MessageSquare className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white">Support</h3>
-                    <p className="text-sm text-gray-400">Get help from our community</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-600/20 rounded-lg">
-                    <Star className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white">Examples</h3>
-                    <p className="text-sm text-gray-400">See NexGuard in action</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Documentation Sections */}
-          <div className="space-y-6">
-            {filteredSections.map((section) => (
-              <Card key={section.id} className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <Collapsible>
-                    <CollapsibleTrigger
-                      onClick={() => toggleSection(section.id)}
-                      className="flex items-center justify-between w-full text-left hover:text-cyan-400 transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <section.icon className="w-6 h-6 text-cyan-400" />
-                        <CardTitle className="text-xl font-semibold text-white">
-                          {section.title}
-                        </CardTitle>
-                      </div>
-                      {expandedSections.includes(section.id) ? (
-                        <ChevronDown className="w-5 h-5" />
-                      ) : (
-                        <ChevronRight className="w-5 h-5" />
-                      )}
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent>
-                      <CardContent className="pt-6">
-                        <div className="space-y-4">
-                          {section.articles.map((article) => (
-                            <Card key={article.id} className="bg-slate-700/50 border-slate-600">
-                              <CardHeader className="pb-3">
-                                <div className="flex items-center justify-between">
-                                  <CardTitle className="text-lg font-medium text-white">
-                                    {article.title}
-                                  </CardTitle>
-                                  <div className="flex items-center space-x-2">
-                                    <Badge 
-                                      variant="outline" 
-                                      className={getDifficultyColor(article.difficulty)}
-                                    >
-                                      {article.difficulty}
-                                    </Badge>
-                                    <ExternalLink className="w-4 h-4 text-gray-400" />
-                                  </div>
-                                </div>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {article.tags.map((tag) => (
-                                    <Badge 
-                                      key={tag} 
-                                      variant="secondary" 
-                                      className="bg-purple-600/20 text-purple-300 border-purple-600/30 text-xs"
-                                    >
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="text-gray-300 leading-relaxed whitespace-pre-line">
-                                  {article.content}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+          <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredSections.map((section, index) => (
+              <StaggerItem key={section.id} index={index}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors h-full">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <section.icon className="w-5 h-5 text-cyan-400" />
+                      {section.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {section.articles.map((article) => (
+                        <div 
+                          key={article.id}
+                          className="p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700/70 transition-colors cursor-pointer"
+                          onClick={() => setSelectedArticle(article)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-white font-medium text-sm">{article.title}</h3>
+                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className={`text-xs ${getDifficultyColor(article.difficulty)}`}>
+                              {article.difficulty}
+                            </Badge>
+                            <span className="text-xs text-gray-400">
+                              {article.tags.slice(0, 2).join(", ")}
+                            </span>
+                          </div>
                         </div>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </CardHeader>
-              </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
+          </StaggerContainer>
+
+          {/* Quick Links */}
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">Need More Help?</h2>
+            <StaggerContainer className="grid gap-4 md:grid-cols-3">
+              <StaggerItem index={0}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+                  <CardHeader className="text-center">
+                    <MessageSquare className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
+                    <CardTitle className="text-white">Support Server</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-gray-400 mb-4">Join our Discord server for live support</p>
+                    <Button className="bg-[#5865F2] hover:bg-[#4752C4] text-white">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Join Server
+                    </Button>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem index={1}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+                  <CardHeader className="text-center">
+                    <HelpCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                    <CardTitle className="text-white">FAQ</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-gray-400 mb-4">Common questions and answers</p>
+                    <Button variant="outline" className="border-slate-600 text-gray-300">
+                      View FAQ
+                    </Button>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem index={2}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+                  <CardHeader className="text-center">
+                    <AlertCircle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                    <CardTitle className="text-white">Report Bug</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-gray-400 mb-4">Found an issue? Let us know</p>
+                    <Button variant="outline" className="border-slate-600 text-gray-300">
+                      Report Issue
+                    </Button>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            </StaggerContainer>
           </div>
-
-          {/* No Results */}
-          {searchQuery && filteredSections.length === 0 && (
-            <div className="text-center py-12">
-              <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
-              <p className="text-gray-400">
-                Try searching with different keywords or browse the sections above.
-              </p>
-            </div>
-          )}
-
-          {/* Footer Help */}
-          <Card className="mt-12 bg-slate-800/50 border-slate-700">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-white mb-2">Still need help?</h3>
-                <p className="text-gray-300 mb-4">
-                  Can't find what you're looking for? Our support team is here to help.
-                </p>
-                <div className="flex justify-center space-x-4">
-                  <div className="flex items-center space-x-2 text-sm text-gray-400">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Join our Discord support server</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-400">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Email: nexguards@gmail.com</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
