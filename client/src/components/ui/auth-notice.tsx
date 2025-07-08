@@ -65,13 +65,17 @@ export function AuthNotice() {
               <div className="text-sm text-gray-300 space-y-2">
                 <p>The Discord Client Secret is configured, but you need to add the redirect URI to your Discord application:</p>
                 <ol className="space-y-1 ml-4">
-                  <li>1. Go to Discord Developer Portal > OAuth2 > General</li>
-                  <li>2. Add this redirect URI:</li>
+                  <li>1. Go to Discord Developer Portal</li>
+                  <li>2. Select your NexGuard application</li>
+                  <li>3. Click on "OAuth2" in the left sidebar</li>
+                  <li>4. Look for "Redirects" section (may be under "OAuth2 &gt; General")</li>
+                  <li>5. Click "Add Redirect" and paste:</li>
                 </ol>
                 <div className="bg-slate-600 p-2 rounded text-xs text-green-400 break-all font-mono">
                   {window.location.origin}/api/auth/discord/callback
                 </div>
-                <p className="text-yellow-400">⚠️ The redirect URI must match exactly for OAuth to work</p>
+                <p className="text-yellow-400">⚠️ If you don't see "Redirects", try OAuth2 &gt; URL Generator first</p>
+                <p className="text-gray-400 text-xs">Alternative: Some applications show redirects in the "General Information" tab</p>
               </div>
             </div>
 
