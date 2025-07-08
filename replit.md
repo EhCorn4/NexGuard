@@ -38,6 +38,11 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 - `GET /api/testimonials` - Retrieve approved user testimonials
 - `POST /api/testimonials` - Submit new testimonial for approval
 - `POST /api/feedback` - Submit feedback, bug reports, or feature requests
+- `GET /api/auth/discord` - Initiate Discord OAuth login flow
+- `GET /api/auth/discord/callback` - Handle Discord OAuth callback
+- `GET /api/auth/user` - Get authenticated user information
+- `GET /api/auth/guilds` - Get user's Discord servers with bot status
+- `GET /api/auth/logout` - Logout and destroy session
 
 ### Frontend Pages
 - **Home**: Landing page with hero section and key statistics
@@ -48,6 +53,7 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 - **Testimonials**: Community feedback and user reviews with submission form
 - **Feedback**: Support system for bug reports, feature requests, and general feedback
 - **Docs**: Comprehensive documentation and help center with search functionality
+- **Dashboard**: Discord OAuth authenticated dashboard for bot management and server configuration
 
 ### Design System
 - **Color Palette**: Custom NexGuard brand colors (cyan/purple gradients)
@@ -111,6 +117,8 @@ Changelog:
 - July 08, 2025. Applied hero gradient background with circuit pattern to all pages for consistent visual design
 - July 08, 2025. Comprehensive website optimization: lazy loading, error boundaries, performance wrappers, memoized components, accessibility improvements, loading skeletons, and reduced motion support
 - July 08, 2025. Successfully implemented and tested community feedback and testimonials system with PostgreSQL database integration, approval workflow, and fully functional submission forms
+- July 08, 2025. Implemented smooth page transition animations with framer-motion, stagger effects, and enhanced navigation with accessibility support
+- July 08, 2025. Added Discord OAuth login system for bot dashboard with session management, user authentication, and server management interface
 
 ## User Preferences
 

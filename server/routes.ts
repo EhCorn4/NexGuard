@@ -8,7 +8,7 @@ import connectPg from "connect-pg-simple";
 // Discord OAuth Configuration
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1389775821794705429";
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || "http://localhost:5000/api/auth/discord/callback";
+const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `${process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:5000"}/api/auth/discord/callback`;
 
 // Session configuration for Discord OAuth
 function setupSession(app: Express) {
@@ -95,6 +95,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Discord OAuth routes
   app.get('/api/auth/discord', (req, res) => {
+    if (!DISCORD_CLIENT_SECRET) {
+      return res.status(500).json({ 
+        error: 'Discord OAuth not configured. Please provide DISCORD_CLIENT_SECRET in environment variables.' 
+      });
+    }
+
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       redirect_uri: DISCORD_REDIRECT_URI,
@@ -110,6 +116,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     if (!code) {
       return res.status(400).json({ error: 'Authorization code required' });
+    }
+
+    if (!DISCORD_CLIENT_SECRET) {
+      return res.status(500).json({ 
+        error: 'Discord OAuth not configured. Please provide DISCORD_CLIENT_SECRET in environment variables.' 
+      });
     }
 
     try {
@@ -130,6 +142,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/user', (req, res) => {
+    if (!DISCORD_CLIENT_SECRET) {
+      return res.status(500).json({ 
+        error: 'Discord OAuth not configured. Please provide DISCORD_CLIENT_SECRET in environment variables.' 
+      });
+    }
+
     const user = (req.session as any)?.user;
     if (!user) {
       return res.status(401).json({ error: 'Not authenticated' });

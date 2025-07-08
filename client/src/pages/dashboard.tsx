@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { PageTransition } from "@/components/ui/page-transition";
+import { AuthNotice } from "@/components/ui/auth-notice";
 import { 
   Settings, 
   Shield, 
@@ -41,7 +42,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [selectedGuild, setSelectedGuild] = useState<string | null>(null);
 
-  const { data: user, isLoading: userLoading } = useQuery<DashboardUser>({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery<DashboardUser>({
     queryKey: ['/api/auth/user'],
     retry: false,
   });
@@ -52,8 +53,11 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  // Check if Discord OAuth is configured
+  const isDiscordConfigured = !userError || !userError.message.includes('Discord OAuth not configured');
+
   useEffect(() => {
-    if (!userLoading && !user) {
+    if (!userLoading && !user && isDiscordConfigured) {
       toast({
         title: "Authentication Required",
         description: "Please log in to access the dashboard",
@@ -63,7 +67,12 @@ export default function Dashboard() {
         window.location.href = '/api/auth/discord';
       }, 1000);
     }
-  }, [user, userLoading, toast]);
+  }, [user, userLoading, toast, isDiscordConfigured]);
+
+  // Show auth notice if Discord OAuth is not configured
+  if (!isDiscordConfigured) {
+    return <AuthNotice />;
+  }
 
   const handleLogout = () => {
     window.location.href = '/api/auth/logout';
