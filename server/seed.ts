@@ -13,28 +13,12 @@ async function seedDatabase() {
     // Insert developers
     await db.insert(developers).values([
       {
-        name: "Alex Rivera",
+        name: "Caleb Weston",
         role: "Lead Developer",
-        bio: "Full-stack developer with 5+ years of experience in Discord bot development and server management.",
-        githubUrl: "https://github.com/alexrivera",
-        twitterUrl: "https://twitter.com/alexrivera",
-        linkedinUrl: "https://linkedin.com/in/alexrivera"
-      },
-      {
-        name: "Sarah Chen",
-        role: "Backend Engineer",
-        bio: "Specialized in scalable bot architecture and database optimization for high-traffic Discord servers.",
-        githubUrl: "https://github.com/sarahchen",
-        twitterUrl: "https://twitter.com/sarahchen",
-        linkedinUrl: "https://linkedin.com/in/sarahchen"
-      },
-      {
-        name: "Marcus Johnson",
-        role: "UX/UI Designer",
-        bio: "Creates intuitive user interfaces and seamless user experiences for Discord bot interactions.",
-        githubUrl: "https://github.com/marcusj",
-        twitterUrl: "https://twitter.com/marcusj",
-        linkedinUrl: "https://linkedin.com/in/marcusj"
+        bio: "3+ years experience in Coding and website development",
+        githubUrl: "https://github.com/calebweston",
+        twitterUrl: "https://twitter.com/calebweston",
+        linkedinUrl: "https://linkedin.com/in/calebweston"
       }
     ]);
 
