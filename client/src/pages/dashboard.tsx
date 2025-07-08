@@ -99,16 +99,16 @@ export default function Dashboard() {
     );
   }
 
-  const availableGuilds = guilds?.filter(guild => guild.hasBot) || [];
-  const inviteableGuilds = guilds?.filter(guild => !guild.hasBot && guild.owner) || [];
+  const availableGuilds = guilds?.filter(guild => guild.hasBot && (guild.owner || guild.permissions.includes('MANAGE_GUILD'))) || [];
+  const inviteableGuilds = guilds?.filter(guild => !guild.hasBot && (guild.owner || guild.permissions.includes('MANAGE_GUILD'))) || [];
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="container mx-auto px-4 py-8">
           <PageHeader 
-            title="NexGuard Dashboard"
-            description="Manage your Discord servers with advanced moderation tools"
+            title="Server Management Dashboard"
+            description="Manage NexGuard settings for your Discord servers"
           />
 
           {/* User Info Header */}
@@ -134,7 +134,7 @@ export default function Dashboard() {
                           {user.globalName || user.username}
                         </h2>
                         <p className="text-gray-400">
-                          @{user.username}#{user.discriminator}
+                          Server Administrator • @{user.username}#{user.discriminator}
                         </p>
                       </div>
                     </div>
@@ -180,12 +180,17 @@ export default function Dashboard() {
                         <div className="flex items-center space-x-2 mt-1">
                           <Badge variant="secondary" className="text-xs">
                             <Bot className="w-3 h-3 mr-1" />
-                            Active
+                            NexGuard Active
                           </Badge>
-                          {guild.owner && (
+                          {guild.owner ? (
                             <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">
                               <Crown className="w-3 h-3 mr-1" />
                               Owner
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs border-blue-500 text-blue-500">
+                              <Shield className="w-3 h-3 mr-1" />
+                              Admin
                             </Badge>
                           )}
                         </div>
@@ -205,7 +210,7 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <Zap className="w-5 h-5 mr-2 text-yellow-500" />
-                      Add NexGuard to Your Servers
+                      Add NexGuard to Servers You Manage
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -249,32 +254,59 @@ export default function Dashboard() {
             <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {[
                 {
-                  title: "Moderation",
-                  description: "Manage bans, kicks, and warnings",
+                  title: "Moderation Tools",
+                  description: "Manage bans, kicks, warns, and timeouts for your server",
                   icon: Shield,
                   color: "text-red-400",
+                  onClick: () => {
+                    toast({
+                      title: "Coming Soon",
+                      description: "Moderation tools panel will be available soon",
+                    });
+                  }
                 },
                 {
                   title: "Auto-Moderation",
-                  description: "Configure automatic moderation rules",
+                  description: "Set up automatic filters and response rules",
                   icon: Activity,
                   color: "text-orange-400",
+                  onClick: () => {
+                    toast({
+                      title: "Coming Soon",
+                      description: "Auto-moderation configuration will be available soon",
+                    });
+                  }
                 },
                 {
-                  title: "Server Settings",
-                  description: "Configure bot settings and permissions",
+                  title: "Server Configuration",
+                  description: "Customize NexGuard settings for your server",
                   icon: Settings,
                   color: "text-blue-400",
+                  onClick: () => {
+                    toast({
+                      title: "Coming Soon",
+                      description: "Server configuration panel will be available soon",
+                    });
+                  }
                 },
                 {
-                  title: "Logs & Analytics",
-                  description: "View server activity and moderation logs",
+                  title: "Activity Logs",
+                  description: "Monitor server activity and moderation history",
                   icon: MessageSquare,
                   color: "text-green-400",
+                  onClick: () => {
+                    toast({
+                      title: "Coming Soon",
+                      description: "Activity logs will be available soon",
+                    });
+                  }
                 },
               ].map((feature, index) => (
                 <StaggerItem key={feature.title} index={index}>
-                  <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer">
+                  <Card 
+                    className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer"
+                    onClick={feature.onClick}
+                  >
                     <CardHeader className="text-center">
                       <feature.icon className={`w-12 h-12 ${feature.color} mx-auto mb-3`} />
                       <CardTitle className="text-white">{feature.title}</CardTitle>
@@ -289,9 +321,9 @@ export default function Dashboard() {
           {!selectedGuild && availableGuilds.length > 0 && (
             <div className="text-center py-12">
               <Server className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">Select a Server</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">Select a Server to Manage</h3>
               <p className="text-gray-400">
-                Choose a server above to access its dashboard and configuration options
+                Choose a server above to access NexGuard's management tools and configuration options
               </p>
             </div>
           )}
@@ -299,9 +331,10 @@ export default function Dashboard() {
           {availableGuilds.length === 0 && !guildsLoading && (
             <div className="text-center py-12">
               <Bot className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Servers Found</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">No Managed Servers</h3>
               <p className="text-gray-400 mb-6">
-                NexGuard isn't installed on any of your servers yet. Add it to get started!
+                You don't have any servers with NexGuard installed where you have admin permissions.
+                Add NexGuard to a server you manage to get started!
               </p>
               <Button
                 onClick={() => {
@@ -310,7 +343,7 @@ export default function Dashboard() {
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white border-0"
               >
                 <Bot className="w-4 h-4 mr-2" />
-                Add NexGuard to Server
+                Add NexGuard to Your Server
               </Button>
             </div>
           )}

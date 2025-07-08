@@ -80,7 +80,15 @@ async function getDiscordGuilds(accessToken: string) {
     throw new Error('Failed to get Discord guilds');
   }
 
-  return await response.json();
+  const guilds = await response.json();
+  
+  // Filter guilds where user has admin permissions (MANAGE_GUILD or ADMINISTRATOR)
+  return guilds.filter((guild: any) => {
+    const permissions = parseInt(guild.permissions);
+    const MANAGE_GUILD = 0x20;
+    const ADMINISTRATOR = 0x8;
+    return guild.owner || (permissions & MANAGE_GUILD) || (permissions & ADMINISTRATOR);
+  });
 }
 
 async function checkBotInGuild(guildId: string) {
@@ -183,6 +191,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.redirect('/');
     });
+  });
+
+  // Middleware to check if user is authenticated
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+  };
+
+  // Middleware to check if user can manage a specific guild
+  const requireGuildAdmin = (req: any, res: any, next: any) => {
+    const { guildId } = req.params;
+    const userGuilds = req.session.guilds || [];
+    
+    const guild = userGuilds.find((g: any) => g.id === guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Guild not found' });
+    }
+
+    const permissions = parseInt(guild.permissions);
+    const MANAGE_GUILD = 0x20;
+    const ADMINISTRATOR = 0x8;
+    
+    if (!guild.owner && !(permissions & MANAGE_GUILD) && !(permissions & ADMINISTRATOR)) {
+      return res.status(403).json({ error: 'Insufficient permissions to manage this server' });
+    }
+    
+    req.guild = guild;
+    next();
+  };
+
+  // Server-specific management endpoints
+  app.get('/api/servers/:guildId/config', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId } = req.params;
+    
+    try {
+      // This would fetch server-specific configuration from your database
+      const serverConfig = {
+        guildId,
+        name: req.guild.name,
+        autoModeration: {
+          enabled: true,
+          badWordsFilter: true,
+          spamProtection: true,
+          raidProtection: false,
+        },
+        moderation: {
+          logChannel: null,
+          muteRole: null,
+          autoDelete: true,
+        },
+        permissions: {
+          modRole: null,
+          adminRole: null,
+        }
+      };
+      
+      res.json(serverConfig);
+    } catch (error) {
+      console.error('Error fetching server config:', error);
+      res.status(500).json({ error: 'Failed to fetch server configuration' });
+    }
+  });
+
+  app.put('/api/servers/:guildId/config', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId } = req.params;
+    const config = req.body;
+    
+    try {
+      // This would update server-specific configuration in your database
+      // For now, just return the updated config
+      res.json({ 
+        success: true, 
+        message: 'Server configuration updated successfully',
+        config 
+      });
+    } catch (error) {
+      console.error('Error updating server config:', error);
+      res.status(500).json({ error: 'Failed to update server configuration' });
+    }
+  });
+
+  app.get('/api/servers/:guildId/moderation/logs', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId } = req.params;
+    
+    try {
+      // This would fetch moderation logs from your database
+      const logs = [
+        {
+          id: 1,
+          type: 'warn',
+          user: { id: '123456789', username: 'example_user' },
+          moderator: { id: '987654321', username: 'moderator' },
+          reason: 'Spam in general chat',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          type: 'timeout',
+          user: { id: '111222333', username: 'another_user' },
+          moderator: { id: '987654321', username: 'moderator' },
+          reason: 'Inappropriate language',
+          duration: '1 hour',
+          timestamp: new Date(Date.now() - 3600000).toISOString(),
+        }
+      ];
+      
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching moderation logs:', error);
+      res.status(500).json({ error: 'Failed to fetch moderation logs' });
+    }
   });
 
   // API routes for NexGuard website

@@ -12,14 +12,14 @@ export function AuthNotice() {
             <Key className="h-6 w-6 text-yellow-500" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            Discord OAuth Setup Required
+            Server Admin Login Setup Required
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert className="border-yellow-500/20 bg-yellow-500/10">
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
             <AlertDescription className="text-yellow-200">
-              Discord OAuth authentication is not configured. To enable the dashboard login, you need to provide your Discord application credentials.
+              Discord OAuth authentication is not configured. To enable server admin login for the dashboard, you need to provide your Discord application credentials.
             </AlertDescription>
           </Alert>
           

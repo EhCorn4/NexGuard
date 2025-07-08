@@ -87,7 +87,7 @@ export function Navbar() {
                 onClick={() => window.location.href = '/dashboard'}
                 className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg"
               >
-                Dashboard Login
+                Server Login
               </Button>
             </HoverScale>
           </div>
@@ -118,7 +118,7 @@ export function Navbar() {
                       onClick={() => window.location.href = '/dashboard'}
                       className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg w-full"
                     >
-                      Dashboard Login
+                      Server Login
                     </Button>
                   </HoverScale>
                 </div>
