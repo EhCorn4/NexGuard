@@ -82,13 +82,28 @@ async function getDiscordGuilds(accessToken: string) {
 
   const guilds = await response.json();
   
-  // Filter guilds where user has admin permissions (MANAGE_GUILD or ADMINISTRATOR)
-  return guilds.filter((guild: any) => {
-    const permissions = parseInt(guild.permissions);
-    const MANAGE_GUILD = 0x20;
-    const ADMINISTRATOR = 0x8;
-    return guild.owner || (permissions & MANAGE_GUILD) || (permissions & ADMINISTRATOR);
+  // Filter guilds where user has admin permissions
+  const filteredGuilds = guilds.filter((guild: any) => {
+    const permissions = BigInt(guild.permissions);
+    const MANAGE_GUILD = BigInt(0x20);
+    const ADMINISTRATOR = BigInt(0x8);
+    const MANAGE_CHANNELS = BigInt(0x10);
+    const MANAGE_ROLES = BigInt(0x10000000);
+    
+    // Check if user is owner or has any admin-level permissions
+    const hasAdminPerms = guild.owner || 
+                         (permissions & ADMINISTRATOR) !== BigInt(0) ||
+                         (permissions & MANAGE_GUILD) !== BigInt(0) ||
+                         (permissions & MANAGE_CHANNELS) !== BigInt(0) ||
+                         (permissions & MANAGE_ROLES) !== BigInt(0);
+    
+    console.log(`Guild ${guild.name} (${guild.id}): owner=${guild.owner}, permissions=${permissions.toString()}, hasAdminPerms=${hasAdminPerms}`);
+    
+    return hasAdminPerms;
   });
+
+  console.log(`Filtered ${filteredGuilds.length} guilds out of ${guilds.length} total`);
+  return filteredGuilds;
 }
 
 async function checkBotInGuild(guildId: string) {
@@ -197,9 +212,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
       );
 
+      console.log(`Returning ${guildsWithBotInfo.length} guilds to client`);
       res.json(guildsWithBotInfo);
     } catch (error) {
       console.error('Error fetching guilds:', error);
+      res.status(500).json({ error: 'Failed to fetch guilds' });
+    }
+  });
+
+  // Debug endpoint to show all guilds (unfiltered)
+  app.get('/api/auth/guilds/debug', async (req, res) => {
+    try {
+      const user = (req.session as any)?.user;
+      if (!user || !user.access_token) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      // Get raw guilds from Discord API without filtering
+      const response = await fetch('https://discord.com/api/users/@me/guilds', {
+        headers: {
+          Authorization: `Bearer ${user.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get Discord guilds');
+      }
+
+      const allGuilds = await response.json();
+      
+      // Add permission analysis
+      const guildsWithAnalysis = allGuilds.map((guild: any) => {
+        const permissions = BigInt(guild.permissions);
+        const MANAGE_GUILD = BigInt(0x20);
+        const ADMINISTRATOR = BigInt(0x8);
+        const MANAGE_CHANNELS = BigInt(0x10);
+        const MANAGE_ROLES = BigInt(0x10000000);
+        
+        return {
+          ...guild,
+          permissionAnalysis: {
+            owner: guild.owner,
+            permissions: permissions.toString(),
+            hasAdministrator: (permissions & ADMINISTRATOR) !== BigInt(0),
+            hasManageGuild: (permissions & MANAGE_GUILD) !== BigInt(0),
+            hasManageChannels: (permissions & MANAGE_CHANNELS) !== BigInt(0),
+            hasManageRoles: (permissions & MANAGE_ROLES) !== BigInt(0),
+          }
+        };
+      });
+
+      res.json(guildsWithAnalysis);
+    } catch (error) {
+      console.error('Error fetching debug guilds:', error);
       res.status(500).json({ error: 'Failed to fetch guilds' });
     }
   });
