@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,31 @@ interface DashboardUser {
 
 export default function Dashboard() {
   const { toast } = useToast();
+  
+  // Check for authentication errors in URL
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+      const errorMessages: { [key: string]: string } = {
+        'discord_denied': 'Discord authentication was cancelled',
+        'no_code': 'No authorization code received from Discord',
+        'oauth_not_configured': 'Discord OAuth is not properly configured',
+        'auth_failed': 'Authentication failed - please try again',
+        'session_failed': 'Session could not be created - please try again'
+      };
+      
+      toast({
+        title: "Authentication Error",
+        description: errorMessages[error] || 'An unknown error occurred',
+        variant: "destructive",
+      });
+      
+      // Clear the error from URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [toast]);
   const [selectedGuild, setSelectedGuild] = useState<string | null>(null);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery<DashboardUser>({
@@ -61,17 +86,23 @@ export default function Dashboard() {
   const isDiscordConfigured = !userError || !userError.message.includes('Discord OAuth not configured');
 
   useEffect(() => {
+    console.log('Dashboard auth check:', {
+      userLoading,
+      user: !!user,
+      isDiscordConfigured,
+      oauthError,
+      userError: userError?.message
+    });
+    
     if (!userLoading && !user && isDiscordConfigured && !oauthError) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to access the dashboard",
+        description: "Click 'Try Discord Login' to authenticate",
         variant: "destructive",
       });
-      setTimeout(() => {
-        window.location.href = '/api/auth/discord';
-      }, 1000);
+      // Don't auto-redirect, let user click the button
     }
-  }, [user, userLoading, toast, isDiscordConfigured, oauthError]);
+  }, [user, userLoading, toast, isDiscordConfigured, oauthError, userError]);
 
   // Show auth notice if Discord OAuth is not configured or there's an OAuth error
   if (!isDiscordConfigured || oauthError === 'oauth_not_configured') {
@@ -82,7 +113,7 @@ export default function Dashboard() {
     window.location.href = '/api/auth/logout';
   };
 
-  if (userLoading || !user) {
+  if (userLoading) {
     return (
       <PageTransition>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -91,6 +122,44 @@ export default function Dashboard() {
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
                 <p className="text-gray-300">Loading dashboard...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center max-w-md">
+                <h2 className="text-2xl font-bold text-white mb-4">Discord Authentication Required</h2>
+                <p className="text-gray-300 mb-6">Please log in with Discord to access the NexGuard dashboard</p>
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => {
+                      console.log('Redirecting to Discord OAuth...');
+                      window.location.href = '/api/auth/discord';
+                    }}
+                    className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-6 py-3"
+                  >
+                    Login with Discord
+                  </Button>
+                  <div className="text-sm text-gray-400">
+                    Click to authenticate with Discord and access your server management dashboard
+                  </div>
+                </div>
+                {userError && (
+                  <div className="mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded">
+                    <p className="text-red-400 text-sm">
+                      Error: {userError.message}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
