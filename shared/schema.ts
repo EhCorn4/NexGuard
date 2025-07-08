@@ -57,6 +57,57 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const serverConfigs = pgTable("server_configs", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull().unique(),
+  guildName: text("guild_name").notNull(),
+  ownerId: text("owner_id").notNull(),
+  
+  // Moderation Settings
+  moderationEnabled: boolean("moderation_enabled").default(true),
+  autoModEnabled: boolean("auto_mod_enabled").default(true),
+  spamProtection: boolean("spam_protection").default(true),
+  linkProtection: boolean("link_protection").default(false),
+  profanityFilter: boolean("profanity_filter").default(true),
+  
+  // Logging Settings
+  modLogChannel: text("mod_log_channel"),
+  auditLogChannel: text("audit_log_channel"),
+  
+  // Welcome/Leave Settings
+  welcomeEnabled: boolean("welcome_enabled").default(false),
+  welcomeChannel: text("welcome_channel"),
+  welcomeMessage: text("welcome_message"),
+  leaveEnabled: boolean("leave_enabled").default(false),
+  leaveChannel: text("leave_channel"),
+  leaveMessage: text("leave_message"),
+  
+  // Role Settings
+  autoRoleEnabled: boolean("auto_role_enabled").default(false),
+  autoRoleId: text("auto_role_id"),
+  mutedRoleId: text("muted_role_id"),
+  
+  // Economy Settings
+  economyEnabled: boolean("economy_enabled").default(false),
+  dailyReward: integer("daily_reward").default(100),
+  
+  // Custom Commands
+  customCommandsEnabled: boolean("custom_commands_enabled").default(true),
+  maxCustomCommands: integer("max_custom_commands").default(10),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const customCommands = pgTable("custom_commands", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  name: text("name").notNull(),
+  response: text("response").notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
