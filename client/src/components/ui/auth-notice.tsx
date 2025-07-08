@@ -61,15 +61,18 @@ export function AuthNotice() {
             </div>
 
             <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
-              <h4 className="font-semibold text-white mb-2">Quick Setup Guide:</h4>
-              <ol className="text-sm text-gray-300 space-y-1">
-                <li>1. Go to Discord Developer Portal</li>
-                <li>2. Select your application or create a new one</li>
-                <li>3. Copy the Client ID: <code className="bg-slate-600 px-1 rounded text-cyan-400">1389775821794705429</code></li>
-                <li>4. Copy the Client Secret from OAuth2 section</li>
-                <li>5. Add the Client Secret to your environment</li>
-                <li>6. Set redirect URI to: <code className="bg-slate-600 px-1 rounded text-green-400 text-xs break-all">{window.location.origin}/api/auth/discord/callback</code></li>
-              </ol>
+              <h4 className="font-semibold text-white mb-2">Discord OAuth Setup Required:</h4>
+              <div className="text-sm text-gray-300 space-y-2">
+                <p>The Discord Client Secret is configured, but you need to add the redirect URI to your Discord application:</p>
+                <ol className="space-y-1 ml-4">
+                  <li>1. Go to Discord Developer Portal > OAuth2 > General</li>
+                  <li>2. Add this redirect URI:</li>
+                </ol>
+                <div className="bg-slate-600 p-2 rounded text-xs text-green-400 break-all font-mono">
+                  {window.location.origin}/api/auth/discord/callback
+                </div>
+                <p className="text-yellow-400">⚠️ The redirect URI must match exactly for OAuth to work</p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
