@@ -283,10 +283,7 @@ export default function Dashboard() {
                   icon: Settings,
                   color: "text-blue-400",
                   onClick: () => {
-                    toast({
-                      title: "Coming Soon",
-                      description: "Server configuration panel will be available soon",
-                    });
+                    window.location.href = `/server/${selectedGuild.id}`;
                   }
                 },
                 {

@@ -1,4 +1,4 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, serverConfigs, customCommands, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type ServerConfig, type InsertServerConfig, type CustomCommand, type InsertCustomCommand } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -12,6 +12,17 @@ export interface IStorage {
   getTestimonials(): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
+  
+  // Server configuration methods
+  getServerConfig(guildId: string): Promise<ServerConfig | undefined>;
+  createServerConfig(config: InsertServerConfig): Promise<ServerConfig>;
+  updateServerConfig(guildId: string, config: Partial<ServerConfig>): Promise<ServerConfig>;
+  
+  // Custom commands methods
+  getCustomCommands(guildId: string): Promise<CustomCommand[]>;
+  createCustomCommand(command: InsertCustomCommand): Promise<CustomCommand>;
+  updateCustomCommand(id: number, command: Partial<CustomCommand>): Promise<CustomCommand>;
+  deleteCustomCommand(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -303,6 +314,48 @@ export class DatabaseStorage implements IStorage {
       .values(insertFeedback)
       .returning();
     return feedbackResult;
+  }
+
+  async getServerConfig(guildId: string): Promise<ServerConfig | undefined> {
+    const [config] = await db.select().from(serverConfigs).where(eq(serverConfigs.guildId, guildId));
+    return config;
+  }
+
+  async createServerConfig(config: InsertServerConfig): Promise<ServerConfig> {
+    const [newConfig] = await db.insert(serverConfigs).values(config).returning();
+    return newConfig;
+  }
+
+  async updateServerConfig(guildId: string, config: Partial<ServerConfig>): Promise<ServerConfig> {
+    const [updatedConfig] = await db
+      .update(serverConfigs)
+      .set({ ...config, updatedAt: new Date() })
+      .where(eq(serverConfigs.guildId, guildId))
+      .returning();
+    return updatedConfig;
+  }
+
+  async getCustomCommands(guildId: string): Promise<CustomCommand[]> {
+    return await db.select().from(customCommands).where(eq(customCommands.guildId, guildId));
+  }
+
+  async createCustomCommand(command: InsertCustomCommand): Promise<CustomCommand> {
+    const [newCommand] = await db.insert(customCommands).values(command).returning();
+    return newCommand;
+  }
+
+  async updateCustomCommand(id: number, command: Partial<CustomCommand>): Promise<CustomCommand> {
+    const [updatedCommand] = await db
+      .update(customCommands)
+      .set(command)
+      .where(eq(customCommands.id, id))
+      .returning();
+    return updatedCommand;
+  }
+
+  async deleteCustomCommand(id: number): Promise<boolean> {
+    const result = await db.delete(customCommands).where(eq(customCommands.id, id));
+    return result.rowCount > 0;
   }
 }
 

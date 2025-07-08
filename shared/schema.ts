@@ -139,6 +139,17 @@ export const insertFeedbackSchema = createInsertSchema(feedback).omit({
   createdAt: true,
 });
 
+export const insertServerConfigSchema = createInsertSchema(serverConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCustomCommandSchema = createInsertSchema(customCommands).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type NewsUpdate = typeof newsUpdates.$inferSelect;
@@ -146,8 +157,12 @@ export type Developer = typeof developers.$inferSelect;
 export type Feature = typeof features.$inferSelect;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type Feedback = typeof feedback.$inferSelect;
+export type ServerConfig = typeof serverConfigs.$inferSelect;
+export type CustomCommand = typeof customCommands.$inferSelect;
 export type InsertNewsUpdate = z.infer<typeof insertNewsUpdateSchema>;
 export type InsertDeveloper = z.infer<typeof insertDeveloperSchema>;
 export type InsertFeature = z.infer<typeof insertFeatureSchema>;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
+export type InsertServerConfig = z.infer<typeof insertServerConfigSchema>;
+export type InsertCustomCommand = z.infer<typeof insertCustomCommandSchema>;
