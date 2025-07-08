@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+  
+  /* NexGuard custom colors */
+  --nexguard-dark: hsl(240, 33%, 9%);
+  --nexguard-darker: hsl(240, 25%, 12%);
+  --nexguard-cyan: hsl(195, 100%, 50%);
+  --nexguard-purple: hsl(263, 100%, 70%);
+  --discord-blurple: hsl(235, 85%, 64%);
+  --discord-light: hsl(227, 58%, 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background-color: hsl(var(--nexguard-dark));
+    color: hsl(var(--foreground));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(var(--nexguard-dark)) 0%, hsl(var(--nexguard-darker)) 50%, hsl(235, 85%, 30%) 100%);
+  }
+  
+  .circuit-pattern {
+    background-image: 
+      linear-gradient(45deg, transparent 40%, hsla(var(--nexguard-cyan), 0.1) 40%, hsla(var(--nexguard-cyan), 0.1) 60%, transparent 60%),
+      linear-gradient(-45deg, transparent 40%, hsla(var(--nexguard-purple), 0.1) 40%, hsla(var(--nexguard-purple), 0.1) 60%, transparent 60%);
+    background-size: 60px 60px;
+    background-position: 0 0, 30px 30px;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(45deg, hsl(var(--nexguard-cyan)), hsl(var(--nexguard-purple)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-link {
+    @apply transition-all duration-300 hover:text-[hsl(var(--nexguard-cyan))];
+  }
+  
+  .nav-link:hover {
+    text-shadow: 0 0 10px hsla(var(--nexguard-cyan), 0.5);
+  }
+  
+  .feature-card-hover {
+    @apply transition-all duration-300 transform hover:-translate-y-2;
+  }
+  
+  .feature-card-hover:hover {
+    box-shadow: 0 20px 40px hsla(var(--nexguard-cyan), 0.3);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px hsla(var(--nexguard-cyan), 0.5); }
+  to { box-shadow: 0 0 30px hsla(var(--nexguard-cyan), 0.8); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
