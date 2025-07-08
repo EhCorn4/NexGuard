@@ -1,9 +1,7 @@
 import { Link } from "wouter";
 import { GradientText } from "@/components/ui/gradient-text";
-import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
-import { Shield, Users, MessageSquare, Bot, Settings, Zap, Eye } from "lucide-react";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
@@ -17,14 +15,6 @@ const Home = memo(function Home() {
         style={{ backgroundImage: `url(${nexguardIcon})` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      
-      {/* Floating Shield */}
-      <div className="absolute top-20 right-20 opacity-30 animate-float">
-        <AnimatedShield size={120} />
-      </div>
-      <div className="absolute bottom-32 left-16 opacity-20 animate-float" style={{ animationDelay: '2s' }}>
-        <AnimatedShield size={80} />
-      </div>
       
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
