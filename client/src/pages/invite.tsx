@@ -5,7 +5,7 @@ import { Download, Settings, Shield } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 
 export default function Invite() {
-  const discordInviteUrl = "https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot";
+  const discordInviteUrl = "https://discord.com/oauth2/authorize?client_id=1389775821794705429";
   const supportServerUrl = "https://discord.gg/wpjZMPXaR";
 
   return (
