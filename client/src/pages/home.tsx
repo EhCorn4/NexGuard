@@ -5,6 +5,7 @@ import { SiDiscord } from "react-icons/si";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
+import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
 import { memo } from "react";
 
 const Home = memo(function Home() {
@@ -87,8 +88,12 @@ const Home = memo(function Home() {
             
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 text-center transform hover:scale-105 transition-all duration-300">
               <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">BLRP</span>
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gradient-to-br from-cyan-400 to-purple-500 p-1">
+                  <img 
+                    src={blrpLogo} 
+                    alt="BlueLine RolePlay Logo" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
               </div>
               
