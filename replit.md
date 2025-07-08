@@ -28,11 +28,16 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 - **News Updates**: Community announcements and updates
 - **Developers**: Team member profiles and information
 - **Features**: Bot feature descriptions and benefits
+- **Testimonials**: User reviews and ratings with approval system
+- **Feedback**: Support tickets and user feedback submissions
 
 ### API Endpoints
 - `GET /api/news` - Retrieve community updates and announcements
 - `GET /api/developers` - Get team member information
 - `GET /api/features` - Fetch bot features and capabilities
+- `GET /api/testimonials` - Retrieve approved user testimonials
+- `POST /api/testimonials` - Submit new testimonial for approval
+- `POST /api/feedback` - Submit feedback, bug reports, or feature requests
 
 ### Frontend Pages
 - **Home**: Landing page with hero section and key statistics
@@ -40,6 +45,9 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 - **Invite**: Bot invitation flow with setup instructions
 - **Developers**: Team member profiles and social links
 - **Community**: News updates and community engagement
+- **Testimonials**: Community feedback and user reviews with submission form
+- **Feedback**: Support system for bug reports, feature requests, and general feedback
+- **Docs**: Comprehensive documentation and help center with search functionality
 
 ### Design System
 - **Color Palette**: Custom NexGuard brand colors (cyan/purple gradients)
@@ -94,6 +102,9 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 
 Changelog:
 - July 08, 2025. Initial setup
+- July 08, 2025. Added community feedback and testimonials system with database integration
+- July 08, 2025. Created comprehensive documentation/help center with search functionality
+- July 08, 2025. Updated developer information to show only Caleb Weston as Lead Developer
 
 ## User Preferences
 

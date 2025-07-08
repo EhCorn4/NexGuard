@@ -25,6 +25,9 @@ export function Navbar() {
     { href: "/invite", label: "Invite Bot" },
     { href: "/developers", label: "Developers" },
     { href: "/community", label: "Community" },
+    { href: "/testimonials", label: "Testimonials" },
+    { href: "/feedback", label: "Feedback" },
+    { href: "/docs", label: "Docs" },
   ];
 
   return (

@@ -10,6 +10,9 @@ import Features from "@/pages/features";
 import Invite from "@/pages/invite";
 import Developers from "@/pages/developers";
 import Community from "@/pages/community";
+import Testimonials from "@/pages/testimonials";
+import Feedback from "@/pages/feedback";
+import Docs from "@/pages/docs";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -23,6 +26,9 @@ function Router() {
           <Route path="/invite" component={Invite} />
           <Route path="/developers" component={Developers} />
           <Route path="/community" component={Community} />
+          <Route path="/testimonials" component={Testimonials} />
+          <Route path="/feedback" component={Feedback} />
+          <Route path="/docs" component={Docs} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -1,6 +1,6 @@
-import { users, newsUpdates, developers, features, type User, type InsertUser, type NewsUpdate, type Developer, type Feature } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -9,6 +9,9 @@ export interface IStorage {
   getNewsUpdates(): Promise<NewsUpdate[]>;
   getDevelopers(): Promise<Developer[]>;
   getFeatures(): Promise<Feature[]>;
+  getTestimonials(): Promise<Testimonial[]>;
+  createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  createFeedback(feedback: InsertFeedback): Promise<Feedback>;
 }
 
 export class MemStorage implements IStorage {
@@ -16,20 +19,28 @@ export class MemStorage implements IStorage {
   private newsUpdates: Map<number, NewsUpdate>;
   private developers: Map<number, Developer>;
   private features: Map<number, Feature>;
+  private testimonialsData: Map<number, Testimonial>;
+  private feedbackData: Map<number, Feedback>;
   private currentUserId: number;
   private currentNewsId: number;
   private currentDevId: number;
   private currentFeatureId: number;
+  private currentTestimonialId: number;
+  private currentFeedbackId: number;
 
   constructor() {
     this.users = new Map();
     this.newsUpdates = new Map();
     this.developers = new Map();
     this.features = new Map();
+    this.testimonialsData = new Map();
+    this.feedbackData = new Map();
     this.currentUserId = 1;
     this.currentNewsId = 1;
     this.currentDevId = 1;
     this.currentFeatureId = 1;
+    this.currentTestimonialId = 1;
+    this.currentFeedbackId = 1;
     
     this.initializeData();
   }
@@ -209,6 +220,36 @@ export class MemStorage implements IStorage {
   async getFeatures(): Promise<Feature[]> {
     return Array.from(this.features.values());
   }
+
+  async getTestimonials(): Promise<Testimonial[]> {
+    return Array.from(this.testimonialsData.values())
+      .filter(t => t.isApproved)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
+    const id = this.currentTestimonialId++;
+    const testimonial: Testimonial = {
+      ...insertTestimonial,
+      id,
+      isApproved: false,
+      createdAt: new Date()
+    };
+    this.testimonialsData.set(id, testimonial);
+    return testimonial;
+  }
+
+  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
+    const id = this.currentFeedbackId++;
+    const feedback: Feedback = {
+      ...insertFeedback,
+      id,
+      status: "pending",
+      createdAt: new Date()
+    };
+    this.feedbackData.set(id, feedback);
+    return feedback;
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -240,6 +281,28 @@ export class DatabaseStorage implements IStorage {
 
   async getFeatures(): Promise<Feature[]> {
     return await db.select().from(features);
+  }
+
+  async getTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials)
+      .where(eq(testimonials.isApproved, true))
+      .orderBy(desc(testimonials.createdAt));
+  }
+
+  async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
+    const [testimonial] = await db
+      .insert(testimonials)
+      .values(insertTestimonial)
+      .returning();
+    return testimonial;
+  }
+
+  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
+    const [feedbackResult] = await db
+      .insert(feedback)
+      .values(insertFeedback)
+      .returning();
+    return feedbackResult;
   }
 }
 

@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { newsUpdates, developers, features } from "@shared/schema";
+import { newsUpdates, developers, features, testimonials } from "@shared/schema";
 
 async function seedDatabase() {
   console.log("Starting database seeding...");
@@ -9,13 +9,14 @@ async function seedDatabase() {
     await db.delete(newsUpdates);
     await db.delete(developers);
     await db.delete(features);
+    await db.delete(testimonials);
 
     // Insert developers
     await db.insert(developers).values([
       {
         name: "Caleb Weston",
         role: "Lead Developer",
-        bio: "3+ years experience in Coding and website development",
+        bio: "3+ years in coding, website development, and server management",
         githubUrl: "https://github.com/calebweston",
         twitterUrl: "https://twitter.com/calebweston",
         linkedinUrl: "https://linkedin.com/in/calebweston"
@@ -111,6 +112,50 @@ async function seedDatabase() {
         publishedAt: new Date("2024-01-03"),
         likes: 189,
         comments: 34
+      }
+    ]);
+
+    // Insert testimonials
+    await db.insert(testimonials).values([
+      {
+        username: "GameMaster_Alex",
+        serverName: "Epic Gaming Hub",
+        content: "NexGuard transformed our server management completely! The auto-moderation features caught 95% of spam before we even saw it. Our community feels safer and more engaged than ever.",
+        rating: 5,
+        isApproved: true,
+        createdAt: new Date("2024-01-20")
+      },
+      {
+        username: "CommunityLeader_Sarah",
+        serverName: "Tech Enthusiasts United",
+        content: "The customizable moderation rules are incredible. We set up specific filters for our tech discussions and the bot handles everything perfectly. Highly recommend for any serious server!",
+        rating: 5,
+        isApproved: true,
+        createdAt: new Date("2024-01-18")
+      },
+      {
+        username: "ServerOwner_Mike",
+        serverName: "Creative Arts Community",
+        content: "Best Discord bot we've ever used! The dashboard is intuitive and the spam detection is spot-on. Our server went from chaotic to perfectly organized in days.",
+        rating: 4,
+        isApproved: true,
+        createdAt: new Date("2024-01-15")
+      },
+      {
+        username: "ModeratorJen",
+        serverName: "Study Group Central",
+        content: "As a moderator, NexGuard saves me hours every week. The automated warnings and temporary bans work exactly as configured. It's like having an extra team member!",
+        rating: 5,
+        isApproved: true,
+        createdAt: new Date("2024-01-12")
+      },
+      {
+        username: "AdminDave",
+        serverName: "Gaming League Pro",
+        content: "The raid protection feature saved our server during a coordinated attack. Within seconds, NexGuard locked down the server and prevented damage. Absolutely essential!",
+        rating: 5,
+        isApproved: true,
+        createdAt: new Date("2024-01-10")
       }
     ]);
 

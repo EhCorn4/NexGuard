@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -36,6 +36,27 @@ export const features = pgTable("features", {
   benefits: text("benefits").array(),
 });
 
+export const testimonials = pgTable("testimonials", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  serverName: text("server_name").notNull(),
+  content: text("content").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  isApproved: boolean("is_approved").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const feedback = pgTable("feedback", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  email: text("email").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull(), // "bug", "feature", "general"
+  status: text("status").default("pending").notNull(), // "pending", "reviewed", "resolved"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -55,11 +76,27 @@ export const insertFeatureSchema = createInsertSchema(features).omit({
   id: true,
 });
 
+export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
+  id: true,
+  isApproved: true,
+  createdAt: true,
+});
+
+export const insertFeedbackSchema = createInsertSchema(feedback).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type NewsUpdate = typeof newsUpdates.$inferSelect;
 export type Developer = typeof developers.$inferSelect;
 export type Feature = typeof features.$inferSelect;
+export type Testimonial = typeof testimonials.$inferSelect;
+export type Feedback = typeof feedback.$inferSelect;
 export type InsertNewsUpdate = z.infer<typeof insertNewsUpdateSchema>;
 export type InsertDeveloper = z.infer<typeof insertDeveloperSchema>;
 export type InsertFeature = z.infer<typeof insertFeatureSchema>;
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
