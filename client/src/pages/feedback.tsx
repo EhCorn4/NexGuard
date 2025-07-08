@@ -72,7 +72,7 @@ export default function Feedback() {
 
   return (
     <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10 animate-pulse-slow"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-4xl mx-auto">
           <PageHeader 

@@ -82,13 +82,13 @@
 
 @layer utilities {
   .hero-gradient {
-    background: linear-gradient(135deg, hsl(var(--nexguard-dark)) 0%, hsl(var(--nexguard-darker)) 50%, hsl(235, 85%, 30%) 100%);
+    background: linear-gradient(135deg, hsl(var(--nexguard-dark)) 0%, hsl(var(--nexguard-darker)) 50%, hsl(235, 85%, 15%) 100%);
   }
   
   .circuit-pattern {
     background-image: 
-      linear-gradient(45deg, transparent 40%, hsla(var(--nexguard-cyan), 0.1) 40%, hsla(var(--nexguard-cyan), 0.1) 60%, transparent 60%),
-      linear-gradient(-45deg, transparent 40%, hsla(var(--nexguard-purple), 0.1) 40%, hsla(var(--nexguard-purple), 0.1) 60%, transparent 60%);
+      linear-gradient(45deg, transparent 40%, hsla(var(--nexguard-cyan), 0.06) 40%, hsla(var(--nexguard-cyan), 0.06) 60%, transparent 60%),
+      linear-gradient(-45deg, transparent 40%, hsla(var(--nexguard-purple), 0.06) 40%, hsla(var(--nexguard-purple), 0.06) 60%, transparent 60%);
     background-size: 60px 60px;
     background-position: 0 0, 30px 30px;
   }
