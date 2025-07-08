@@ -9,11 +9,11 @@ Discord OAuth redirect is failing because the redirect URI in your Discord appli
 1. Go to: https://discord.com/developers/applications
 2. Select your NexGuard application (ID: 1389775821794705429)
 3. Navigate to OAuth2 → General
-4. Add these redirect URIs to the "Redirects" section:
+4. Add this exact redirect URI to the "Redirects" section:
    ```
    https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev/api/auth/discord/callback
    ```
-   **AND also add any other domains you're using (like replit.app domains)**
+   **IMPORTANT:** This must match exactly - no extra characters, no trailing slashes
 5. Save changes
 
 ### Important: Multiple Domains

@@ -11,6 +11,13 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on request
 function getDiscordRedirectUri(req: any) {
+  // Use the REPLIT_DOMAINS environment variable as the primary source
+  const replitDomain = process.env.REPLIT_DOMAINS;
+  if (replitDomain) {
+    return `https://${replitDomain}/api/auth/discord/callback`;
+  }
+  
+  // Fallback to request-based detection
   const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
   const host = req.headers.host || req.headers['x-forwarded-host'];
   return `${protocol}://${host}/api/auth/discord/callback`;
@@ -130,7 +137,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const redirectUri = getDiscordRedirectUri(req);
-    console.log('Discord OAuth redirect URI:', redirectUri);
+    console.log('=== Discord OAuth Debug ===');
+    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Generated redirect URI:', redirectUri);
+    console.log('Expected redirect URI should be:', `https://${process.env.REPLIT_DOMAINS}/api/auth/discord/callback`);
+    
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       redirect_uri: redirectUri,
@@ -138,7 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       scope: 'identify guilds',
     });
 
-    res.redirect(`https://discord.com/api/oauth2/authorize?${params}`);
+    const authUrl = `https://discord.com/api/oauth2/authorize?${params}`;
+    console.log('Full auth URL:', authUrl);
+    res.redirect(authUrl);
   });
 
   app.get('/api/auth/discord/callback', async (req, res) => {
