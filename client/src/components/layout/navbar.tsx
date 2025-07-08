@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
+import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -37,7 +37,7 @@ export function Navbar() {
             <img 
               src={nexguardIcon} 
               alt="NexGuard" 
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-lg"
             />
             <div>
               <h1 className="text-xl font-bold text-white">NEXGUARD</h1>

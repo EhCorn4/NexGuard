@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { AnimatedShield } from "@/components/ui/animated-shield";
 import { SiDiscord } from "react-icons/si";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
+import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Footer() {
   return (
@@ -13,7 +13,7 @@ export function Footer() {
               <img 
                 src={nexguardIcon} 
                 alt="NexGuard" 
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-lg"
               />
               <div>
                 <h3 className="text-lg font-bold text-white">NEXGUARD</h3>
