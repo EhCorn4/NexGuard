@@ -18,6 +18,14 @@ const Home = memo(function Home() {
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       
+      {/* Floating Shield */}
+      <div className="absolute top-20 right-20 opacity-30 animate-float">
+        <AnimatedShield size={120} />
+      </div>
+      <div className="absolute bottom-32 left-16 opacity-20 animate-float" style={{ animationDelay: '2s' }}>
+        <AnimatedShield size={80} />
+      </div>
+      
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
@@ -78,101 +86,15 @@ const Home = memo(function Home() {
         </div>
       </div>
 
-      {/* Why Choose NexGuard Section */}
+      {/* About Section */}
       <div className="py-20 px-4 bg-gradient-to-b from-[hsl(var(--nexguard-darker))] to-[hsl(var(--nexguard-dark))]">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">
-              <GradientText>Why Choose NexGuard?</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Built by Discord enthusiasts for Discord communities, NexGuard combines powerful automation with intuitive design.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center p-6 rounded-lg bg-background/10 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20">
-              <div className="w-16 h-16 mx-auto mb-4 bg-[hsl(var(--nexguard-cyan))]/20 rounded-full flex items-center justify-center">
-                <Shield className="w-8 h-8 text-[hsl(var(--nexguard-cyan))]" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-[hsl(var(--nexguard-cyan))]">Advanced Protection</h3>
-              <p className="text-gray-300">
-                AI-powered moderation that learns and adapts to your server's unique needs and culture.
-              </p>
-            </div>
-            
-            <div className="text-center p-6 rounded-lg bg-background/10 backdrop-blur-sm border border-[hsl(var(--nexguard-purple))]/20">
-              <div className="w-16 h-16 mx-auto mb-4 bg-[hsl(var(--nexguard-purple))]/20 rounded-full flex items-center justify-center">
-                <Zap className="w-8 h-8 text-[hsl(var(--nexguard-purple))]" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-[hsl(var(--nexguard-purple))]">Lightning Fast</h3>
-              <p className="text-gray-300">
-                Optimized performance with sub-second response times and 99%+ uptime guarantee.
-              </p>
-            </div>
-            
-            <div className="text-center p-6 rounded-lg bg-background/10 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20">
-              <div className="w-16 h-16 mx-auto mb-4 bg-[hsl(var(--nexguard-cyan))]/20 rounded-full flex items-center justify-center">
-                <Settings className="w-8 h-8 text-[hsl(var(--nexguard-cyan))]" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-[hsl(var(--nexguard-cyan))]">Easy Setup</h3>
-              <p className="text-gray-300">
-                Get started in minutes with our intuitive dashboard and step-by-step configuration guide.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Capabilities Section */}
-      <div className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">
-              <GradientText>Core Capabilities</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Everything you need to create a safe, engaging, and well-managed Discord community.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-lg bg-background/5 border border-[hsl(var(--nexguard-cyan))]/10 hover:border-[hsl(var(--nexguard-cyan))]/30 transition-colors">
-              <MessageSquare className="w-8 h-8 text-[hsl(var(--nexguard-cyan))] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Smart Moderation</h3>
-              <p className="text-sm text-gray-400">Automated content filtering and behavior analysis</p>
-            </div>
-            
-            <div className="p-6 rounded-lg bg-background/5 border border-[hsl(var(--nexguard-purple))]/10 hover:border-[hsl(var(--nexguard-purple))]/30 transition-colors">
-              <Users className="w-8 h-8 text-[hsl(var(--nexguard-purple))] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Member Management</h3>
-              <p className="text-sm text-gray-400">Role automation and user engagement tracking</p>
-            </div>
-            
-            <div className="p-6 rounded-lg bg-background/5 border border-[hsl(var(--nexguard-cyan))]/10 hover:border-[hsl(var(--nexguard-cyan))]/30 transition-colors">
-              <Eye className="w-8 h-8 text-[hsl(var(--nexguard-cyan))] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Real-time Monitoring</h3>
-              <p className="text-sm text-gray-400">Live activity feeds and instant alerts</p>
-            </div>
-            
-            <div className="p-6 rounded-lg bg-background/5 border border-[hsl(var(--nexguard-purple))]/10 hover:border-[hsl(var(--nexguard-purple))]/30 transition-colors">
-              <Bot className="w-8 h-8 text-[hsl(var(--nexguard-purple))] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Custom Commands</h3>
-              <p className="text-sm text-gray-400">Personalized bot interactions and responses</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Call to Action Section */}
-      <div className="py-20 px-4 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10">
         <div className="container mx-auto text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl font-bold mb-6">
-              <GradientText>Ready to Protect Your Server?</GradientText>
+              <GradientText>Advanced Discord Protection</GradientText>
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Join hundreds of Discord communities that trust NexGuard to keep their servers safe and engaged.
+              NexGuard is built by Discord enthusiasts for Discord communities. Our AI-powered moderation system learns and adapts to your server's unique culture while providing lightning-fast protection against spam, raids, and unwanted content.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/invite">
