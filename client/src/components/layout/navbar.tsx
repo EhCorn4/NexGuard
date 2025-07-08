@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Navbar() {
@@ -48,7 +49,7 @@ export function Navbar() {
             </div>
           </Link>
           
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -60,9 +61,11 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <ThemeToggle />
           </div>
           
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-white hover:text-[hsl(var(--nexguard-cyan))]">
