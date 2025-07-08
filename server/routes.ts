@@ -137,14 +137,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const guilds = await getDiscordGuilds(tokenData.access_token);
 
       // Store user session
-      (req.session as any).user = user;
-      (req.session as any).accessToken = tokenData.access_token;
+      (req.session as any).user = {
+        ...user,
+        access_token: tokenData.access_token,
+      };
       (req.session as any).guilds = guilds;
 
-      res.redirect('/dashboard');
+      // Force session save before redirect
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.redirect('/dashboard?error=session_failed');
+        }
+        res.redirect('/dashboard');
+      });
     } catch (error) {
       console.error('Discord OAuth error:', error);
-      res.status(500).json({ error: 'Authentication failed' });
+      res.redirect('/dashboard?error=auth_failed');
     }
   });
 
@@ -156,6 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const user = (req.session as any)?.user;
+    console.log('Session user:', user ? 'exists' : 'not found');
     if (!user) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
@@ -163,12 +173,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/guilds', async (req, res) => {
-    const guilds = (req.session as any)?.guilds;
-    if (!guilds) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
     try {
+      const user = (req.session as any)?.user;
+      if (!user || !user.access_token) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      // Get fresh guilds from Discord API
+      const guilds = await getDiscordGuilds(user.access_token);
+      
       // Add bot presence information to guilds
       const guildsWithBotInfo = await Promise.all(
         guilds.map(async (guild: any) => ({

@@ -99,8 +99,8 @@ export default function Dashboard() {
     );
   }
 
-  const availableGuilds = guilds?.filter(guild => guild.hasBot && (guild.owner || guild.permissions.includes('MANAGE_GUILD'))) || [];
-  const inviteableGuilds = guilds?.filter(guild => !guild.hasBot && (guild.owner || guild.permissions.includes('MANAGE_GUILD'))) || [];
+  const availableGuilds = guilds?.filter(guild => guild.hasBot) || [];
+  const inviteableGuilds = guilds?.filter(guild => !guild.hasBot) || [];
 
   return (
     <PageTransition>
