@@ -56,9 +56,9 @@
   
   /* NexGuard custom colors - Light */
   --nexguard-dark: hsl(0, 0%, 98%);
-  --nexguard-darker: hsl(240, 5.9%, 90%);
-  --nexguard-cyan: hsl(195, 100%, 40%);
-  --nexguard-purple: hsl(263, 85%, 60%);
+  --nexguard-darker: hsl(240, 5.9%, 95%);
+  --nexguard-cyan: hsl(195, 100%, 35%);
+  --nexguard-purple: hsl(263, 85%, 45%);
   --discord-blurple: hsl(235, 85%, 64%);
   --discord-light: hsl(227, 58%, 65%);
 }
@@ -70,8 +70,6 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    background-color: hsl(var(--nexguard-dark));
-    color: hsl(var(--foreground));
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
