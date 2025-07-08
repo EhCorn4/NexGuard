@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, Settings, Shield } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
+import { memo } from "react";
 
-export default function Invite() {
+const Invite = memo(function Invite() {
   const discordInviteUrl = "https://discord.com/oauth2/authorize?client_id=1389775821794705429";
   const supportServerUrl = "https://discord.gg/wpjZMPXaR";
 
@@ -90,4 +91,6 @@ export default function Invite() {
       </div>
     </div>
   );
-}
+});
+
+export default Invite;

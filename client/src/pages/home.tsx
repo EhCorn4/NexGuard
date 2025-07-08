@@ -6,8 +6,9 @@ import { SiDiscord } from "react-icons/si";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
+import { memo } from "react";
 
-export default function Home() {
+const Home = memo(function Home() {
   return (
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
@@ -77,4 +78,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+});
+
+export default Home;

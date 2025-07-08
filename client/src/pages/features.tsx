@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { GradientText } from "@/components/ui/gradient-text";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings } from "lucide-react";
 import type { Feature } from "@shared/schema";
+import { memo } from "react";
 
 const iconMap = {
   gavel: Gavel,
@@ -16,7 +18,7 @@ const iconMap = {
   cog: Settings,
 };
 
-export default function Features() {
+const Features = memo(function Features() {
   const { data: features, isLoading, error } = useQuery<Feature[]>({
     queryKey: ["/api/features"],
   });
@@ -74,4 +76,6 @@ export default function Features() {
       </div>
     </div>
   );
-}
+});
+
+export default Features;

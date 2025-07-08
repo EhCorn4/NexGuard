@@ -9,7 +9,7 @@ import { AlertCircle, User, Mail } from "lucide-react";
 import { SiDiscord, SiGithub, SiX, SiLinkedin } from "react-icons/si";
 import type { Developer } from "@shared/schema";
 
-export default function Developers() {
+const Developers = memo(function Developers() {
   const { data: developers, isLoading, error } = useQuery<Developer[]>({
     queryKey: ["/api/developers"],
   });
@@ -43,11 +43,7 @@ export default function Developers() {
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={i} className="bg-[hsl(var(--nexguard-dark))]/50 backdrop-blur-sm border-[hsl(var(--nexguard-cyan))]/20">
                 <CardContent className="p-6 text-center">
-                  <Skeleton className="w-24 h-24 rounded-full mx-auto mb-4" />
-                  <Skeleton className="h-6 w-3/4 mx-auto mb-2" />
-                  <Skeleton className="h-4 w-1/2 mx-auto mb-3" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
+                  <LoadingSkeleton type="card" count={1} />
                   <Skeleton className="h-4 w-2/3 mx-auto mb-4" />
                   <div className="flex justify-center space-x-4">
                     <Skeleton className="w-6 h-6 rounded" />
@@ -148,4 +144,6 @@ export default function Developers() {
       </div>
     </div>
   );
-}
+});
+
+export default Developers;

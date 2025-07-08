@@ -7,38 +7,81 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
 import { useScrollToTop } from "@/hooks/use-scroll-to-top";
 import { Footer } from "@/components/layout/footer";
-import Home from "@/pages/home";
-import Features from "@/pages/features";
-import Invite from "@/pages/invite";
-import Developers from "@/pages/developers";
-import Community from "@/pages/community";
-import Testimonials from "@/pages/testimonials";
-import Feedback from "@/pages/feedback";
-import Docs from "@/pages/docs";
-import NotFound from "@/pages/not-found";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { PerformanceWrapper } from "@/components/optimized/performance-wrapper";
+import { Suspense, lazy } from "react";
+
+// Lazy load pages for better performance
+const Home = lazy(() => import("@/pages/home"));
+const Features = lazy(() => import("@/pages/features"));
+const Invite = lazy(() => import("@/pages/invite"));
+const Developers = lazy(() => import("@/pages/developers"));
+const Community = lazy(() => import("@/pages/community"));
+const Testimonials = lazy(() => import("@/pages/testimonials"));
+const Feedback = lazy(() => import("@/pages/feedback"));
+const Docs = lazy(() => import("@/pages/docs"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
   // Enable smooth scrolling to top on page navigation
   useScrollToTop();
   
   return (
-    <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] text-foreground transition-colors duration-300">
-      <Navbar />
-      <main>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/features" component={Features} />
-          <Route path="/invite" component={Invite} />
-          <Route path="/developers" component={Developers} />
-          <Route path="/community" component={Community} />
-          <Route path="/testimonials" component={Testimonials} />
-          <Route path="/feedback" component={Feedback} />
-          <Route path="/docs" component={Docs} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <Footer />
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-[hsl(var(--nexguard-dark))] text-foreground transition-colors duration-300">
+        <Navbar />
+        <main role="main">
+          <Switch>
+            <Route path="/" component={() => (
+              <PerformanceWrapper skeletonType="grid" skeletonCount={1}>
+                <Home />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/features" component={() => (
+              <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                <Features />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/invite" component={() => (
+              <PerformanceWrapper skeletonType="card" skeletonCount={3}>
+                <Invite />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/developers" component={() => (
+              <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                <Developers />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/community" component={() => (
+              <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                <Community />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/testimonials" component={() => (
+              <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
+                <Testimonials />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/feedback" component={() => (
+              <PerformanceWrapper skeletonType="card" skeletonCount={2}>
+                <Feedback />
+              </PerformanceWrapper>
+            )} />
+            <Route path="/docs" component={() => (
+              <PerformanceWrapper skeletonType="list" skeletonCount={5}>
+                <Docs />
+              </PerformanceWrapper>
+            )} />
+            <Route component={() => (
+              <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                <NotFound />
+              </PerformanceWrapper>
+            )} />
+          </Switch>
+        </main>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   );
 }
 

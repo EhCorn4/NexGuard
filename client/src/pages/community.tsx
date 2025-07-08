@@ -3,11 +3,13 @@ import { GradientText } from "@/components/ui/gradient-text";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Heart, MessageCircle, Rocket, Users, Wrench, Star, Shield, Gamepad2 } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import type { NewsUpdate } from "@shared/schema";
+import { memo } from "react";
 
 const categoryIcons = {
   "NEW FEATURE": { icon: Rocket, color: "from-[hsl(var(--nexguard-cyan))] to-[hsl(var(--nexguard-purple))]", textColor: "text-[hsl(var(--nexguard-cyan))]" },
@@ -18,7 +20,7 @@ const categoryIcons = {
   "FEATURED": { icon: Star, color: "from-indigo-400 to-purple-600", textColor: "text-indigo-400" },
 };
 
-export default function Community() {
+const Community = memo(function Community() {
   const { data: news, isLoading, error } = useQuery<NewsUpdate[]>({
     queryKey: ["/api/news"],
   });
@@ -140,4 +142,6 @@ export default function Community() {
       </div>
     </div>
   );
-}
+});
+
+export default Community;
