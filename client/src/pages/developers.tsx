@@ -119,7 +119,7 @@ export default function Developers() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
-                  href="mailto:contact@nexguard.bot"
+                  href="mailto:nexguards@gmail.com"
                   className="inline-block"
                 >
                   <Button 
