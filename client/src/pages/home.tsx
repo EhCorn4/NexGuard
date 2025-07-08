@@ -58,15 +58,15 @@ const Home = memo(function Home() {
           
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">2,847</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">127</div>
               <div className="text-sm text-gray-400">Servers Protected</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">156K</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">8.2K</div>
               <div className="text-sm text-gray-400">Users Secured</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">98.7%</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">96.3%</div>
               <div className="text-sm text-gray-400">Uptime</div>
             </div>
             <div className="text-center">
