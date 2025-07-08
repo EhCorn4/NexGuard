@@ -22,6 +22,7 @@ const Community = lazy(() => import("@/pages/community"));
 const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
 const Docs = lazy(() => import("@/pages/docs"));
+const Dashboard = lazy(() => import("@/pages/dashboard"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -89,6 +90,13 @@ function Router() {
                 <PageTransition key="docs">
                   <PerformanceWrapper skeletonType="list" skeletonCount={5}>
                     <Docs />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/dashboard" component={() => (
+                <PageTransition key="dashboard">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
+                    <Dashboard />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />

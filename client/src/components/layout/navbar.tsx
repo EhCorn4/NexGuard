@@ -82,6 +82,14 @@ export function Navbar() {
               </motion.div>
             ))}
             <ThemeToggle />
+            <HoverScale scale={1.05}>
+              <Button
+                onClick={() => window.location.href = '/api/auth/discord'}
+                className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg"
+              >
+                Dashboard Login
+              </Button>
+            </HoverScale>
           </div>
           
           <div className="md:hidden flex items-center space-x-2">
@@ -105,6 +113,14 @@ export function Navbar() {
                       {item.label}
                     </Link>
                   ))}
+                  <HoverScale scale={1.05}>
+                    <Button
+                      onClick={() => window.location.href = '/api/auth/discord'}
+                      className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg w-full"
+                    >
+                      Dashboard Login
+                    </Button>
+                  </HoverScale>
                 </div>
               </SheetContent>
             </Sheet>
