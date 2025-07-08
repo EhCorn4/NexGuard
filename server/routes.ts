@@ -96,9 +96,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Discord OAuth routes
   app.get('/api/auth/discord', (req, res) => {
     if (!DISCORD_CLIENT_SECRET) {
-      return res.status(500).json({ 
-        error: 'Discord OAuth not configured. Please provide DISCORD_CLIENT_SECRET in environment variables.' 
-      });
+      // Redirect to dashboard with error state instead of returning JSON error
+      return res.redirect('/dashboard?error=oauth_not_configured');
     }
 
     const params = new URLSearchParams({

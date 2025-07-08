@@ -84,7 +84,7 @@ export function Navbar() {
             <ThemeToggle />
             <HoverScale scale={1.05}>
               <Button
-                onClick={() => window.location.href = '/api/auth/discord'}
+                onClick={() => window.location.href = '/dashboard'}
                 className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg"
               >
                 Dashboard Login
@@ -115,7 +115,7 @@ export function Navbar() {
                   ))}
                   <HoverScale scale={1.05}>
                     <Button
-                      onClick={() => window.location.href = '/api/auth/discord'}
+                      onClick={() => window.location.href = '/dashboard'}
                       className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg w-full"
                     >
                       Dashboard Login

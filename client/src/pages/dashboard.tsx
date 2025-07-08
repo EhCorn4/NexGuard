@@ -53,11 +53,15 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  // Check URL parameters for error state
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthError = urlParams.get('error');
+  
   // Check if Discord OAuth is configured
   const isDiscordConfigured = !userError || !userError.message.includes('Discord OAuth not configured');
 
   useEffect(() => {
-    if (!userLoading && !user && isDiscordConfigured) {
+    if (!userLoading && !user && isDiscordConfigured && !oauthError) {
       toast({
         title: "Authentication Required",
         description: "Please log in to access the dashboard",
@@ -67,10 +71,10 @@ export default function Dashboard() {
         window.location.href = '/api/auth/discord';
       }, 1000);
     }
-  }, [user, userLoading, toast, isDiscordConfigured]);
+  }, [user, userLoading, toast, isDiscordConfigured, oauthError]);
 
-  // Show auth notice if Discord OAuth is not configured
-  if (!isDiscordConfigured) {
+  // Show auth notice if Discord OAuth is not configured or there's an OAuth error
+  if (!isDiscordConfigured || oauthError === 'oauth_not_configured') {
     return <AuthNotice />;
   }
 

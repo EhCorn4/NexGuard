@@ -60,6 +60,18 @@ export function AuthNotice() {
               </div>
             </div>
 
+            <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+              <h4 className="font-semibold text-white mb-2">Quick Setup Guide:</h4>
+              <ol className="text-sm text-gray-300 space-y-1">
+                <li>1. Go to Discord Developer Portal</li>
+                <li>2. Select your application or create a new one</li>
+                <li>3. Copy the Client ID: <code className="bg-slate-600 px-1 rounded text-cyan-400">1389775821794705429</code></li>
+                <li>4. Copy the Client Secret from OAuth2 section</li>
+                <li>5. Add the Client Secret to your environment</li>
+                <li>6. Set redirect URI to: <code className="bg-slate-600 px-1 rounded text-green-400 text-xs break-all">{window.location.origin}/api/auth/discord/callback</code></li>
+              </ol>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={() => window.open('https://discord.com/developers/applications', '_blank')}
@@ -69,12 +81,12 @@ export function AuthNotice() {
                 Discord Developer Portal
               </Button>
               <Button
-                onClick={() => window.location.reload()}
+                onClick={() => window.location.href = '/api/auth/discord'}
                 variant="outline"
                 className="flex-1 border-slate-600 text-gray-300 hover:bg-slate-700"
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Refresh After Setup
+                Test Configuration
               </Button>
             </div>
           </div>
