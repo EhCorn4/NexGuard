@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertTestimonialSchema, type Testimonial } from "@shared/schema";
@@ -211,9 +212,10 @@ export default function Testimonials() {
           </Dialog>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials?.map((testimonial) => (
-            <Card key={testimonial.id} className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+        <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {testimonials?.map((testimonial, index) => (
+            <StaggerItem key={testimonial.id} index={index}>
+              <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -245,8 +247,9 @@ export default function Testimonials() {
                 </div>
               </CardContent>
             </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {testimonials?.length === 0 && (
           <div className="text-center py-12">

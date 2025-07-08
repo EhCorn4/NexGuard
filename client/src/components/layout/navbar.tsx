@@ -5,6 +5,8 @@ import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { HoverScale } from "@/components/ui/hover-scale";
+import { motion } from "framer-motion";
 import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Navbar() {
@@ -37,29 +39,47 @@ export function Navbar() {
     }`}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3">
-            <img 
-              src={nexguardIcon} 
-              alt="NexGuard" 
-              className="w-10 h-10 rounded-lg"
-            />
-            <div>
-              <h1 className="text-xl font-bold text-white">NEXGUARD</h1>
-              <p className="text-xs text-[hsl(var(--nexguard-cyan))]">PROTECT. MANAGE. ENHANCE.</p>
-            </div>
-          </Link>
+          <HoverScale scale={1.05}>
+            <Link href="/" className="flex items-center space-x-3">
+              <motion.img 
+                src={nexguardIcon} 
+                alt="NexGuard" 
+                className="w-10 h-10 rounded-lg"
+                whileHover={{ rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              />
+              <div>
+                <h1 className="text-xl font-bold text-white">NEXGUARD</h1>
+                <p className="text-xs text-[hsl(var(--nexguard-cyan))]">PROTECT. MANAGE. ENHANCE.</p>
+              </div>
+            </Link>
+          </HoverScale>
           
           <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
+            {navItems.map((item, index) => (
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className={`nav-link text-white hover:text-[hsl(var(--nexguard-cyan))] ${
-                  location === item.href ? "text-[hsl(var(--nexguard-cyan))]" : ""
-                }`}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ y: -2 }}
               >
-                {item.label}
-              </Link>
+                <Link
+                  href={item.href}
+                  className={`relative nav-link text-white hover:text-[hsl(var(--nexguard-cyan))] transition-colors duration-200 ${
+                    location === item.href ? "text-[hsl(var(--nexguard-cyan))]" : ""
+                  }`}
+                >
+                  {item.label}
+                  {location === item.href && (
+                    <motion.div
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
+                      layoutId="activeNavItem"
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    />
+                  )}
+                </Link>
+              </motion.div>
             ))}
             <ThemeToggle />
           </div>

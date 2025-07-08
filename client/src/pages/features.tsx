@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings } from "lucide-react";
 import type { Feature } from "@shared/schema";
@@ -48,32 +49,35 @@ const Features = memo(function Features() {
           description="NexGuard combines cutting-edge moderation tools with quality-of-life features to create the perfect Discord server experience."
         />
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="h-20 w-20 rounded-lg" />
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
-              </div>
+              <StaggerItem key={i}>
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-20 rounded-lg" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              </StaggerItem>
             ))
           ) : (
-            features?.map((feature) => {
+            features?.map((feature, index) => {
               const IconComponent = iconMap[feature.icon as keyof typeof iconMap] || Settings;
               return (
-                <FeatureCard
-                  key={feature.id}
-                  icon={IconComponent}
-                  title={feature.title}
-                  description={feature.description}
-                  benefits={feature.benefits || []}
-                />
+                <StaggerItem key={feature.id} index={index}>
+                  <FeatureCard
+                    icon={IconComponent}
+                    title={feature.title}
+                    description={feature.description}
+                    benefits={feature.benefits || []}
+                  />
+                </StaggerItem>
               );
             })
           )}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   );

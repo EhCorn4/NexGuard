@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,7 +9,9 @@ import { useScrollToTop } from "@/hooks/use-scroll-to-top";
 import { Footer } from "@/components/layout/footer";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PerformanceWrapper } from "@/components/optimized/performance-wrapper";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Suspense, lazy } from "react";
+import { AnimatePresence } from "framer-motion";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/pages/home"));
@@ -25,59 +27,80 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 function Router() {
   // Enable smooth scrolling to top on page navigation
   useScrollToTop();
+  const [location] = useLocation();
   
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
         <Navbar />
         <main role="main">
-          <Switch>
-            <Route path="/" component={() => (
-              <PerformanceWrapper skeletonType="grid" skeletonCount={1}>
-                <Home />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/features" component={() => (
-              <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
-                <Features />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/invite" component={() => (
-              <PerformanceWrapper skeletonType="card" skeletonCount={3}>
-                <Invite />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/developers" component={() => (
-              <PerformanceWrapper skeletonType="card" skeletonCount={1}>
-                <Developers />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/community" component={() => (
-              <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
-                <Community />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/testimonials" component={() => (
-              <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
-                <Testimonials />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/feedback" component={() => (
-              <PerformanceWrapper skeletonType="card" skeletonCount={2}>
-                <Feedback />
-              </PerformanceWrapper>
-            )} />
-            <Route path="/docs" component={() => (
-              <PerformanceWrapper skeletonType="list" skeletonCount={5}>
-                <Docs />
-              </PerformanceWrapper>
-            )} />
-            <Route component={() => (
-              <PerformanceWrapper skeletonType="card" skeletonCount={1}>
-                <NotFound />
-              </PerformanceWrapper>
-            )} />
-          </Switch>
+          <AnimatePresence mode="wait" initial={false}>
+            <Switch key={location}>
+              <Route path="/" component={() => (
+                <PageTransition key="home">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={1}>
+                    <Home />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/features" component={() => (
+                <PageTransition key="features">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                    <Features />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/invite" component={() => (
+                <PageTransition key="invite">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={3}>
+                    <Invite />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/developers" component={() => (
+                <PageTransition key="developers">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                    <Developers />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/community" component={() => (
+                <PageTransition key="community">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                    <Community />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/testimonials" component={() => (
+                <PageTransition key="testimonials">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
+                    <Testimonials />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/feedback" component={() => (
+                <PageTransition key="feedback">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={2}>
+                    <Feedback />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/docs" component={() => (
+                <PageTransition key="docs">
+                  <PerformanceWrapper skeletonType="list" skeletonCount={5}>
+                    <Docs />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route component={() => (
+                <PageTransition key="notfound">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                    <NotFound />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+            </Switch>
+          </AnimatePresence>
         </main>
         <Footer />
       </div>
