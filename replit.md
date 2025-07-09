@@ -130,6 +130,8 @@ Changelog:
 - July 09, 2025. Added comprehensive Privacy Policy page with detailed data handling policies, accessible at /privacy-policy and linked from footer
 - July 09, 2025. Added comprehensive Cookies Policy page with detailed cookie usage information, accessible at /cookies-policy and linked from footer
 - July 09, 2025. Added comprehensive Contact page with multiple contact methods, situational guidance, and response time expectations at /contact
+- July 09, 2025. Fixed developers page crash by importing memo from React and replacing LoadingSkeleton with Skeleton component
+- July 09, 2025. Fixed community page crash by correcting Skeleton import path
 
 ## User Preferences
 

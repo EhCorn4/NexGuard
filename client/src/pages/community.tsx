@@ -3,7 +3,7 @@ import { GradientText } from "@/components/ui/gradient-text";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Heart, MessageCircle, Rocket, Users, Wrench, Star, Shield, Gamepad2 } from "lucide-react";
