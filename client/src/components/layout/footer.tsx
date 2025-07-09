@@ -38,10 +38,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="https://discord.gg/wpjZMPXaR" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Discord Server</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Documentation</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Contact</a></li>
+              <li><a href="https://discord.gg/wpjZMPXaRT" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Discord Server</a></li>
+              <li><Link href="/docs" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Documentation</Link></li>
+              <li><Link href="/feedback" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">FAQ</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Contact</Link></li>
             </ul>
           </div>
           
