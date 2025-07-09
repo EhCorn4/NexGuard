@@ -50,7 +50,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/privacy-policy" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms-of-service" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Terms of Service</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Cookie Policy</a></li>
+              <li><Link href="/cookies-policy" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>

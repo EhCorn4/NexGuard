@@ -26,6 +26,7 @@ const Dashboard = lazy(() => import("@/pages/dashboard"));
 const ServerConfig = lazy(() => import("@/pages/server-config"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
+const CookiesPolicy = lazy(() => import("@/pages/cookies-policy"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -121,6 +122,13 @@ function Router() {
                 <PageTransition key="privacy-policy">
                   <PerformanceWrapper skeletonType="card" skeletonCount={1}>
                     <PrivacyPolicy />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/cookies-policy" component={() => (
+                <PageTransition key="cookies-policy">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                    <CookiesPolicy />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />

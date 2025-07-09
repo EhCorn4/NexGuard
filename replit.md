@@ -128,6 +128,7 @@ Changelog:
 - July 09, 2025. Added Terms of Service page with professional legal document layout, accessible via footer link at /terms-of-service
 - July 09, 2025. Updated Terms of Service effective and last updated dates to July 8, 2025
 - July 09, 2025. Added comprehensive Privacy Policy page with detailed data handling policies, accessible at /privacy-policy and linked from footer
+- July 09, 2025. Added comprehensive Cookies Policy page with detailed cookie usage information, accessible at /cookies-policy and linked from footer
 
 ## User Preferences
 
