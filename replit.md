@@ -127,6 +127,7 @@ Changelog:
 - July 08, 2025. Created comprehensive bot integration guide with database connection examples, configuration loading system, and API integration methods for connecting actual Discord bot to dashboard
 - July 09, 2025. Added Terms of Service page with professional legal document layout, accessible via footer link at /terms-of-service
 - July 09, 2025. Updated Terms of Service effective and last updated dates to July 8, 2025
+- July 09, 2025. Added comprehensive Privacy Policy page with detailed data handling policies, accessible at /privacy-policy and linked from footer
 
 ## User Preferences
 
