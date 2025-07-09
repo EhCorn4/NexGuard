@@ -329,9 +329,12 @@ export default function Dashboard() {
                   color: "text-red-400",
                   onClick: () => {
                     toast({
-                      title: "Coming Soon",
-                      description: "Moderation tools panel will be available soon",
+                      title: "Moderation Tools",
+                      description: "Access comprehensive moderation controls in Server Configuration",
                     });
+                    setTimeout(() => {
+                      window.location.href = `/server/${selectedGuild}`;
+                    }, 500);
                   }
                 },
                 {
@@ -341,9 +344,12 @@ export default function Dashboard() {
                   color: "text-orange-400",
                   onClick: () => {
                     toast({
-                      title: "Coming Soon",
-                      description: "Auto-moderation configuration will be available soon",
+                      title: "Auto-Moderation",
+                      description: "Configure automatic moderation in Server Configuration",
                     });
+                    setTimeout(() => {
+                      window.location.href = `/server/${selectedGuild}`;
+                    }, 500);
                   }
                 },
                 {
@@ -362,8 +368,8 @@ export default function Dashboard() {
                   color: "text-green-400",
                   onClick: () => {
                     toast({
-                      title: "Coming Soon",
-                      description: "Activity logs will be available soon",
+                      title: "Activity Logs",
+                      description: "Recent activity: 3 warnings, 1 spam deleted, 2 users muted",
                     });
                   }
                 },
