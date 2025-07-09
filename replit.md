@@ -125,6 +125,7 @@ Changelog:
 - July 08, 2025. Implemented comprehensive documentation/help center with searchable articles, categorized sections, and interactive navigation
 - July 08, 2025. Fixed Discord OAuth redirect URI issues by implementing dynamic domain handling for multiple deployment environments
 - July 08, 2025. Created comprehensive bot integration guide with database connection examples, configuration loading system, and API integration methods for connecting actual Discord bot to dashboard
+- July 09, 2025. Added Terms of Service page with professional legal document layout, accessible via footer link at /terms-of-service
 
 ## User Preferences
 
