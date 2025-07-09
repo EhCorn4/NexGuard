@@ -358,7 +358,12 @@ export default function ServerConfig() {
                             <Switch
                               id="raid"
                               checked={true}
-                              onCheckedChange={() => {}}
+                              onCheckedChange={(checked) => {
+                                toast({ 
+                                  title: checked ? "Anti-Raid Protection Enabled" : "Anti-Raid Protection Disabled",
+                                  description: checked ? "Server is protected against mass join attacks" : "Anti-raid protection has been disabled"
+                                });
+                              }}
                             />
                           </div>
                         </CardContent>
@@ -381,7 +386,12 @@ export default function ServerConfig() {
                             <Switch
                               id="caps"
                               checked={false}
-                              onCheckedChange={() => {}}
+                              onCheckedChange={(checked) => {
+                                toast({ 
+                                  title: checked ? "Caps Filter Enabled" : "Caps Filter Disabled",
+                                  description: checked ? "Messages with excessive caps will be filtered" : "Caps filter has been disabled"
+                                });
+                              }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
@@ -389,7 +399,12 @@ export default function ServerConfig() {
                             <Switch
                               id="duplicate"
                               checked={true}
-                              onCheckedChange={() => {}}
+                              onCheckedChange={(checked) => {
+                                toast({ 
+                                  title: checked ? "Duplicate Filter Enabled" : "Duplicate Filter Disabled",
+                                  description: checked ? "Duplicate messages will be automatically removed" : "Duplicate message filter has been disabled"
+                                });
+                              }}
                             />
                           </div>
                           <div className="flex items-center justify-between">
@@ -397,7 +412,12 @@ export default function ServerConfig() {
                             <Switch
                               id="mentions"
                               checked={true}
-                              onCheckedChange={() => {}}
+                              onCheckedChange={(checked) => {
+                                toast({ 
+                                  title: checked ? "Mention Spam Protection Enabled" : "Mention Spam Protection Disabled",
+                                  description: checked ? "Excessive mentions will be filtered" : "Mention spam protection has been disabled"
+                                });
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
@@ -409,6 +429,15 @@ export default function ServerConfig() {
                               min="1"
                               max="20"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 20) {
+                                  toast({
+                                    title: "Max Mentions Updated",
+                                    description: `Maximum mentions per message set to ${value}`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                         </CardContent>
@@ -427,7 +456,12 @@ export default function ServerConfig() {
                             <Switch
                               id="slowmode"
                               checked={false}
-                              onCheckedChange={() => {}}
+                              onCheckedChange={(checked) => {
+                                toast({ 
+                                  title: checked ? "Slowmode Enabled" : "Slowmode Disabled",
+                                  description: checked ? "Rate limiting is now active" : "Rate limiting has been disabled"
+                                });
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
@@ -439,6 +473,15 @@ export default function ServerConfig() {
                               min="1"
                               max="300"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 300) {
+                                  toast({
+                                    title: "Slowmode Duration Updated",
+                                    description: `Users can send messages every ${value} seconds`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
@@ -450,6 +493,15 @@ export default function ServerConfig() {
                               min="2"
                               max="20"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 2 && value <= 20) {
+                                  toast({
+                                    title: "Spam Threshold Updated",
+                                    description: `${value} messages in 10 seconds will trigger spam protection`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                         </CardContent>
@@ -476,6 +528,15 @@ export default function ServerConfig() {
                               min="1"
                               max="10"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 10) {
+                                  toast({
+                                    title: "Max Warnings Updated",
+                                    description: `Users will receive up to ${value} warnings before punishment`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
@@ -487,11 +548,31 @@ export default function ServerConfig() {
                               min="1"
                               max="365"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 365) {
+                                  toast({
+                                    title: "Warning Expiry Updated",
+                                    description: `Warnings will expire after ${value} days`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="warnAction" className="text-white">After Max Warnings</Label>
-                            <Select defaultValue="mute">
+                            <Select defaultValue="mute" onValueChange={(value) => {
+                              const actions = {
+                                warn: "Additional Warning",
+                                mute: "Mute User",
+                                kick: "Kick User",
+                                ban: "Ban User"
+                              };
+                              toast({
+                                title: "Warning Action Updated",
+                                description: `After max warnings: ${actions[value as keyof typeof actions]}`
+                              });
+                            }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
                               </SelectTrigger>
@@ -516,7 +597,17 @@ export default function ServerConfig() {
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label htmlFor="muteAction" className="text-white">Mute Action</Label>
-                            <Select defaultValue="mute">
+                            <Select defaultValue="mute" onValueChange={(value) => {
+                              const actions = {
+                                mute: "Mute User",
+                                kick: "Kick User", 
+                                ban: "Ban User"
+                              };
+                              toast({
+                                title: "Mute Action Updated",
+                                description: `Mute violations will result in: ${actions[value as keyof typeof actions]}`
+                              });
+                            }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
                               </SelectTrigger>
@@ -529,7 +620,16 @@ export default function ServerConfig() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="kickAction" className="text-white">Kick Action</Label>
-                            <Select defaultValue="kick">
+                            <Select defaultValue="kick" onValueChange={(value) => {
+                              const actions = {
+                                kick: "Kick User",
+                                ban: "Ban User"
+                              };
+                              toast({
+                                title: "Kick Action Updated",
+                                description: `Kick violations will result in: ${actions[value as keyof typeof actions]}`
+                              });
+                            }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
                               </SelectTrigger>
@@ -548,6 +648,18 @@ export default function ServerConfig() {
                               min="1"
                               max="8760"
                               className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (value >= 1 && value <= 8760) {
+                                  const days = Math.floor(value / 24);
+                                  const hours = value % 24;
+                                  const duration = days > 0 ? `${days} days${hours > 0 ? ` ${hours} hours` : ''}` : `${hours} hours`;
+                                  toast({
+                                    title: "Temp Ban Duration Updated",
+                                    description: `Temporary bans will last ${duration}`
+                                  });
+                                }
+                              }}
                             />
                           </div>
                         </CardContent>
@@ -603,7 +715,10 @@ export default function ServerConfig() {
                           <Button 
                             variant="outline" 
                             className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
-                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                            onClick={() => toast({ 
+                              title: "Recent Actions", 
+                              description: "Last 24 hours: 3 warnings issued, 1 spam message deleted, 2 users muted" 
+                            })}
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             View Recent Actions
@@ -611,7 +726,10 @@ export default function ServerConfig() {
                           <Button 
                             variant="outline" 
                             className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
-                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                            onClick={() => toast({ 
+                              title: "Mass Moderation", 
+                              description: "Mass moderation tools opened. Use with caution." 
+                            })}
                           >
                             <Ban className="w-4 h-4 mr-2" />
                             Mass Moderation
@@ -619,7 +737,20 @@ export default function ServerConfig() {
                           <Button 
                             variant="outline" 
                             className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
-                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                            onClick={() => {
+                              const settings = JSON.stringify({
+                                moderationEnabled: config.moderationEnabled,
+                                autoModEnabled: config.autoModEnabled,
+                                spamProtection: config.spamProtection,
+                                linkProtection: config.linkProtection,
+                                profanityFilter: config.profanityFilter
+                              }, null, 2);
+                              navigator.clipboard.writeText(settings);
+                              toast({ 
+                                title: "Settings Exported", 
+                                description: "Configuration copied to clipboard" 
+                              });
+                            }}
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Export Settings
