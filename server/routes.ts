@@ -298,8 +298,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Middleware to check if user is authenticated
   const requireAuth = (req: any, res: any, next: any) => {
+    console.log('Auth check - Session:', !!req.session?.user);
     if (!req.session.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: 'Not authenticated' });
     }
     next();
   };
@@ -309,14 +310,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { guildId } = req.params;
     const userGuilds = req.session.guilds || [];
     
+    console.log('Guild check - Guild ID:', guildId);
+    console.log('User guilds:', userGuilds.map((g: any) => ({ id: g.id, name: g.name })));
+    
     const guild = userGuilds.find((g: any) => g.id === guildId);
     if (!guild) {
-      return res.status(404).json({ error: 'Guild not found' });
+      return res.status(404).json({ error: 'Server not found or you do not have access' });
     }
 
     const permissions = parseInt(guild.permissions);
     const MANAGE_GUILD = 0x20;
     const ADMINISTRATOR = 0x8;
+    
+    console.log('Guild permissions check:', { owner: guild.owner, permissions, hasManageGuild: !!(permissions & MANAGE_GUILD), hasAdmin: !!(permissions & ADMINISTRATOR) });
     
     if (!guild.owner && !(permissions & MANAGE_GUILD) && !(permissions & ADMINISTRATOR)) {
       return res.status(403).json({ error: 'Insufficient permissions to manage this server' });
