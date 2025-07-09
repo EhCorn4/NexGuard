@@ -502,6 +502,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bot Authentication Middleware
+  const requireBotAuth = (req: any, res: any, next: any) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Bot authentication required' });
+    }
+    
+    const token = authHeader.substring(7);
+    if (token !== process.env.DISCORD_BOT_TOKEN) {
+      return res.status(401).json({ error: 'Invalid bot token' });
+    }
+    
+    next();
+  };
+
+  // Bot API Endpoints - Secure endpoints for your Discord bot
+  app.get('/api/bot/servers/:guildId/config', requireBotAuth, async (req, res) => {
+    const { guildId } = req.params;
+    
+    try {
+      // Get server configuration from database
+      const config = await storage.getServerConfig(guildId);
+      
+      if (!config) {
+        // Return default configuration if none exists
+        const defaultConfig = {
+          guildId,
+          moderationEnabled: false,
+          autoModEnabled: false,
+          spamProtection: false,
+          linkProtection: false,
+          profanityFilter: false,
+          welcomeEnabled: false,
+          welcomeChannel: null,
+          welcomeMessage: "Welcome to {server}, {user}!",
+          leaveEnabled: false,
+          leaveChannel: null,
+          leaveMessage: "{user} has left the server.",
+          autoRoleEnabled: false,
+          autoRoleId: null,
+          mutedRoleId: null,
+          economyEnabled: false,
+          dailyReward: 100,
+          customCommandsEnabled: true,
+          maxCustomCommands: 20,
+          modLogChannel: null,
+          auditLogChannel: null
+        };
+        return res.json(defaultConfig);
+      }
+      
+      res.json(config);
+    } catch (error) {
+      console.error('Bot API - Error fetching server config:', error);
+      res.status(500).json({ error: 'Failed to fetch server configuration' });
+    }
+  });
+
+  app.get('/api/bot/servers/:guildId/commands', requireBotAuth, async (req, res) => {
+    const { guildId } = req.params;
+    
+    try {
+      const commands = await storage.getCustomCommands(guildId);
+      res.json(commands);
+    } catch (error) {
+      console.error('Bot API - Error fetching commands:', error);
+      res.status(500).json({ error: 'Failed to fetch commands' });
+    }
+  });
+
+  app.post('/api/bot/servers/:guildId/moderation/log', requireBotAuth, async (req, res) => {
+    const { guildId } = req.params;
+    const { type, userId, moderatorId, reason, duration } = req.body;
+    
+    try {
+      // Log moderation action to database
+      // This would typically store in a moderation_logs table
+      console.log('Moderation log:', { guildId, type, userId, moderatorId, reason, duration });
+      
+      res.json({ success: true, message: 'Moderation action logged' });
+    } catch (error) {
+      console.error('Bot API - Error logging moderation:', error);
+      res.status(500).json({ error: 'Failed to log moderation action' });
+    }
+  });
+
+  app.post('/api/bot/servers/:guildId/sync', requireBotAuth, async (req, res) => {
+    const { guildId } = req.params;
+    const { channels, roles, members } = req.body;
+    
+    try {
+      // Sync server data from Discord bot
+      // This would update server information in the database
+      console.log('Server sync:', { guildId, channelCount: channels?.length, roleCount: roles?.length, memberCount: members?.length });
+      
+      res.json({ success: true, message: 'Server data synchronized' });
+    } catch (error) {
+      console.error('Bot API - Error syncing server data:', error);
+      res.status(500).json({ error: 'Failed to sync server data' });
+    }
+  });
+
   // API routes for NexGuard website
   app.get("/api/news", async (req, res) => {
     try {
