@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GradientText } from "@/components/ui/gradient-text";
 import { PageHeader } from "@/components/ui/page-header";
@@ -43,7 +44,7 @@ const Developers = memo(function Developers() {
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={i} className="bg-[hsl(var(--nexguard-dark))]/50 backdrop-blur-sm border-[hsl(var(--nexguard-cyan))]/20">
                 <CardContent className="p-6 text-center">
-                  <LoadingSkeleton type="card" count={1} />
+                  <Skeleton className="w-24 h-24 rounded-full mx-auto mb-4" />
                   <Skeleton className="h-4 w-2/3 mx-auto mb-4" />
                   <div className="flex justify-center space-x-4">
                     <Skeleton className="w-6 h-6 rounded" />
@@ -124,7 +125,7 @@ const Developers = memo(function Developers() {
                   </Button>
                 </a>
                 <a 
-                  href="https://discord.gg/wpjZMPXaR"
+                  href="https://discord.gg/wpjZMPXaRT"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block"
