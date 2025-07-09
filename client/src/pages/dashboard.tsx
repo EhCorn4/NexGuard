@@ -41,6 +41,12 @@ interface DashboardUser {
 export default function Dashboard() {
   const { toast } = useToast();
   
+  // Get config including Discord client ID
+  const { data: config } = useQuery({
+    queryKey: ['/api/config'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
   // Check for authentication errors in URL
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -303,7 +309,8 @@ export default function Dashboard() {
                           <Button
                             size="sm"
                             onClick={() => {
-                              window.open(`https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&guild_id=${guild.id}&scope=bot`, '_blank');
+                              const clientId = config?.discordClientId || "1389775821794705429";
+                              window.open(`https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&guild_id=${guild.id}&scope=bot`, '_blank');
                             }}
                             className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white border-0"
                           >
@@ -410,7 +417,8 @@ export default function Dashboard() {
               </p>
               <Button
                 onClick={() => {
-                  window.open('https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot', '_blank');
+                  const clientId = config?.discordClientId || "1389775821794705429";
+                  window.open(`https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot`, '_blank');
                 }}
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white border-0"
               >

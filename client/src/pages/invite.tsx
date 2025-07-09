@@ -5,10 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Download, Settings, Shield } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { memo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Invite = memo(function Invite() {
-  const discordInviteUrl = "https://discord.com/oauth2/authorize?client_id=1389775821794705429";
-  const supportServerUrl = "https://discord.gg/wpjZMPXaR";
+  const { data: config } = useQuery({
+    queryKey: ['/api/config'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const discordInviteUrl = config?.discordInviteUrl || "https://discord.com/oauth2/authorize?client_id=1389775821794705429";
+  const supportServerUrl = config?.supportServerUrl || "https://discord.gg/wpjZMPXaRT";
 
   return (
     <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">

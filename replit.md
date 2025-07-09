@@ -104,6 +104,26 @@ This is a full-stack web application for NexGuard, a Discord moderation and qual
 3. Database schema pushed using Drizzle Kit
 4. Environment-specific configuration management
 
+## Bot Integration
+
+### Discord Bot API Endpoints
+The website now provides secure API endpoints for the Discord bot to connect and fetch configurations:
+
+- **Bot Authentication**: All bot endpoints require Bearer token authentication using `DISCORD_BOT_TOKEN`
+- **Server Configuration**: `/api/bot/servers/{guildId}/config` - Get server-specific settings
+- **Custom Commands**: `/api/bot/servers/{guildId}/commands` - Get custom commands for a server
+- **Moderation Logging**: `/api/bot/servers/{guildId}/moderation/log` - Log moderation actions
+- **Server Sync**: `/api/bot/servers/{guildId}/sync` - Sync server data from Discord
+
+### Environment Variables
+Required for bot integration:
+- `DISCORD_BOT_TOKEN` - Bot's authentication token
+- `DISCORD_CLIENT_ID` - Discord application ID  
+- `DISCORD_CLIENT_SECRET` - Discord OAuth client secret
+
+### Dynamic Configuration
+The website now uses dynamic configuration through `/api/config` endpoint instead of hardcoded values, allowing for flexible deployment across different environments.
+
 ## Changelog
 
 Changelog:
@@ -133,6 +153,7 @@ Changelog:
 - July 09, 2025. Fixed developers page crash by importing memo from React and replacing LoadingSkeleton with Skeleton component
 - July 09, 2025. Fixed community page crash by correcting Skeleton import path
 - July 09, 2025. Created comprehensive moderation tools dashboard with tabbed interface (Basic, Filters, Punishments, Logging) featuring fully functional controls, real-time feedback, and advanced configuration options
+- July 09, 2025. Implemented secure Discord bot API integration with authentication, server configuration endpoints, and dynamic client ID management throughout the website
 
 ## User Preferences
 

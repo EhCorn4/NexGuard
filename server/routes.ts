@@ -572,6 +572,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/bot/servers/:guildId/commands', requireBotAuth, async (req, res) => {
+    const { guildId } = req.params;
+    const { name, response, createdBy } = req.body;
+    
+    try {
+      const command = await storage.createCustomCommand({
+        guildId,
+        name,
+        response,
+        createdBy
+      });
+      res.json(command);
+    } catch (error) {
+      console.error('Bot API - Error creating command:', error);
+      res.status(500).json({ error: 'Failed to create command' });
+    }
+  });
+
   app.post('/api/bot/servers/:guildId/moderation/log', requireBotAuth, async (req, res) => {
     const { guildId } = req.params;
     const { type, userId, moderatorId, reason, duration } = req.body;
@@ -602,6 +620,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Bot API - Error syncing server data:', error);
       res.status(500).json({ error: 'Failed to sync server data' });
     }
+  });
+
+  // Configuration endpoint for frontend
+  app.get("/api/config", (req, res) => {
+    res.json({
+      discordClientId: process.env.DISCORD_CLIENT_ID || "1389775821794705429",
+      discordInviteUrl: `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || "1389775821794705429"}&permissions=8&scope=bot`,
+      supportServerUrl: "https://discord.gg/wpjZMPXaRT"
+    });
   });
 
   // API routes for NexGuard website
