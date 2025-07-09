@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { PageTransition } from '@/components/ui/page-transition';
@@ -26,7 +29,19 @@ import {
   Bot,
   Hash,
   UserPlus,
-  Coins
+  Coins,
+  Timer,
+  Ban,
+  UserX,
+  Volume2,
+  Eye,
+  Zap,
+  Filter,
+  AlertTriangle,
+  Clock,
+  Hammer,
+  FileText,
+  Target
 } from 'lucide-react';
 
 interface ServerConfig {
@@ -244,61 +259,381 @@ export default function ServerConfig() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Moderation Settings */}
+          {/* Moderation Tools Section */}
+          <div className="mb-8">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Shield className="w-5 h-5" />
-                  Moderation Settings
+                  Moderation Tools
                 </CardTitle>
                 <CardDescription>
-                  Configure automated moderation and protection features
+                  Advanced moderation controls and automated protection systems
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="moderation" className="text-white">Enable Moderation</Label>
-                  <Switch
-                    id="moderation"
-                    checked={config.moderationEnabled}
-                    onCheckedChange={(checked) => handleToggle('moderationEnabled', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="automod" className="text-white">Auto Moderation</Label>
-                  <Switch
-                    id="automod"
-                    checked={config.autoModEnabled}
-                    onCheckedChange={(checked) => handleToggle('autoModEnabled', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="spam" className="text-white">Spam Protection</Label>
-                  <Switch
-                    id="spam"
-                    checked={config.spamProtection}
-                    onCheckedChange={(checked) => handleToggle('spamProtection', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="links" className="text-white">Link Protection</Label>
-                  <Switch
-                    id="links"
-                    checked={config.linkProtection}
-                    onCheckedChange={(checked) => handleToggle('linkProtection', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="profanity" className="text-white">Profanity Filter</Label>
-                  <Switch
-                    id="profanity"
-                    checked={config.profanityFilter}
-                    onCheckedChange={(checked) => handleToggle('profanityFilter', checked)}
-                  />
-                </div>
+              <CardContent>
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4 bg-slate-700/50">
+                    <TabsTrigger value="basic" className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Basic
+                    </TabsTrigger>
+                    <TabsTrigger value="filters" className="flex items-center gap-2">
+                      <Filter className="w-4 h-4" />
+                      Filters
+                    </TabsTrigger>
+                    <TabsTrigger value="punishments" className="flex items-center gap-2">
+                      <Hammer className="w-4 h-4" />
+                      Punishments
+                    </TabsTrigger>
+                    <TabsTrigger value="logging" className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Logging
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="basic" className="space-y-6 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-yellow-400" />
+                            Core Moderation
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="moderation" className="text-white">Enable Moderation</Label>
+                            <Switch
+                              id="moderation"
+                              checked={config.moderationEnabled}
+                              onCheckedChange={(checked) => handleToggle('moderationEnabled', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="automod" className="text-white">Auto Moderation</Label>
+                            <Switch
+                              id="automod"
+                              checked={config.autoModEnabled}
+                              onCheckedChange={(checked) => handleToggle('autoModEnabled', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="spam" className="text-white">Spam Protection</Label>
+                            <Switch
+                              id="spam"
+                              checked={config.spamProtection}
+                              onCheckedChange={(checked) => handleToggle('spamProtection', checked)}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-red-400" />
+                            Advanced Protection
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="links" className="text-white">Link Protection</Label>
+                            <Switch
+                              id="links"
+                              checked={config.linkProtection}
+                              onCheckedChange={(checked) => handleToggle('linkProtection', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="profanity" className="text-white">Profanity Filter</Label>
+                            <Switch
+                              id="profanity"
+                              checked={config.profanityFilter}
+                              onCheckedChange={(checked) => handleToggle('profanityFilter', checked)}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="raid" className="text-white">Anti-Raid Protection</Label>
+                            <Switch
+                              id="raid"
+                              checked={true}
+                              onCheckedChange={() => {}}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="filters" className="space-y-6 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-blue-400" />
+                            Message Filters
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="caps" className="text-white">Caps Filter</Label>
+                            <Switch
+                              id="caps"
+                              checked={false}
+                              onCheckedChange={() => {}}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="duplicate" className="text-white">Duplicate Messages</Label>
+                            <Switch
+                              id="duplicate"
+                              checked={true}
+                              onCheckedChange={() => {}}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="mentions" className="text-white">Mention Spam</Label>
+                            <Switch
+                              id="mentions"
+                              checked={true}
+                              onCheckedChange={() => {}}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="maxMentions" className="text-white">Max Mentions</Label>
+                            <Input
+                              id="maxMentions"
+                              type="number"
+                              defaultValue="5"
+                              min="1"
+                              max="20"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <Timer className="w-5 h-5 text-green-400" />
+                            Rate Limiting
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="slowmode" className="text-white">Slowmode</Label>
+                            <Switch
+                              id="slowmode"
+                              checked={false}
+                              onCheckedChange={() => {}}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="slowmodeSeconds" className="text-white">Slowmode Duration (seconds)</Label>
+                            <Input
+                              id="slowmodeSeconds"
+                              type="number"
+                              defaultValue="5"
+                              min="1"
+                              max="300"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="spamCount" className="text-white">Spam Message Count</Label>
+                            <Input
+                              id="spamCount"
+                              type="number"
+                              defaultValue="5"
+                              min="2"
+                              max="20"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="punishments" className="space-y-6 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-orange-400" />
+                            Warning System
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="maxWarnings" className="text-white">Max Warnings</Label>
+                            <Input
+                              id="maxWarnings"
+                              type="number"
+                              defaultValue="3"
+                              min="1"
+                              max="10"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="warningExpire" className="text-white">Warning Expiry (days)</Label>
+                            <Input
+                              id="warningExpire"
+                              type="number"
+                              defaultValue="30"
+                              min="1"
+                              max="365"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="warnAction" className="text-white">After Max Warnings</Label>
+                            <Select defaultValue="mute">
+                              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-600">
+                                <SelectItem value="warn">Additional Warning</SelectItem>
+                                <SelectItem value="mute">Mute User</SelectItem>
+                                <SelectItem value="kick">Kick User</SelectItem>
+                                <SelectItem value="ban">Ban User</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <Hammer className="w-5 h-5 text-red-400" />
+                            Punishment Actions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="muteAction" className="text-white">Mute Action</Label>
+                            <Select defaultValue="mute">
+                              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-600">
+                                <SelectItem value="mute">Mute User</SelectItem>
+                                <SelectItem value="kick">Kick User</SelectItem>
+                                <SelectItem value="ban">Ban User</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="kickAction" className="text-white">Kick Action</Label>
+                            <Select defaultValue="kick">
+                              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-600">
+                                <SelectItem value="kick">Kick User</SelectItem>
+                                <SelectItem value="ban">Ban User</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="tempbanDuration" className="text-white">Temp Ban Duration (hours)</Label>
+                            <Input
+                              id="tempbanDuration"
+                              type="number"
+                              defaultValue="24"
+                              min="1"
+                              max="8760"
+                              className="bg-slate-800 border-slate-600 text-white"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="logging" className="space-y-6 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-purple-400" />
+                            Moderation Logs
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="modLogChannel" className="text-white">Mod Log Channel</Label>
+                            <Input
+                              id="modLogChannel"
+                              placeholder="#mod-log"
+                              defaultValue={config.modLogChannel || ''}
+                              className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => handleInputChange('modLogChannel', e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="auditLogChannel" className="text-white">Audit Log Channel</Label>
+                            <Input
+                              id="auditLogChannel"
+                              placeholder="#audit-log"
+                              defaultValue={config.auditLogChannel || ''}
+                              className="bg-slate-800 border-slate-600 text-white"
+                              onChange={(e) => handleInputChange('auditLogChannel', e.target.value)}
+                            />
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            <p>• Mod logs track punishments and warnings</p>
+                            <p>• Audit logs track all moderation actions</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-slate-900/50 border-slate-600">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg text-white flex items-center gap-2">
+                            <Target className="w-5 h-5 text-cyan-400" />
+                            Quick Actions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <Button 
+                            variant="outline" 
+                            className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Recent Actions
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                          >
+                            <Ban className="w-4 h-4 mr-2" />
+                            Mass Moderation
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="w-full bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                            onClick={() => toast({ title: "Feature Coming Soon", description: "This feature will be available in the next update." })}
+                          >
+                            <Settings className="w-4 h-4 mr-2" />
+                            Export Settings
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Logging Settings */}
             <Card className="bg-slate-800/50 border-slate-700">

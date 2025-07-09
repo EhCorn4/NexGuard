@@ -70,6 +70,33 @@ export const serverConfigs = pgTable("server_configs", {
   linkProtection: boolean("link_protection").default(false),
   profanityFilter: boolean("profanity_filter").default(true),
   
+  // Advanced Moderation Settings
+  maxWarnings: integer("max_warnings").default(3),
+  warningExpireDays: integer("warning_expire_days").default(30),
+  antiRaidEnabled: boolean("anti_raid_enabled").default(true),
+  massJoinThreshold: integer("mass_join_threshold").default(5),
+  slowmodeEnabled: boolean("slowmode_enabled").default(false),
+  slowmodeSeconds: integer("slowmode_seconds").default(5),
+  capsFilter: boolean("caps_filter").default(false),
+  capsThreshold: integer("caps_threshold").default(70),
+  duplicateMessageFilter: boolean("duplicate_message_filter").default(true),
+  mentionSpamFilter: boolean("mention_spam_filter").default(true),
+  maxMentions: integer("max_mentions").default(5),
+  wordFilter: boolean("word_filter").default(true),
+  wordFilterList: text("word_filter_list").array(),
+  
+  // Punishment Settings
+  warnAction: text("warn_action").default("warn"), // "warn", "mute", "kick", "ban"
+  muteAction: text("mute_action").default("mute"), // "mute", "kick", "ban"
+  kickAction: text("kick_action").default("kick"), // "kick", "ban"
+  banAction: text("ban_action").default("ban"), // "ban", "tempban"
+  tempbanDuration: integer("tempban_duration").default(24), // hours
+  
+  // Automod Thresholds
+  spamMessageCount: integer("spam_message_count").default(5),
+  spamTimeWindow: integer("spam_time_window").default(10), // seconds
+  raidJoinTimeWindow: integer("raid_join_time_window").default(60), // seconds
+  
   // Logging Settings
   modLogChannel: text("mod_log_channel"),
   auditLogChannel: text("audit_log_channel"),
