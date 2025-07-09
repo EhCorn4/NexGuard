@@ -333,23 +333,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // This would fetch server-specific configuration from your database
       const serverConfig = {
+        id: 1,
         guildId,
-        name: req.guild.name,
-        autoModeration: {
-          enabled: true,
-          badWordsFilter: true,
-          spamProtection: true,
-          raidProtection: false,
-        },
-        moderation: {
-          logChannel: null,
-          muteRole: null,
-          autoDelete: true,
-        },
-        permissions: {
-          modRole: null,
-          adminRole: null,
-        }
+        guildName: req.guild.name,
+        ownerId: req.guild.owner_id || req.session.user.id,
+        
+        // Moderation Settings
+        moderationEnabled: true,
+        autoModEnabled: true,
+        spamProtection: true,
+        linkProtection: false,
+        profanityFilter: true,
+        
+        // Logging Settings
+        modLogChannel: null,
+        auditLogChannel: null,
+        
+        // Welcome/Leave Settings
+        welcomeEnabled: false,
+        welcomeChannel: null,
+        welcomeMessage: "Welcome to {server}, {user}!",
+        leaveEnabled: false,
+        leaveChannel: null,
+        leaveMessage: "{user} has left the server.",
+        
+        // Role Settings
+        autoRoleEnabled: false,
+        autoRoleId: null,
+        mutedRoleId: null,
+        
+        // Economy Settings
+        economyEnabled: false,
+        dailyReward: 100,
+        
+        // Custom Commands
+        customCommandsEnabled: true,
+        maxCustomCommands: 20,
+        
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       res.json(serverConfig);
@@ -374,6 +396,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating server config:', error);
       res.status(500).json({ error: 'Failed to update server configuration' });
+    }
+  });
+
+  app.get('/api/servers/:guildId/commands', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId } = req.params;
+    
+    try {
+      // This would fetch custom commands from your database
+      const commands = [
+        {
+          id: 1,
+          guildId,
+          name: 'rules',
+          response: 'Please follow our server rules:\n1. Be respectful\n2. No spam\n3. Keep discussions on topic',
+          createdBy: req.session.user.id,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          guildId,
+          name: 'discord',
+          response: 'Join our Discord community at https://discord.gg/example',
+          createdBy: req.session.user.id,
+          createdAt: new Date().toISOString(),
+        }
+      ];
+      
+      res.json(commands);
+    } catch (error) {
+      console.error('Error fetching commands:', error);
+      res.status(500).json({ error: 'Failed to fetch commands' });
+    }
+  });
+
+  app.post('/api/servers/:guildId/commands', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId } = req.params;
+    const { name, response } = req.body;
+    
+    try {
+      // This would create a new command in your database
+      const command = {
+        id: Date.now(), // Simple ID for demo
+        guildId,
+        name,
+        response,
+        createdBy: req.session.user.id,
+        createdAt: new Date().toISOString(),
+      };
+      
+      res.status(201).json(command);
+    } catch (error) {
+      console.error('Error creating command:', error);
+      res.status(500).json({ error: 'Failed to create command' });
+    }
+  });
+
+  app.delete('/api/servers/:guildId/commands/:commandId', requireAuth, requireGuildAdmin, async (req, res) => {
+    const { guildId, commandId } = req.params;
+    
+    try {
+      // This would delete the command from your database
+      res.json({ success: true, message: 'Command deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting command:', error);
+      res.status(500).json({ error: 'Failed to delete command' });
     }
   });
 

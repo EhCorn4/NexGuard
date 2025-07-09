@@ -358,7 +358,7 @@ export default function Dashboard() {
                   icon: Settings,
                   color: "text-blue-400",
                   onClick: () => {
-                    window.location.href = `/server/${selectedGuild.id}`;
+                    window.location.href = `/server/${selectedGuild}`;
                   }
                 },
                 {
