@@ -6,6 +6,7 @@ from discord.ext import commands
 # NexGuard API Integration
 class NexGuardAPI:
     def __init__(self):
+        # Use your current development domain for API calls
         self.base_url = os.getenv('NEXGUARD_API_URL', 'https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev')
         self.token = os.getenv('DISCORD_BOT_TOKEN')
         self.headers = {
