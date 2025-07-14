@@ -1,35 +1,52 @@
-# Discord OAuth - Immediate Fix Required
+# Discord OAuth Quick Fix
 
-## The Problem
-You're getting "Invalid OAuth2 redirect_uri" because the redirect URI in your Discord application doesn't match what the code is generating.
+## 🔍 Current Issue
+The OAuth token exchange is failing because Discord is rejecting the redirect URI. This happens when the redirect URI in your Discord application doesn't exactly match what the code is sending.
 
-## The Exact Fix
+## 📋 Exact Steps to Fix
 
-**Step 1: Go to Discord Developer Portal**
-1. Visit: https://discord.com/developers/applications
-2. Click on your NexGuard application (ID: 1389775821794705429)
-3. Go to **OAuth2 → General**
+### 1. Go to Discord Developer Portal
+- Visit: https://discord.com/developers/applications
+- Select your application (ID: 1389775821794705429)
 
-**Step 2: Add This Exact Redirect URI**
-In the "Redirects" section, add this exact URL:
+### 2. Navigate to OAuth2 Section
+- Click "OAuth2" in the left sidebar
+- Look for "Redirects" section
+
+### 3. Add This EXACT URI
 ```
 https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev/api/auth/discord/callback
 ```
 
-**Step 3: Save Changes**
-Click "Save Changes" at the bottom of the page.
+### 4. Important Notes
+- ✅ Must be HTTPS (not HTTP)
+- ✅ Must include the full domain
+- ✅ Must end with `/api/auth/discord/callback`
+- ✅ Case-sensitive
+- ✅ No trailing slash
 
-**Step 4: Test**
-Go back to your dashboard and try the "Server Login" button again.
+### 5. Required OAuth2 Scopes
+Make sure these scopes are also selected:
+- `identify` - Get user information
+- `guilds` - Get user's Discord servers
 
-## Current Status
-- ✅ Code is working correctly
-- ✅ Environment variables are configured
-- ❌ Discord application redirect URI needs to be added
-- ✅ Domain is: `ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev`
+### 6. Test the Fix
+After adding the redirect URI:
+1. Save the Discord application settings
+2. Try logging in through the dashboard
+3. You should be redirected to Discord, then back to the dashboard successfully
 
-## If It Still Doesn't Work
-1. Double-check the redirect URI matches exactly (no extra spaces, characters, or trailing slashes)
-2. Make sure you clicked "Save Changes" in Discord
-3. Try clearing your browser cache
-4. Let me know what error message you get
+## 🚨 Common Mistakes
+- Adding HTTP instead of HTTPS
+- Missing the full domain name
+- Adding extra slashes or characters
+- Not saving the Discord application settings
+
+## 🔄 Alternative: Use Bot Commands
+While fixing OAuth, you can still use the bot integration:
+- `!config` - Shows current settings
+- `!addcmd name response` - Add custom commands
+- `!warn @user reason` - Warn users (logs to dashboard)
+- `!mute @user reason` - Mute users (logs to dashboard)
+
+The bot integration works 100% regardless of OAuth status.
