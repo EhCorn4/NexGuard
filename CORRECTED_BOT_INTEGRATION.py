@@ -8,6 +8,7 @@ class NexGuardAPI:
     def __init__(self):
         # Use your current development domain for API calls
         self.base_url = os.getenv('NEXGUARD_API_URL', 'https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev')
+        self.dashboard_url = os.getenv('NEXGUARD_DASHBOARD_URL', self.base_url)
         self.token = os.getenv('DISCORD_BOT_TOKEN')
         self.headers = {
             'Authorization': f'Bearer {self.token}',
@@ -116,7 +117,7 @@ async def config(ctx):
         embed.add_field(name="Spam Protection", value="✅ Enabled" if config.get("spamProtection") else "❌ Disabled", inline=True)
         embed.add_field(name="Welcome Messages", value="✅ Enabled" if config.get("welcomeEnabled") else "❌ Disabled", inline=True)
         embed.add_field(name="Custom Commands", value="✅ Enabled" if config.get("customCommandsEnabled") else "❌ Disabled", inline=True)
-        embed.add_field(name="Dashboard", value="[Configure Settings](https://nexguard.replit.app/dashboard)", inline=False)
+        embed.add_field(name="Dashboard", value=f"[Configure Settings]({nexguard.dashboard_url}/dashboard)", inline=False)
         await ctx.send(embed=embed)
     else:
         await ctx.send("❌ Could not fetch server configuration")
