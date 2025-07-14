@@ -117,7 +117,7 @@ async def config(ctx):
         embed.add_field(name="Spam Protection", value="✅ Enabled" if config.get("spamProtection") else "❌ Disabled", inline=True)
         embed.add_field(name="Welcome Messages", value="✅ Enabled" if config.get("welcomeEnabled") else "❌ Disabled", inline=True)
         embed.add_field(name="Custom Commands", value="✅ Enabled" if config.get("customCommandsEnabled") else "❌ Disabled", inline=True)
-        embed.add_field(name="Dashboard", value=f"[Configure Settings]({nexguard.dashboard_url}/dashboard)", inline=False)
+        embed.add_field(name="Dashboard", value=f"[Configure Settings]({nexguard.dashboard_url}/dashboard)\n*Note: Login with Discord to access server settings*", inline=False)
         await ctx.send(embed=embed)
     else:
         await ctx.send("❌ Could not fetch server configuration")
