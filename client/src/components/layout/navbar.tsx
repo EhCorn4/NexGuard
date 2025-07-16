@@ -82,7 +82,9 @@ export function Navbar() {
                 </Link>
               </motion.div>
             ))}
-            <BotStatusBadge />
+            <div className="flex items-center">
+              <BotStatusBadge />
+            </div>
             <ThemeToggle />
             <HoverScale scale={1.05}>
               <Button

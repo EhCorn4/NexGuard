@@ -141,24 +141,37 @@ export function BotStatus() {
 }
 
 export function BotStatusBadge() {
-  const { data: status } = useQuery<BotStatus>({
+  const { data: status, isLoading } = useQuery<BotStatus>({
     queryKey: ["/api/bot/status"],
     refetchInterval: 30000,
   });
 
+  if (isLoading) {
+    return (
+      <Badge variant="outline" className="gap-2 text-white border-gray-400 bg-gray-800/50 px-3 py-1">
+        <div className="h-2 w-2 rounded-full bg-gray-400 animate-pulse" />
+        <span className="text-sm font-medium">Loading...</span>
+      </Badge>
+    );
+  }
+
   if (!status) {
     return (
-      <Badge variant="outline" className="gap-1">
-        <div className="h-2 w-2 rounded-full bg-gray-400" />
-        Loading...
+      <Badge variant="outline" className="gap-2 text-white border-red-400 bg-red-900/30 px-3 py-1">
+        <div className="h-2 w-2 rounded-full bg-red-500" />
+        <span className="text-sm font-medium">Offline</span>
       </Badge>
     );
   }
 
   return (
-    <Badge variant="outline" className="gap-1">
+    <Badge variant="outline" className={`gap-2 text-white px-3 py-1 ${
+      status.online 
+        ? 'border-green-400 bg-green-900/30' 
+        : 'border-red-400 bg-red-900/30'
+    }`}>
       <div className={`h-2 w-2 rounded-full ${getStatusColor(status.online)}`} />
-      {getStatusText(status.online)}
+      <span className="text-sm font-medium">{getStatusText(status.online)}</span>
     </Badge>
   );
 }
