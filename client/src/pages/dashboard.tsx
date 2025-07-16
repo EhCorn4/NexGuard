@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { PageTransition } from "@/components/ui/page-transition";
 import { AuthNotice } from "@/components/ui/auth-notice";
+import { BotStatus } from "@/components/ui/bot-status";
 import { 
   Settings, 
   Shield, 
@@ -186,7 +187,7 @@ export default function Dashboard() {
             description="Manage NexGuard settings for your Discord servers"
           />
 
-          {/* User Info Header */}
+          {/* User Info and Bot Status Header */}
           <StaggerContainer className="mb-8">
             <StaggerItem index={0}>
               <Card className="bg-slate-800/50 border-slate-700">
@@ -224,6 +225,12 @@ export default function Dashboard() {
                   </div>
                 </CardHeader>
               </Card>
+            </StaggerItem>
+            
+            <StaggerItem index={1}>
+              <div className="flex justify-center mt-4">
+                <BotStatus />
+              </div>
             </StaggerItem>
           </StaggerContainer>
 

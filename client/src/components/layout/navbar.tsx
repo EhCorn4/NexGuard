@@ -5,6 +5,7 @@ import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { BotStatusBadge } from "@/components/ui/bot-status";
 import { HoverScale } from "@/components/ui/hover-scale";
 import { motion } from "framer-motion";
 import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
@@ -81,6 +82,7 @@ export function Navbar() {
                 </Link>
               </motion.div>
             ))}
+            <BotStatusBadge />
             <ThemeToggle />
             <HoverScale scale={1.05}>
               <Button

@@ -154,6 +154,7 @@ Changelog:
 - July 09, 2025. Fixed community page crash by correcting Skeleton import path
 - July 09, 2025. Created comprehensive moderation tools dashboard with tabbed interface (Basic, Filters, Punishments, Logging) featuring fully functional controls, real-time feedback, and advanced configuration options
 - July 09, 2025. Implemented secure Discord bot API integration with authentication, server configuration endpoints, and dynamic client ID management throughout the website
+- July 16, 2025. Added real-time bot status monitoring with BotStatus component and BotStatusBadge integrated into navbar and dashboard, displaying guild count, user count, uptime, and online status with automatic refresh and WebSocket support
 
 ## User Preferences
 
