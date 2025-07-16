@@ -12,13 +12,19 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on request
 function getDiscordRedirectUri(req: any) {
-  // Hardcoded for debugging - this should match exactly what's in Discord settings
-  const hardcodedUri = 'https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev/api/auth/discord/callback';
+  // Try to get the host from request headers
+  const host = req.get('host');
+  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
   
-  console.log('=== DEBUG: Using hardcoded redirect URI ===');
-  console.log('Hardcoded URI:', hardcodedUri);
+  // Build the redirect URI dynamically
+  const redirectUri = `${protocol}://${host}/api/auth/discord/callback`;
   
-  return hardcodedUri;
+  console.log('=== Discord OAuth Redirect URI ===');
+  console.log('Host:', host);
+  console.log('Protocol:', protocol);
+  console.log('Generated URI:', redirectUri);
+  
+  return redirectUri;
 }
 
 // Session configuration for Discord OAuth
@@ -45,27 +51,40 @@ function setupSession(app: Express) {
 
 // Discord API helper functions
 async function exchangeCodeForToken(code: string, redirectUri: string) {
+  console.log('=== OAuth Token Exchange ===');
+  console.log('Client ID:', DISCORD_CLIENT_ID);
+  console.log('Code:', code.substring(0, 10) + '...');
+  console.log('Redirect URI:', redirectUri);
+  console.log('Has Client Secret:', !!DISCORD_CLIENT_SECRET);
+  
+  const params = new URLSearchParams({
+    client_id: DISCORD_CLIENT_ID,
+    client_secret: DISCORD_CLIENT_SECRET!,
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+  });
+  
+  console.log('Request body:', params.toString());
+  
   const response = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: new URLSearchParams({
-      client_id: DISCORD_CLIENT_ID,
-      client_secret: DISCORD_CLIENT_SECRET!,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-    }),
+    body: params,
   });
 
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Discord OAuth error:', response.status, errorText);
+    console.error('Response headers:', Object.fromEntries(response.headers.entries()));
     throw new Error(`Failed to exchange code for token: ${response.status} ${errorText}`);
   }
 
-  return await response.json();
+  const tokenData = await response.json();
+  console.log('Token exchange successful');
+  return tokenData;
 }
 
 async function getDiscordUser(accessToken: string) {

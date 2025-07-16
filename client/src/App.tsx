@@ -23,6 +23,7 @@ const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
 const Docs = lazy(() => import("@/pages/docs"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
+const DashboardDemo = lazy(() => import("@/pages/dashboard-demo"));
 const ServerConfig = lazy(() => import("@/pages/server-config"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
@@ -102,6 +103,13 @@ function Router() {
                 <PageTransition key="dashboard">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
                     <Dashboard />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/dashboard-demo" component={() => (
+                <PageTransition key="dashboard-demo">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
+                    <DashboardDemo />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
