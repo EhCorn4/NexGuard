@@ -1,0 +1,408 @@
+/* NexGuard Dashboard - Discord Security Theme */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #2c3e50 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(88, 101, 242, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(116, 75, 162, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(88, 101, 242, 0.02) 0%, transparent 50%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10 10h20v20H10V10zm30 0h20v20H40V10zm30 0h20v20H70V10zM10 40h20v20H10V40zm30 0h20v20H40V40zm30 0h20v20H70V40zM10 70h20v20H10V70zm30 0h20v20H40V70zm30 0h20v20H70V70z" fill="none" stroke="rgba(88,101,242,0.03)" stroke-width="0.5"/></svg>');
+    background-size: 200px 200px, 300px 300px, 100% 100%, 50px 50px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.navbar {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.95) 0%, rgba(116, 75, 162, 0.95) 100%) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(88, 101, 242, 0.2);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.navbar-brand::before {
+    content: '🛡️';
+    margin-right: 8px;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: white !important;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.main-content {
+    padding: 30px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(88, 101, 242, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.card-header {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.2) 0%, rgba(116, 75, 162, 0.2) 100%);
+    border-bottom: 1px solid rgba(88, 101, 242, 0.3);
+    font-weight: 600;
+    color: #ffffff;
+    border-radius: 15px 15px 0 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #5865f2 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4752c4 0%, #6a3d8a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
+}
+
+.stats-card {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.2) 0%, rgba(116, 75, 162, 0.2) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.stats-card h3 {
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.stats-card p {
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #2c3e50 100%);
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    max-width: 400px;
+    width: 100%;
+    color: #ffffff;
+}
+
+.login-card .logo {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.sidebar {
+    background: linear-gradient(180deg, rgba(15, 20, 25, 0.95) 0%, rgba(26, 35, 50, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    min-height: 100vh;
+    padding: 20px 0;
+    border-right: 1px solid rgba(88, 101, 242, 0.2);
+}
+
+.sidebar .nav-link {
+    color: rgba(255,255,255,0.8);
+    padding: 15px 25px;
+    border-radius: 0;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+    background: linear-gradient(90deg, rgba(88, 101, 242, 0.2) 0%, rgba(116, 75, 162, 0.2) 100%);
+    color: white;
+    border-left: 3px solid #5865f2;
+}
+
+.sidebar .nav-link.active {
+    background: linear-gradient(90deg, #5865f2 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+}
+
+.content-wrapper {
+    background: transparent;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(88, 101, 242, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    color: #ffffff;
+}
+
+.guild-card {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(88, 101, 242, 0.2);
+}
+
+.guild-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(88, 101, 242, 0.3);
+    border-color: rgba(88, 101, 242, 0.5);
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #5865f2;
+    box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+    color: #ffffff;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.table {
+    color: #ffffff;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(88, 101, 242, 0.1);
+}
+
+.alert {
+    border: none;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(34, 139, 34, 0.2) 100%);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    color: #d4edda;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(139, 34, 34, 0.2) 100%);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #f8d7da;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.status-online {
+    color: #28a745;
+    text-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.status-offline {
+    color: #dc3545;
+    text-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+}
+
+.activity-item {
+    border-left: 3px solid #5865f2;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    background: rgba(88, 101, 242, 0.05);
+    border-radius: 0 10px 10px 0;
+    padding: 10px 15px;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(88, 101, 242, 0.2);
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #5865f2 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.metric-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Cybersecurity Circuit Pattern Animation */
+@keyframes circuit-glow {
+    0% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+    100% { opacity: 0.3; }
+}
+
+.circuit-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10 10h20v20H10V10zm30 0h20v20H40V10zm30 0h20v20H70V10zM10 40h20v20H10V40zm30 0h20v20H40V40zm30 0h20v20H70V40zM10 70h20v20H10V70zm30 0h20v20H40V70zm30 0h20v20H70V70z" fill="none" stroke="rgba(88,101,242,0.1)" stroke-width="0.5"/></svg>');
+    background-size: 100px 100px;
+    pointer-events: none;
+    z-index: -1;
+    animation: circuit-glow 3s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #5865f2 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4752c4 0%, #6a3d8a 100%);
+}
+
+/* Form styling adjustments */
+.form-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.form-check-input:checked {
+    background-color: #5865f2;
+    border-color: #5865f2;
+}
+
+.form-check-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Table styling */
+.table thead th {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.2) 0%, rgba(116, 75, 162, 0.2) 100%);
+    border-color: rgba(88, 101, 242, 0.3);
+    color: #ffffff;
+}
+
+.table td {
+    border-color: rgba(88, 101, 242, 0.1);
+}
+
+/* Button variants */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #218838 0%, #1fa383 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+/* Card body adjustments */
+.card-body {
+    color: #ffffff;
+}
+
+/* Select styling */
+.form-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+}
+
+.form-select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #5865f2;
+    box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+    color: #ffffff;
+}
+
+.form-select option {
+    background: #2c3e50;
+    color: #ffffff;
+}

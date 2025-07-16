@@ -8,6 +8,7 @@ import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container
 import { PageTransition } from "@/components/ui/page-transition";
 import { AuthNotice } from "@/components/ui/auth-notice";
 import { BotStatus } from "@/components/ui/bot-status";
+import { BotControl } from "@/components/ui/bot-control";
 import { 
   Settings, 
   Shield, 
@@ -228,8 +229,9 @@ export default function Dashboard() {
             </StaggerItem>
             
             <StaggerItem index={1}>
-              <div className="flex justify-center mt-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                 <BotStatus />
+                <BotControl />
               </div>
             </StaggerItem>
           </StaggerContainer>

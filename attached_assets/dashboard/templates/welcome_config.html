@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome Configuration - {{ guild.name }} - NexGuard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-person-plus"></i> Welcome System Configuration
+                </h5>
+                <div class="d-flex align-items-center">
+                    <img src="{{ guild.icon_url or 'https://cdn.discordapp.com/embed/avatars/0.png' }}" 
+                         alt="Guild Icon" class="rounded-circle me-2" width="32" height="32">
+                    <strong>{{ guild.name }}</strong>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-check form-switch mb-4">
+                        {{ form.enabled(class="form-check-input") }}
+                        {{ form.enabled.label(class="form-check-label fw-bold") }}
+                        <div class="form-text">Enable welcome messages for new members.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.channel_id.label(class="form-label") }}
+                                {{ form.channel_id(class="form-control") }}
+                                <div class="form-text">Channel ID where welcome messages will be sent.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.tone.label(class="form-label") }}
+                                {{ form.tone(class="form-select") }}
+                                <div class="form-text">AI tone for generated welcome messages.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.custom_template.label(class="form-label") }}
+                        {{ form.custom_template(class="form-control", rows="5") }}
+                        <div class="form-text">
+                            Custom welcome message template. Use placeholders like {user}, {server}, {member_count}.
+                        </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-4">
+                        {{ form.ai_enabled(class="form-check-input") }}
+                        {{ form.ai_enabled.label(class="form-check-label") }}
+                        <div class="form-text">Use AI to generate personalized welcome messages.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('guild_config', guild_id=guild.discord_id) }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Back to Config
+                        </a>
+                        <button type="button" class="btn btn-outline-info me-md-2" onclick="testWelcome()">
+                            <i class="bi bi-play-circle"></i> Test Welcome
+                        </button>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Welcome Preview -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-eye"></i> Welcome Preview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="preview-message p-3 border rounded" style="background-color: #f8f9fa;">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="https://cdn.discordapp.com/embed/avatars/0.png" 
+                             alt="Bot Avatar" class="rounded-circle me-2" width="24" height="24">
+                        <strong class="text-primary">NexGuard</strong>
+                        <span class="badge bg-primary ms-2">BOT</span>
+                    </div>
+                    <div id="welcome-preview">
+                        <div class="border-start border-primary border-3 ps-3">
+                            <h6 class="mb-1">👋 Welcome to {{ guild.name }}!</h6>
+                            <p class="mb-0 text-muted">Welcome message will appear here based on your settings.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="updatePreview()">
+                    <i class="bi bi-arrow-clockwise"></i> Update Preview
+                </button>
+            </div>
+        </div>
+        
+        <!-- Available Placeholders -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-braces"></i> Available Placeholders
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{user}</code>
+                        <small class="text-muted">User mention</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{user.name}</code>
+                        <small class="text-muted">Username</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{server}</code>
+                        <small class="text-muted">Server name</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{member_count}</code>
+                        <small class="text-muted">Total members</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{date}</code>
+                        <small class="text-muted">Current date</small>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <code>{time}</code>
+                        <small class="text-muted">Current time</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welcome Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bar-chart"></i> Welcome Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-success">15</h4>
+                        <small class="text-muted">New Members (7d)</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-info">142</h4>
+                        <small class="text-muted">Total Welcomes</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> 
+                        Last welcome: 2 hours ago
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tone Examples -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-chat-text"></i> Tone Examples
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="toneExamples">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#friendly">
+                                Friendly
+                            </button>
+                        </h2>
+                        <div id="friendly" class="accordion-collapse collapse" data-bs-parent="#toneExamples">
+                            <div class="accordion-body">
+                                <small class="text-muted">"Hey there! Welcome to our awesome community! We're so excited to have you join us. Feel free to explore and make yourself at home!"</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#professional">
+                                Professional
+                            </button>
+                        </h2>
+                        <div id="professional" class="accordion-collapse collapse" data-bs-parent="#toneExamples">
+                            <div class="accordion-body">
+                                <small class="text-muted">"Welcome to our Discord server. Please take a moment to review our rules and guidelines. We look forward to your participation in our community."</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gaming">
+                                Gaming
+                            </button>
+                        </h2>
+                        <div id="gaming" class="accordion-collapse collapse" data-bs-parent="#toneExamples">
+                            <div class="accordion-body">
+                                <small class="text-muted">"Player joined the server! Welcome to the squad! Ready to game and have some epic adventures together? Let's go!"</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testWelcome() {
+    fetch('/api/commands/execute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            command: 'test_welcome',
+            guild_id: '{{ guild.discord_id }}',
+            args: {
+                tone: document.getElementById('tone').value,
+                template: document.getElementById('custom_template').value,
+                ai_enabled: document.getElementById('ai_enabled').checked
+            }
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Welcome message test sent successfully!', 'success');
+            if (data.preview) {
+                document.getElementById('welcome-preview').innerHTML = data.preview;
+            }
+        } else {
+            showAlert('Welcome message test failed', 'danger');
+        }
+    });
+}
+
+function updatePreview() {
+    const template = document.getElementById('custom_template').value;
+    const tone = document.getElementById('tone').value;
+    const aiEnabled = document.getElementById('ai_enabled').checked;
+    
+    let preview = template || getDefaultTemplate(tone);
+    
+    // Replace placeholders with example values
+    preview = preview.replace(/{user}/g, '@DemoUser');
+    preview = preview.replace(/{user\.name}/g, 'DemoUser');
+    preview = preview.replace(/{server}/g, '{{ guild.name }}');
+    preview = preview.replace(/{member_count}/g, '{{ guild.member_count }}');
+    preview = preview.replace(/{date}/g, new Date().toLocaleDateString());
+    preview = preview.replace(/{time}/g, new Date().toLocaleTimeString());
+    
+    document.getElementById('welcome-preview').innerHTML = `
+        <div class="border-start border-primary border-3 ps-3">
+            <h6 class="mb-1">👋 Welcome Message ${aiEnabled ? '(AI-Enhanced)' : ''}</h6>
+            <p class="mb-0">${preview}</p>
+        </div>
+    `;
+}
+
+function getDefaultTemplate(tone) {
+    const templates = {
+        'friendly': "Hey there, {user}! Welcome to {server}! We're so excited to have you join our community of {member_count} members. Feel free to explore and make yourself at home! 😊",
+        'professional': "Welcome to {server}, {user}. We are pleased to have you join our community. Please take a moment to review our guidelines and feel free to participate in our discussions.",
+        'enthusiastic': "🎉 WELCOME {user}! We're absolutely THRILLED to have you join {server}! Get ready for an amazing experience with our {member_count} awesome members! Let's get this party started! 🚀",
+        'warm': "A warm welcome to you, {user}! {server} is a cozy place where {member_count} members come together to share, learn, and grow. We're so glad you're here with us today. ❤️",
+        'gaming': "Player {user} has joined the server! Welcome to {server}, gamer! Ready to team up with {member_count} other players and dominate? Let's go! 🎮"
+    };
+    
+    return templates[tone] || templates['friendly'];
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Auto-update preview when form changes
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+    
+    document.getElementById('custom_template').addEventListener('input', updatePreview);
+    document.getElementById('tone').addEventListener('change', updatePreview);
+    document.getElementById('ai_enabled').addEventListener('change', updatePreview);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{
+  "name": "NexGuard Discord Bot",
+  "version": "2.3.2",
+  "description": "Advanced Discord moderation bot with AI-powered auto-reply system",
+  "author": "NexGuard Development Team",
+  "license": "MIT",
+  "created": "2025-07-16",
+  "features": [
+    "64 slash commands",
+    "Auto-reply system with smart keyword detection",
+    "Advanced moderation tools",
+    "AI-powered welcome messages",
+    "Ticket system with transcripts",
+    "Autorole assignment",
+    "Comprehensive logging",
+    "Web dashboard interface",
+    "PostgreSQL database support",
+    "Deployment-ready configuration"
+  ],
+  "recent_updates": [
+    "Fixed auto-reply system broad keyword issue",
+    "Added proper auto-reply rule creation guidelines",
+    "Optimized keyword filtering for better performance",
+    "Enhanced embed response system",
+    "Improved cooldown management",
+    "Better database error handling",
+    "Updated all documentation and guides",
+    "Complete package with latest stable code"
+  ],
+  "requirements": [
+    "Python 3.11+",
+    "Discord Bot Token",
+    "OpenAI API Key (optional)",
+    "PostgreSQL Database (optional)"
+  ],
+  "ports": {
+    "bot_health": 5000,
+    "dashboard": 8080
+  }
+}

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
+import { botManager } from "./bot-manager";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -627,23 +628,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot status endpoint
   app.get("/api/bot/status", (req, res) => {
     try {
-      // Check if bot token is available
-      const hasToken = !!process.env.DISCORD_BOT_TOKEN;
+      // Get real bot status from bot manager
+      const botStatus = botManager.getStatus();
       
-      const defaultStatus = {
-        online: hasToken,
-        guilds: hasToken ? 100 : 0,
-        users: hasToken ? 15000 : 0,
-        uptime: hasToken ? Date.now() - (1000 * 60 * 60 * 24) : 0,
-        commands: hasToken ? 25 : 0,
+      const response = {
+        online: botStatus.online,
+        guilds: botStatus.guilds,
+        users: botStatus.users,
+        uptime: botStatus.uptime,
+        commands: botStatus.online ? 25 : 0,
         lastHeartbeat: new Date(),
-        version: '2.3.2'
+        version: '2.3.2',
+        lastUpdated: botStatus.lastUpdated
       };
       
-      res.json(defaultStatus);
+      res.json(response);
     } catch (error) {
       console.error('Error fetching bot status:', error);
       res.status(500).json({ error: 'Failed to fetch bot status' });
+    }
+  });
+
+  // Bot management endpoints
+  app.post("/api/bot/start", async (req, res) => {
+    try {
+      const success = await botManager.startBot();
+      res.json({ success, message: success ? 'Bot started' : 'Failed to start bot' });
+    } catch (error) {
+      console.error('Error starting bot:', error);
+      res.status(500).json({ error: 'Failed to start bot' });
+    }
+  });
+
+  app.post("/api/bot/stop", async (req, res) => {
+    try {
+      const success = await botManager.stopBot();
+      res.json({ success, message: success ? 'Bot stopped' : 'Failed to stop bot' });
+    } catch (error) {
+      console.error('Error stopping bot:', error);
+      res.status(500).json({ error: 'Failed to stop bot' });
+    }
+  });
+
+  app.post("/api/bot/restart", async (req, res) => {
+    try {
+      const success = await botManager.restart();
+      res.json({ success, message: success ? 'Bot restarted' : 'Failed to restart bot' });
+    } catch (error) {
+      console.error('Error restarting bot:', error);
+      res.status(500).json({ error: 'Failed to restart bot' });
     }
   });
 
