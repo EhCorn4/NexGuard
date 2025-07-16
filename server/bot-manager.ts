@@ -64,13 +64,16 @@ export class BotManager {
     }
 
     try {
-      const botPath = resolve(__dirname, '../bot-python/main.py');
+      const botPath = resolve(__dirname, '../bot-python/bot_only.py');
+      console.log(`Starting bot from: ${botPath}`);
+      console.log(`Bot directory: ${resolve(__dirname, '../bot-python')}`);
       
-      this.botProcess = spawn('python', [botPath], {
+      this.botProcess = spawn('python3', [botPath], {
         cwd: resolve(__dirname, '../bot-python'),
         env: {
           ...process.env,
           DISCORD_TOKEN: process.env.DISCORD_BOT_TOKEN,
+          DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
           NEXGUARD_API_URL: 'http://localhost:5000',
           DATABASE_URL: process.env.DATABASE_URL
         },
@@ -95,13 +98,23 @@ export class BotManager {
         console.error('Bot process error:', error);
         this.isRunning = false;
         this.updateBotStatus();
+        return false;
       });
 
-      this.isRunning = true;
-      this.updateBotStatus();
+      // Wait to see if bot actually starts and connects to Discord
+      await new Promise(resolve => setTimeout(resolve, 8000));
       
-      console.log('Bot started successfully');
-      return true;
+      if (this.botProcess && !this.botProcess.killed) {
+        this.isRunning = true;
+        this.updateBotStatus();
+        console.log('Bot started successfully');
+        return true;
+      } else {
+        console.error('Bot process died during startup');
+        this.isRunning = false;
+        this.updateBotStatus();
+        return false;
+      }
     } catch (error) {
       console.error('Failed to start bot:', error);
       this.isRunning = false;
