@@ -8,8 +8,8 @@ import threading
 import os
 import logging
 from aiohttp import web
-from nexguard.index import bot
-from nexguard.utils.api_integration import api
+from index import bot
+from utils.api_integration import api
 
 # Configure logging
 logging.basicConfig(
