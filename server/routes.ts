@@ -73,7 +73,7 @@ async function exchangeCodeForToken(code: string, redirectUri: string) {
     redirect_uri: redirectUri,
   });
   
-  console.log('Request body:', params.toString());
+  console.log('Request body length:', params.toString().length);
   
   const response = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
