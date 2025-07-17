@@ -819,10 +819,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/developers", async (req, res) => {
     try {
+      console.log('Fetching developers...');
       const developers = await storage.getDevelopers();
+      console.log('Developers fetched:', developers);
       res.json(developers);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch developers" });
+      console.error('Error in /api/developers:', error);
+      res.status(500).json({ message: "Failed to fetch developers", error: error.message });
     }
   });
 

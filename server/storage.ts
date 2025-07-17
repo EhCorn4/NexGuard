@@ -53,69 +53,78 @@ export class MemStorage implements IStorage {
     this.currentTestimonialId = 1;
     this.currentFeedbackId = 1;
     
-    this.initializeData();
+    try {
+      this.initializeData();
+      console.log('Storage initialized successfully');
+    } catch (error) {
+      console.error('Error initializing storage:', error);
+      throw error;
+    }
   }
 
   private initializeData() {
-    // Initialize developers
-    const devs: Developer[] = [
-      {
-        id: 7,
-        name: "Caleb Weston",
-        role: "Lead Developer & Founder",
-        bio: "Passionate full-stack developer with 3+ years of experience in web development, Discord bot development, and server management. Created NexGuard to provide comprehensive moderation solutions for Discord communities.",
-        githubUrl: "https://github.com/calebweston",
-        twitterUrl: "https://twitter.com/calebweston",
-        linkedinUrl: "https://linkedin.com/in/calebweston",
-        location: "United States",
-        experience: "3+ years in full-stack development with expertise in Discord bot architecture, database design, and scalable web applications",
-        skills: [
-          "JavaScript/TypeScript",
-          "Node.js",
-          "Discord.js",
-          "React",
-          "PostgreSQL",
-          "Express.js",
-          "Docker",
-          "Git/GitHub",
-          "API Development",
-          "Database Design",
-          "Server Administration",
-          "Web Development"
-        ],
-        specialties: [
-          "Discord Bot Development",
-          "Server Moderation Systems",
-          "Database Optimization",
-          "API Architecture",
-          "Real-time Applications",
-          "Community Management Tools"
-        ],
-        achievements: [
-          "Successfully deployed NexGuard to 8+ Discord servers",
-          "Developed 64+ slash commands for comprehensive server management",
-          "Created advanced moderation system with AI-powered spam detection",
-          "Built secure OAuth2 authentication system",
-          "Implemented real-time dashboard with PostgreSQL integration",
-          "Designed scalable bot architecture handling 157+ users"
-        ],
-        projects: [
-          "NexGuard Discord Bot - Advanced moderation and management bot",
-          "NexGuard Web Dashboard - Full-stack admin panel with OAuth2",
-          "Custom Command System - Dynamic command creation and management",
-          "Anti-Raid Protection - Automated server protection system",
-          "Economy System - Currency and rewards management",
-          "Ticket System - Support ticket automation"
-        ],
-        education: "Self-taught developer with continuous learning through practical projects and modern web technologies",
-        email: "nexguards@gmail.com",
-        discord: "calebweston",
-        website: "https://nexguard.replit.app",
-        yearsOfExperience: 3
-      }
-    ];
+    try {
+      console.log('Initializing developer data...');
+      // Initialize developers
+      const devs: Developer[] = [
+        {
+          id: 7,
+          name: "Caleb Weston",
+          role: "Lead Developer & Founder",
+          bio: "Passionate full-stack developer with 3+ years of experience in web development, Discord bot development, and server management. Created NexGuard to provide comprehensive moderation solutions for Discord communities.",
+          githubUrl: "https://github.com/calebweston",
+          twitterUrl: "https://twitter.com/calebweston",
+          linkedinUrl: "https://linkedin.com/in/calebweston",
+          location: "United States",
+          experience: "3+ years in full-stack development with expertise in Discord bot architecture, database design, and scalable web applications",
+          skills: [
+            "JavaScript/TypeScript",
+            "Node.js",
+            "Discord.js",
+            "React",
+            "PostgreSQL",
+            "Express.js",
+            "Docker",
+            "Git/GitHub",
+            "API Development",
+            "Database Design",
+            "Server Administration",
+            "Web Development"
+          ],
+          specialties: [
+            "Discord Bot Development",
+            "Server Moderation Systems",
+            "Database Optimization",
+            "API Architecture",
+            "Real-time Applications",
+            "Community Management Tools"
+          ],
+          achievements: [
+            "Successfully deployed NexGuard to 8+ Discord servers",
+            "Developed 64+ slash commands for comprehensive server management",
+            "Created advanced moderation system with AI-powered spam detection",
+            "Built secure OAuth2 authentication system",
+            "Implemented real-time dashboard with PostgreSQL integration",
+            "Designed scalable bot architecture handling 157+ users"
+          ],
+          projects: [
+            "NexGuard Discord Bot - Advanced moderation and management bot",
+            "NexGuard Web Dashboard - Full-stack admin panel with OAuth2",
+            "Custom Command System - Dynamic command creation and management",
+            "Anti-Raid Protection - Automated server protection system",
+            "Economy System - Currency and rewards management",
+            "Ticket System - Support ticket automation"
+          ],
+          education: "Self-taught developer with continuous learning through practical projects and modern web technologies",
+          email: "nexguards@gmail.com",
+          discord: "calebweston",
+          website: "https://nexguard.replit.app",
+          yearsOfExperience: 3
+        }
+      ];
+      console.log('Developer data created with', devs.length, 'developers');
 
-    // Initialize features based on actual bot capabilities
+      // Initialize features based on actual bot capabilities
     const feats: Feature[] = [
       {
         id: 1,
@@ -233,13 +242,19 @@ export class MemStorage implements IStorage {
       }
     ];
 
-    devs.forEach(dev => this.developers.set(dev.id, dev));
-    feats.forEach(feat => this.features.set(feat.id, feat));
-    news.forEach(update => this.newsUpdates.set(update.id, update));
+      devs.forEach(dev => this.developers.set(dev.id, dev));
+      feats.forEach(feat => this.features.set(feat.id, feat));
+      news.forEach(update => this.newsUpdates.set(update.id, update));
 
-    this.currentDevId = devs.length + 1;
-    this.currentFeatureId = feats.length + 1;
-    this.currentNewsId = news.length + 1;
+      this.currentDevId = devs.length + 1;
+      this.currentFeatureId = feats.length + 1;
+      this.currentNewsId = news.length + 1;
+      
+      console.log('Storage initialization completed successfully');
+    } catch (error) {
+      console.error('Error during storage initialization:', error);
+      throw error;
+    }
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -266,7 +281,15 @@ export class MemStorage implements IStorage {
   }
 
   async getDevelopers(): Promise<Developer[]> {
-    return Array.from(this.developers.values());
+    try {
+      console.log('getDevelopers called, developers count:', this.developers.size);
+      const developers = Array.from(this.developers.values());
+      console.log('Returning developers:', developers.length);
+      return developers;
+    } catch (error) {
+      console.error('Error in getDevelopers:', error);
+      throw error;
+    }
   }
 
   async getFeatures(): Promise<Feature[]> {
