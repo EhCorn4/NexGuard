@@ -220,23 +220,6 @@ class NexGuard(commands.Bot):
         logger.info(f'{self.user} has connected to Discord!')
         logger.info(f'Bot is in {len(self.guilds)} guilds')
         
-        # Create status file for bot manager
-        try:
-            import json
-            from datetime import datetime
-            status_data = {
-                "status": "ready",
-                "timestamp": datetime.now().isoformat(),
-                "guilds": len(self.guilds),
-                "users": len(self.users),
-                "bot_name": str(self.user)
-            }
-            with open("/tmp/nexguard_bot_status.json", "w") as f:
-                json.dump(status_data, f, indent=2)
-            logger.info("Bot status file created - ready")
-        except Exception as e:
-            logger.error(f"Failed to create status file: {e}")
-        
         # Sync slash commands
         try:
             # Sync globally first

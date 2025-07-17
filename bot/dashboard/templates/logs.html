@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}Logs & Monitoring - NexGuard Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-journal-text"></i> System Logs & Monitoring
+                </h5>
+                <div>
+                    <button class="btn btn-outline-success btn-sm me-2" onclick="exportLogs()">
+                        <i class="bi bi-download"></i> Export
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshLogs()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Log Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-primary">1,245</h4>
+                                <small class="text-muted">Total Events (24h)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-success">1,229</h4>
+                                <small class="text-muted">Successful Operations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-warning">12</h4>
+                                <small class="text-muted">Warnings</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-danger">4</h4>
+                                <small class="text-muted">Errors</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Log Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="logLevel">
+                            <option value="">All Levels</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="logCategory">
+                            <option value="">All Categories</option>
+                            <option value="command">Commands</option>
+                            <option value="moderation">Moderation</option>
+                            <option value="automod">AutoMod</option>
+                            <option value="system">System</option>
+                            <option value="api">API</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="timeRange">
+                            <option value="1h">Last Hour</option>
+                            <option value="6h">Last 6 Hours</option>
+                            <option value="24h" selected>Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="logSearch" placeholder="Search logs...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Recent Logs -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="log-container" style="max-height: 600px; overflow-y: auto;">
+                    {% if recent_logs %}
+                        {% for log in recent_logs %}
+                        <div class="log-entry mb-2 p-2 border-start border-3 border-{{ 'success' if log.success else 'danger' }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-{{ 'success' if log.success else 'danger' }} me-2">
+                                            {{ 'SUCCESS' if log.success else 'ERROR' }}
+                                        </span>
+                                        <strong>/{{ log.command_name }}</strong>
+                                        <small class="text-muted ms-2">
+                                            Guild: {{ log.guild_id }} | User: {{ log.user_id }}
+                                        </small>
+                                    </div>
+                                    {% if log.command_args %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">Args: {{ log.command_args }}</small>
+                                    </div>
+                                    {% endif %}
+                                    {% if log.error_message %}
+                                    <div class="mt-1">
+                                        <small class="text-danger">Error: {{ log.error_message }}</small>
+                                    </div>
+                                    {% endif %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            Execution time: {{ "%.3f"|format(log.execution_time or 0) }}s
+                                        </small>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    {{ log.created_at.strftime('%H:%M:%S') }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-journal display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No recent logs available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Performance -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-speedometer2"></i> System Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" width="400" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Error Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Error Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if error_logs %}
+                    {% for error in error_logs[:10] %}
+                    <div class="error-item mb-3 p-2 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <strong class="text-danger">/{{ error.command_name }}</strong>
+                                <div class="small text-muted mt-1">
+                                    {{ error.error_message[:100] }}{% if error.error_message|length > 100 %}...{% endif %}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ error.created_at.strftime('%m/%d %H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-4 text-success"></i>
+                        <p class="text-muted mt-2">No recent errors</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- System Health -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-heart-pulse"></i> System Health
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="health-metric mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Bot Uptime</span>
+                        <span class="badge bg-success">99.8%</span>
+                    </div>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-success" style="width: 99.8%"></div>
+                    </div>
+                </div>
+                
+                <div class="health-metric mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Command Success Rate</span>
+                        <span class="badge bg-success">98.7%</span>
+                    </div>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-success" style="width: 98.7%"></div>
+                    </div>
+                </div>
+                
+                <div class="health-metric mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>API Response Time</span>
+                        <span class="badge bg-warning">245ms</span>
+                    </div>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-warning" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="health-metric mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Database Performance</span>
+                        <span class="badge bg-success">Excellent</span>
+                    </div>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-success" style="width: 95%"></div>
+                    </div>
+                </div>
+                
+                <div class="health-metric">
+                    <div class="d-flex justify-content-between">
+                        <span>Memory Usage</span>
+                        <span class="badge bg-info">142MB</span>
+                    </div>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-info" style="width: 35%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger" onclick="clearLogs()">
+                        <i class="bi bi-trash"></i> Clear Old Logs
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="restartBot()">
+                        <i class="bi bi-bootstrap-reboot"></i> Restart Bot
+                    </button>
+                    <button class="btn btn-outline-info" onclick="runDiagnostics()">
+                        <i class="bi bi-gear"></i> Run Diagnostics
+                    </button>
+                    <button class="btn btn-outline-success" onclick="generateReport()">
+                        <i class="bi bi-file-earmark-text"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Performance Chart
+const perfCtx = document.getElementById('performanceChart').getContext('2d');
+const performanceChart = new Chart(perfCtx, {
+    type: 'line',
+    data: {
+        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+        datasets: [{
+            label: 'Response Time (ms)',
+            data: [180, 195, 220, 165, 210, 190, 245],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            tension: 0.1,
+            yAxisID: 'y'
+        }, {
+            label: 'Commands/Hour',
+            data: [45, 52, 68, 89, 76, 65, 58],
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.1,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Response Time (ms)'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Commands/Hour'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                },
+            }
+        }
+    }
+});
+
+// Log filtering
+document.getElementById('logLevel').addEventListener('change', filterLogs);
+document.getElementById('logCategory').addEventListener('change', filterLogs);
+document.getElementById('timeRange').addEventListener('change', filterLogs);
+document.getElementById('logSearch').addEventListener('input', filterLogs);
+
+function filterLogs() {
+    const level = document.getElementById('logLevel').value;
+    const category = document.getElementById('logCategory').value;
+    const timeRange = document.getElementById('timeRange').value;
+    const search = document.getElementById('logSearch').value.toLowerCase();
+    
+    // Implement log filtering logic
+    const logEntries = document.querySelectorAll('.log-entry');
+    logEntries.forEach(entry => {
+        // Add filtering logic here
+        entry.style.display = '';
+    });
+}
+
+function refreshLogs() {
+    window.location.reload();
+}
+
+function exportLogs() {
+    fetch('/api/logs/export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            level: document.getElementById('logLevel').value,
+            category: document.getElementById('logCategory').value,
+            timeRange: document.getElementById('timeRange').value
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nexguard-logs-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showAlert('Logs exported successfully!', 'success');
+    })
+    .catch(error => {
+        showAlert('Failed to export logs', 'danger');
+    });
+}
+
+function clearLogs() {
+    if (confirm('Are you sure you want to clear old logs? This action cannot be undone.')) {
+        fetch('/api/logs/clear', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Old logs cleared successfully!', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showAlert('Failed to clear logs', 'danger');
+            }
+        });
+    }
+}
+
+function restartBot() {
+    if (confirm('Are you sure you want to restart the bot? This will temporarily disconnect all servers.')) {
+        fetch('/api/bot/restart', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Bot restart initiated...', 'info');
+            } else {
+                showAlert('Failed to restart bot', 'danger');
+            }
+        });
+    }
+}
+
+function runDiagnostics() {
+    fetch('/api/system/diagnostics', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('System diagnostics completed successfully!', 'success');
+        } else {
+            showAlert('System diagnostics failed', 'danger');
+        }
+    });
+}
+
+function generateReport() {
+    fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: 'system_health',
+            timeRange: '24h'
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nexguard-report-${new Date().toISOString().split('T')[0]}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showAlert('System report generated successfully!', 'success');
+    })
+    .catch(error => {
+        showAlert('Failed to generate report', 'danger');
+    });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

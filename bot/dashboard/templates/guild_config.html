@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}{{ guild.name }} Configuration - NexGuard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-sliders"></i> Server Configuration
+                </h5>
+                <div class="d-flex align-items-center">
+                    <img src="{{ guild.icon_url or 'https://cdn.discordapp.com/embed/avatars/0.png' }}" 
+                         alt="Guild Icon" class="rounded-circle me-2" width="32" height="32">
+                    <strong>{{ guild.name }}</strong>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.prefix.label(class="form-label") }}
+                                {{ form.prefix(class="form-control") }}
+                                <div class="form-text">The prefix used to invoke bot commands.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.mod_role.label(class="form-label") }}
+                                {{ form.mod_role(class="form-control") }}
+                                <div class="form-text">Role ID for moderation permissions.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.log_channel.label(class="form-label") }}
+                        {{ form.log_channel(class="form-control") }}
+                        <div class="form-text">Channel ID for bot logs and notifications.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                {{ form.welcome_enabled(class="form-check-input") }}
+                                {{ form.welcome_enabled.label(class="form-check-label") }}
+                                <div class="form-text">Enable welcome messages for new members.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                {{ form.automod_enabled(class="form-check-input") }}
+                                {{ form.automod_enabled.label(class="form-check-label") }}
+                                <div class="form-text">Enable automatic moderation features.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                {{ form.autorole_enabled(class="form-check-input") }}
+                                {{ form.autorole_enabled.label(class="form-check-label") }}
+                                <div class="form-text">Enable automatic role assignment.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" onclick="resetForm()">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Advanced Configuration -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-gear"></i> Advanced Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{{ url_for('automod_config', guild_id=guild.discord_id) }}" class="btn btn-outline-primary btn-lg w-100 mb-3">
+                            <i class="bi bi-shield-check"></i>
+                            <div class="mt-1">
+                                <strong>AutoMod Settings</strong>
+                                <div class="small text-muted">Configure spam detection, link filtering, and content moderation</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('welcome_config', guild_id=guild.discord_id) }}" class="btn btn-outline-success btn-lg w-100 mb-3">
+                            <i class="bi bi-person-plus"></i>
+                            <div class="mt-1">
+                                <strong>Welcome System</strong>
+                                <div class="small text-muted">Set up AI-powered welcome messages and greetings</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-lg w-100 mb-3" onclick="manageTickets()">
+                            <i class="bi bi-ticket"></i>
+                            <div class="mt-1">
+                                <strong>Ticket System</strong>
+                                <div class="small text-muted">Configure support tickets and categories</div>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-warning btn-lg w-100 mb-3" onclick="manageRoles()">
+                            <i class="bi bi-people"></i>
+                            <div class="mt-1">
+                                <strong>Role Management</strong>
+                                <div class="small text-muted">Set up autoroles and permission overrides</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Server Statistics -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bar-chart"></i> Server Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h3 class="text-primary">{{ guild.member_count }}</h3>
+                    <small class="text-muted">Total Members</small>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-success">{{ stats.recent_commands }}</h4>
+                        <small class="text-muted">Commands (7d)</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-info">{{ stats.total_commands }}</h4>
+                        <small class="text-muted">Total Commands</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <span>Error Rate</span>
+                    <span class="badge bg-{{ 'danger' if stats.error_rate > 5 else 'success' }}">
+                        {{ stats.error_rate }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="testBot()">
+                        <i class="bi bi-play-circle"></i> Test Bot
+                    </button>
+                    <button class="btn btn-outline-success" onclick="syncCommands()">
+                        <i class="bi bi-arrow-clockwise"></i> Sync Commands
+                    </button>
+                    <button class="btn btn-outline-info" onclick="exportConfig()">
+                        <i class="bi bi-download"></i> Export Config
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="viewLogs()">
+                        <i class="bi bi-journal-text"></i> View Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configuration Status -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-check-circle"></i> Configuration Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Basic Settings
+                        <span class="badge bg-success rounded-pill">✓</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        AutoMod
+                        <span class="badge bg-{{ 'success' if form.automod_enabled.data else 'secondary' }} rounded-pill">
+                            {{ '✓' if form.automod_enabled.data else '○' }}
+                        </span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Welcome System
+                        <span class="badge bg-{{ 'success' if form.welcome_enabled.data else 'secondary' }} rounded-pill">
+                            {{ '✓' if form.welcome_enabled.data else '○' }}
+                        </span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        AutoRole
+                        <span class="badge bg-{{ 'success' if form.autorole_enabled.data else 'secondary' }} rounded-pill">
+                            {{ '✓' if form.autorole_enabled.data else '○' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function resetForm() {
+    if (confirm('Are you sure you want to reset all settings?')) {
+        document.querySelector('form').reset();
+    }
+}
+
+function testBot() {
+    fetch('/api/commands/execute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            command: 'ping',
+            guild_id: '{{ guild.discord_id }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Bot test successful!', 'success');
+        } else {
+            showAlert('Bot test failed', 'danger');
+        }
+    });
+}
+
+function syncCommands() {
+    fetch('/api/commands/execute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            command: 'sync_commands',
+            guild_id: '{{ guild.discord_id }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Commands synced successfully!', 'success');
+        } else {
+            showAlert('Failed to sync commands', 'danger');
+        }
+    });
+}
+
+function exportConfig() {
+    const config = {
+        prefix: document.getElementById('prefix').value,
+        mod_role: document.getElementById('mod_role').value,
+        log_channel: document.getElementById('log_channel').value,
+        welcome_enabled: document.getElementById('welcome_enabled').checked,
+        automod_enabled: document.getElementById('automod_enabled').checked,
+        autorole_enabled: document.getElementById('autorole_enabled').checked
+    };
+    
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nexguard-config.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function viewLogs() {
+    window.location.href = '/logs?guild_id={{ guild.discord_id }}';
+}
+
+function manageTickets() {
+    showAlert('Ticket management will be available soon!', 'info');
+}
+
+function manageRoles() {
+    showAlert('Role management will be available soon!', 'info');
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

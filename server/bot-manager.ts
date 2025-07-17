@@ -6,7 +6,7 @@ export class BotManager {
   private botProcess: ChildProcess | null = null;
   private isRunning = false;
   private lastStatus: any = null;
-  private statusUpdateInterval: NodeJS.Timer | null = null;
+  private statusUpdateInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.setupBotStatusUpdates();
@@ -64,11 +64,10 @@ export class BotManager {
     }
 
     try {
-      const botPath = resolve(__dirname, '../bot-python/bot_only.py');
-      console.log(`Starting bot from: ${botPath}`);
-      console.log(`Bot directory: ${resolve(__dirname, '../bot-python')}`);
+      console.log('Starting Discord bot using background script...');
       
-      this.botProcess = spawn('python3', [botPath], {
+      // Start the simple bot directly
+      this.botProcess = spawn('python3', ['simple_bot.py'], {
         cwd: resolve(__dirname, '../bot-python'),
         env: {
           ...process.env,
@@ -80,8 +79,22 @@ export class BotManager {
         stdio: ['pipe', 'pipe', 'pipe']
       });
 
+      let botConnected = false;
+      
       this.botProcess.stdout?.on('data', (data) => {
-        console.log(`[Bot] ${data.toString()}`);
+        const output = data.toString();
+        console.log(`[Bot] ${output}`);
+        
+        // Check if bot has connected to Discord
+        if (output.includes('has connected to Discord!') || 
+            output.includes('Bot connected as') || 
+            output.includes('logged in as') ||
+            output.includes('Bot status file created - ready')) {
+          console.log('Bot connection detected!');
+          botConnected = true;
+          this.isRunning = true;
+          this.updateBotStatus();
+        }
       });
 
       this.botProcess.stderr?.on('data', (data) => {
@@ -101,24 +114,55 @@ export class BotManager {
         return false;
       });
 
-      // Wait to see if bot actually starts and connects to Discord
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      // Wait up to 15 seconds for bot to be ready
+      for (let i = 0; i < 15; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check if bot connected via stdout
+        if (botConnected) {
+          console.log('Bot connected to Discord successfully!');
+          return true;
+        }
+        
+        // Check if bot is ready via status file
+        try {
+          const fs = require('fs');
+          if (fs.existsSync('/tmp/nexguard_bot_status.json')) {
+            const statusData = JSON.parse(fs.readFileSync('/tmp/nexguard_bot_status.json', 'utf8'));
+            if (statusData.status === 'ready') {
+              console.log('Bot ready confirmed via status file!');
+              this.isRunning = true;
+              this.updateBotStatus();
+              return true;
+            }
+          }
+        } catch (e) {
+          // Status file check failed, continue
+        }
+        
+        // Check if process is still running
+        if (this.botProcess && this.botProcess.exitCode !== null) {
+          console.error(`Bot process exited with code ${this.botProcess.exitCode}`);
+          this.isRunning = false;
+          this.updateBotStatus();
+          return false;
+        }
+      }
       
-      if (this.botProcess && !this.botProcess.killed) {
+      // If we get here, bot didn't connect in time but process is still running
+      if (this.botProcess && !this.botProcess.killed && this.botProcess.exitCode === null) {
+        console.warn('Bot process is running but may not have connected to Discord yet, assuming success');
         this.isRunning = true;
         this.updateBotStatus();
-        console.log('Bot started successfully');
         return true;
       } else {
-        console.error('Bot process died during startup');
+        console.error('Bot process failed to start or exited early');
         this.isRunning = false;
         this.updateBotStatus();
         return false;
       }
     } catch (error) {
-      console.error('Failed to start bot:', error);
-      this.isRunning = false;
-      this.updateBotStatus();
+      console.error('Error starting bot:', error);
       return false;
     }
   }
