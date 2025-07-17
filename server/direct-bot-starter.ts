@@ -337,27 +337,7 @@ export class DirectBotStarter {
             }
           ]
         },
-        // Economy System
-        {
-          name: 'balance',
-          description: 'Check your balance',
-          options: [
-            {
-              name: 'user',
-              description: 'User to check balance for',
-              type: 6,
-              required: false
-            }
-          ]
-        },
-        {
-          name: 'daily',
-          description: 'Claim your daily reward',
-        },
-        {
-          name: 'leaderboard',
-          description: 'View the economy leaderboard',
-        },
+
         // Custom Commands
         {
           name: 'customcmd',
@@ -390,8 +370,7 @@ export class DirectBotStarter {
               choices: [
                 { name: 'moderation', value: 'moderation' },
                 { name: 'logging', value: 'logging' },
-                { name: 'automod', value: 'automod' },
-                { name: 'economy', value: 'economy' }
+                { name: 'automod', value: 'automod' }
               ]
             }
           ]
@@ -640,93 +619,6 @@ export class DirectBotStarter {
         {
           name: 'coinflip',
           description: 'Flip a coin',
-        },
-        // Extended Economy Commands
-        {
-          name: 'work',
-          description: 'Work to earn money',
-        },
-        {
-          name: 'rob',
-          description: 'Attempt to rob another user',
-          options: [
-            {
-              name: 'user',
-              description: 'User to rob',
-              type: 6,
-              required: true
-            }
-          ]
-        },
-        {
-          name: 'pay',
-          description: 'Pay money to another user',
-          options: [
-            {
-              name: 'user',
-              description: 'User to pay',
-              type: 6,
-              required: true
-            },
-            {
-              name: 'amount',
-              description: 'Amount to pay',
-              type: 4,
-              required: true
-            }
-          ]
-        },
-        {
-          name: 'shop',
-          description: 'View the server shop',
-        },
-        {
-          name: 'buy',
-          description: 'Buy an item from the shop',
-          options: [
-            {
-              name: 'item',
-              description: 'Item to buy',
-              type: 3,
-              required: true
-            }
-          ]
-        },
-        {
-          name: 'sell',
-          description: 'Sell an item',
-          options: [
-            {
-              name: 'item',
-              description: 'Item to sell',
-              type: 3,
-              required: true
-            }
-          ]
-        },
-        {
-          name: 'inventory',
-          description: 'View your inventory',
-          options: [
-            {
-              name: 'user',
-              description: 'User to view inventory for',
-              type: 6,
-              required: false
-            }
-          ]
-        },
-        {
-          name: 'gamble',
-          description: 'Gamble your money',
-          options: [
-            {
-              name: 'amount',
-              description: 'Amount to gamble',
-              type: 4,
-              required: true
-            }
-          ]
         },
         // Admin Commands
         {
@@ -1229,7 +1121,7 @@ export class DirectBotStarter {
             fields: [
               { name: 'Moderation', value: '`/ban` `/kick` `/mute` `/unmute` `/warn` `/warnings` `/clear` `/slowmode` `/lock` `/unlock`', inline: false },
               { name: 'Utility', value: '`/userinfo` `/serverinfo` `/avatar` `/roleinfo`', inline: false },
-              { name: 'Systems', value: '`/welcome` `/ticket` `/balance` `/daily` `/leaderboard`', inline: false },
+              { name: 'Systems', value: '`/welcome` `/ticket`', inline: false },
               { name: 'Management', value: '`/customcmd` `/config` `/lockdown` `/unlockdown`', inline: false },
               { name: 'Auto-Reply', value: '`/autoreply-create` `/autoreply-list` `/autoreply-toggle` `/autoreply-delete` `/autoreply-stats` `/autoreply-test`', inline: false },
               { name: 'Fun', value: '`/poll` `/announce`', inline: false }
@@ -1286,13 +1178,7 @@ export class DirectBotStarter {
           await interaction.reply('⚠️ Welcome system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure welcome messages.');
         } else if (commandName === 'ticket') {
           await interaction.reply('⚠️ Ticket system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure ticket settings.');
-        } else if (commandName === 'balance') {
-          await interaction.reply('⚠️ Economy system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure economy settings.');
-        } else if (commandName === 'daily') {
-          await interaction.reply('⚠️ Economy system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure economy settings.');
-        } else if (commandName === 'leaderboard') {
-          await interaction.reply('⚠️ Economy system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure economy settings.');
-        
+
         // Management Commands
         } else if (commandName === 'customcmd') {
           await interaction.reply('⚠️ Custom commands are currently under development. Please use the dashboard at https://nexguard.replit.app to create custom commands.');

@@ -178,6 +178,7 @@ Changelog:
 - July 17, 2025. Successfully increased Discord bot slash commands from 25 to 86 globally synced commands by fixing all import issues, dependency problems, and token authentication - all extensions now load properly with comprehensive moderation, utility, admin, economy, fun, logging, ticket, welcome, verification, role management, and server management functionality
 - July 17, 2025. Fixed hardcoded command count issue in API endpoint that was preventing accurate command count display - bot now correctly reports 86 commands instead of cached 25
 - July 17, 2025. Implemented comprehensive auto-reply system with 6 new slash commands (autoreply-create, autoreply-list, autoreply-toggle, autoreply-delete, autoreply-stats, autoreply-test) bringing total to 92 commands, added database schema for auto-reply rules/cooldowns/stats, complete storage interface with CRUD operations, and API endpoints for auto-reply management via dashboard
+- July 17, 2025. Removed all economy commands (balance, daily, leaderboard, work, rob, pay, shop, buy, sell, inventory, gamble) from Discord bot reducing total commands from 92 to 81 commands, cleaned up help command and config options to remove economy references
 
 ## User Preferences
 
