@@ -116,13 +116,28 @@ export default function ServerConfig() {
 
   const updateConfigMutation = useMutation({
     mutationFn: async (updates: Partial<ServerConfig>) => {
-      return apiRequest(`/api/servers/${guildId}/config`, {
+      console.log('Updating config with:', updates);
+      console.log('Guild ID:', guildId);
+      
+      const response = await fetch(`/api/servers/${guildId}/config`, {
         method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updates),
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // This is important for cookies
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', response.status, errorText);
+        throw new Error(`${response.status}: ${errorText}`);
+      }
+      
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Config update successful:', data);
       toast({
         title: "Configuration Updated",
         description: "Server settings have been saved successfully.",
@@ -130,6 +145,7 @@ export default function ServerConfig() {
       queryClient.invalidateQueries({ queryKey: ['/api/servers', guildId, 'config'] });
     },
     onError: (error) => {
+      console.error('Config update failed:', error);
       toast({
         title: "Update Failed",
         description: error.message,
@@ -188,10 +204,12 @@ export default function ServerConfig() {
   });
 
   const handleToggle = (field: keyof ServerConfig, value: boolean) => {
+    console.log('Toggle called:', field, value);
     updateConfigMutation.mutate({ [field]: value });
   };
 
   const handleInputChange = (field: keyof ServerConfig, value: string | number) => {
+    console.log('Input change called:', field, value);
     updateConfigMutation.mutate({ [field]: value });
   };
 
