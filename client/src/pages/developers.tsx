@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, User, Mail } from "lucide-react";
 import { SiDiscord, SiGithub, SiX, SiLinkedin } from "react-icons/si";
 import type { Developer } from "@shared/schema";
+import devAvatar from "@assets/Devavatar_1752722055445.png";
 
 const Developers = memo(function Developers() {
   const { data: developers, isLoading, error } = useQuery<Developer[]>({
@@ -61,8 +62,12 @@ const Developers = memo(function Developers() {
                 className="bg-[hsl(var(--nexguard-dark))]/50 backdrop-blur-sm border-[hsl(var(--nexguard-cyan))]/20 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-all duration-300"
               >
                 <CardContent className="p-6 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-[hsl(var(--nexguard-cyan))] to-[hsl(var(--nexguard-purple))] rounded-full flex items-center justify-center mx-auto mb-4">
-                    <User className="text-white" size={32} />
+                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-[hsl(var(--nexguard-cyan))]">
+                    <img 
+                      src={devAvatar} 
+                      alt={`${developer.name} Avatar`} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">{developer.name}</h3>
                   <p className="text-[hsl(var(--nexguard-cyan))] mb-3">{developer.role}</p>
