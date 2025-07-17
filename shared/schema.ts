@@ -26,6 +26,17 @@ export const developers = pgTable("developers", {
   githubUrl: text("github_url"),
   twitterUrl: text("twitter_url"),
   linkedinUrl: text("linkedin_url"),
+  location: text("location"),
+  experience: text("experience"),
+  skills: text("skills").array(),
+  specialties: text("specialties").array(),
+  achievements: text("achievements").array(),
+  projects: text("projects").array(),
+  education: text("education"),
+  email: text("email"),
+  discord: text("discord"),
+  website: text("website"),
+  yearsOfExperience: integer("years_of_experience"),
 });
 
 export const features = pgTable("features", {

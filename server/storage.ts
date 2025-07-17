@@ -60,31 +60,58 @@ export class MemStorage implements IStorage {
     // Initialize developers
     const devs: Developer[] = [
       {
-        id: 1,
-        name: "Alex Rivera",
-        role: "Lead Developer",
-        bio: "Full-stack developer with 5+ years of experience in Discord bot development and server management.",
-        githubUrl: "https://github.com/alexrivera",
-        twitterUrl: "https://twitter.com/alexrivera",
-        linkedinUrl: "https://linkedin.com/in/alexrivera"
-      },
-      {
-        id: 2,
-        name: "Sarah Chen",
-        role: "Backend Engineer",
-        bio: "Specialized in scalable bot architecture and database optimization for high-traffic Discord servers.",
-        githubUrl: "https://github.com/sarahchen",
-        twitterUrl: "https://twitter.com/sarahchen",
-        linkedinUrl: "https://linkedin.com/in/sarahchen"
-      },
-      {
-        id: 3,
-        name: "Marcus Johnson",
-        role: "UX/UI Designer",
-        bio: "Creates intuitive user interfaces and seamless user experiences for Discord bot interactions.",
-        githubUrl: "https://github.com/marcusj",
-        twitterUrl: "https://twitter.com/marcusj",
-        linkedinUrl: "https://linkedin.com/in/marcusj"
+        id: 7,
+        name: "Caleb Weston",
+        role: "Lead Developer & Founder",
+        bio: "Passionate full-stack developer with 3+ years of experience in web development, Discord bot development, and server management. Created NexGuard to provide comprehensive moderation solutions for Discord communities.",
+        githubUrl: "https://github.com/calebweston",
+        twitterUrl: "https://twitter.com/calebweston",
+        linkedinUrl: "https://linkedin.com/in/calebweston",
+        location: "United States",
+        experience: "3+ years in full-stack development with expertise in Discord bot architecture, database design, and scalable web applications",
+        skills: [
+          "JavaScript/TypeScript",
+          "Node.js",
+          "Discord.js",
+          "React",
+          "PostgreSQL",
+          "Express.js",
+          "Docker",
+          "Git/GitHub",
+          "API Development",
+          "Database Design",
+          "Server Administration",
+          "Web Development"
+        ],
+        specialties: [
+          "Discord Bot Development",
+          "Server Moderation Systems",
+          "Database Optimization",
+          "API Architecture",
+          "Real-time Applications",
+          "Community Management Tools"
+        ],
+        achievements: [
+          "Successfully deployed NexGuard to 8+ Discord servers",
+          "Developed 64+ slash commands for comprehensive server management",
+          "Created advanced moderation system with AI-powered spam detection",
+          "Built secure OAuth2 authentication system",
+          "Implemented real-time dashboard with PostgreSQL integration",
+          "Designed scalable bot architecture handling 157+ users"
+        ],
+        projects: [
+          "NexGuard Discord Bot - Advanced moderation and management bot",
+          "NexGuard Web Dashboard - Full-stack admin panel with OAuth2",
+          "Custom Command System - Dynamic command creation and management",
+          "Anti-Raid Protection - Automated server protection system",
+          "Economy System - Currency and rewards management",
+          "Ticket System - Support ticket automation"
+        ],
+        education: "Self-taught developer with continuous learning through practical projects and modern web technologies",
+        email: "nexguards@gmail.com",
+        discord: "calebweston",
+        website: "https://nexguard.replit.app",
+        yearsOfExperience: 3
       }
     ];
 
