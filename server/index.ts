@@ -72,8 +72,8 @@ app.use((req, res, next) => {
   }
 
   // Start the Discord bot automatically
-  const { directBotStarter } = await import('./direct-bot-starter');
-  directBotStarter.startBot().catch(console.error);
+  const { DirectBotStarter } = await import('./direct-bot-starter');
+  DirectBotStarter.getInstance().startBot().catch(console.error);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.

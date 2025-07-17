@@ -151,8 +151,8 @@ export class DirectBotStarter {
     }
   }
 
-  public async stopBot(): Promise<void> {
-    if (!this.isRunning || !this.client) return;
+  public async stopBot(): Promise<boolean> {
+    if (!this.isRunning || !this.client) return true;
     
     console.log('Stopping Discord bot...');
     this.client.destroy();
@@ -163,6 +163,20 @@ export class DirectBotStarter {
     this.statusData.users = 0;
     this.statusData.lastUpdated = new Date().toISOString();
     console.log('Bot stopped');
+    return true;
+  }
+
+  public async restart(): Promise<boolean> {
+    try {
+      console.log('Restarting Discord bot...');
+      await this.stopBot();
+      // Wait a moment before starting again
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return await this.startBot();
+    } catch (error) {
+      console.error('Error restarting bot:', error);
+      return false;
+    }
   }
 
   public getStatus(): any {
@@ -180,3 +194,6 @@ export class DirectBotStarter {
     this.statusData.timestamp = new Date().toISOString();
   }
 }
+
+// Export singleton instance for backward compatibility
+export const directBotStarter = DirectBotStarter.getInstance();

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTestimonialSchema, insertFeedbackSchema, insertAutoreplyRuleSchema } from "@shared/schema";
-import { directBotStarter } from "./direct-bot-starter";
+import { DirectBotStarter } from "./direct-bot-starter";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -733,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot/status", (req, res) => {
     try {
       // Get real bot status from bot manager
-      const botStatus = directBotStarter.getStatus();
+      const botStatus = DirectBotStarter.getInstance().getStatus();
       
       const response = {
         online: botStatus.online,
@@ -757,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bot/start", async (req, res) => {
     try {
       console.log('Starting bot via API...');
-      const success = await directBotStarter.startBot();
+      const success = await DirectBotStarter.getInstance().startBot();
       console.log('Bot start result:', success);
       res.json({ success, message: success ? 'Bot started' : 'Failed to start bot' });
     } catch (error) {
@@ -768,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/bot/stop", async (req, res) => {
     try {
-      const success = await directBotStarter.stopBot();
+      const success = await DirectBotStarter.getInstance().stopBot();
       res.json({ success, message: success ? 'Bot stopped' : 'Failed to stop bot' });
     } catch (error) {
       console.error('Error stopping bot:', error);
@@ -778,7 +778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/bot/restart", async (req, res) => {
     try {
-      const success = await directBotStarter.restart();
+      const success = await DirectBotStarter.getInstance().restart();
       res.json({ success, message: success ? 'Bot restarted' : 'Failed to restart bot' });
     } catch (error) {
       console.error('Error restarting bot:', error);
