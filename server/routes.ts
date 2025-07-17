@@ -12,26 +12,9 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on environment
 function getDiscordRedirectUri(req: any) {
-  // Check for Replit environment variables
-  const replitDomain = process.env.REPLIT_DOMAINS;
-  
-  if (replitDomain) {
-    // Use the first domain from REPLIT_DOMAINS
-    const domain = replitDomain.split(',')[0];
-    const redirectUri = `https://${domain}/api/auth/discord/callback`;
-    return redirectUri;
-  }
-  
-  // Fallback to request headers
-  const host = req.get('x-forwarded-host') || req.get('host');
-  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
-  
-  // If running on Replit, use https
-  const finalProtocol = host && host.includes('replit.dev') ? 'https' : protocol;
-  
-  // Build the redirect URI using the actual host
-  const redirectUri = `${finalProtocol}://${host}/api/auth/discord/callback`;
-  
+  // Based on the Discord error, use the correct nexguard.replit.app domain
+  const redirectUri = `https://nexguard.replit.app/api/auth/discord/callback`;
+  console.log('Using configured redirect URI:', redirectUri);
   return redirectUri;
 }
 

@@ -1,0 +1,238 @@
+authorize?client_id=1389775821794705429&redirect_uri=https%3A%2F%2Fnexguard.replit.app%2Fapi%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify+guilds:20 [FAST CONNECT] wss://gateway.discord.gg/?encoding=json&v=9&compress=zlib-stream, encoding: json, version: 9
+sentry.28ed92cf6482fb4e.js:14 [FAST CONNECT] connected in 213ms
+sentry.28ed92cf6482fb4e.js:14 [libdiscore] [experiment_manager] Failed to load experiments state: Version mismatch: expected 1, found 2065856101
+(anonymous) @ sentry.28ed92cf6482fb4e.js:14
+u @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+s @ web.a7542b529c8c12cb.js:12
+(anonymous) @ libdiscoreWasmFetch.afe0221f70e51bfa.js:1
+s @ libdiscoreWasmFetch.afe0221f70e51bfa.js:1
+G @ libdiscoreWasmFetch.afe0221f70e51bfa.js:1
+$func587 @ 8b4aa48d095fa081.module.wasm:0x61f9b
+$func412 @ 8b4aa48d095fa081.module.wasm:0x57c3e
+$func663 @ 8b4aa48d095fa081.module.wasm:0x63f2c
+$func84 @ 8b4aa48d095fa081.module.wasm:0x15536
+$func238 @ 8b4aa48d095fa081.module.wasm:0x48f26
+$func718 @ 8b4aa48d095fa081.module.wasm:0x65a95
+$func717 @ 8b4aa48d095fa081.module.wasm:0x65a87
+$closure496_externref_shim @ 8b4aa48d095fa081.module.wasm:0x664e7
+S @ libdiscoreWasmFetch.afe0221f70e51bfa.js:1
+u @ libdiscoreWasmFetch.afe0221f70e51bfa.js:1
+sentry.28ed92cf6482fb4e.js:14 [ProcessUtilsElectron] setMemoryInformation not available.
+sentry.28ed92cf6482fb4e.js:14 [KvStore] GuildStore initialized in mode: typescript
+sentry.28ed92cf6482fb4e.js:14 [default] [BUILD INFO] Release Channel: stable, Build Number: 420018, Version Hash: 13e1822715293c199cfc4792525c98fee611b4aa
+sentry.28ed92cf6482fb4e.js:14 AppCrashedFatalReport: getLastCrash not supported.
+sentry.28ed92cf6482fb4e.js:14 [KvStore] NoteStore initialized in mode: typescript
+sentry.28ed92cf6482fb4e.js:14 [libdiscore] The answer for life the universe and everything is: 42
+sentry.28ed92cf6482fb4e.js:14 Hold Up!
+sentry.28ed92cf6482fb4e.js:14 If someone told you to copy/paste something here you have an 11/10 chance you're being scammed.
+sentry.28ed92cf6482fb4e.js:14 Pasting anything in here could give attackers access to your Discord account.
+sentry.28ed92cf6482fb4e.js:1 
+            
+            
+           GET https://discord.com/api/v9/oauth2/authorize?client_id=1389775821794705429&response_type=code&redirect_uri=https%3A%2F%2Fnexguard.replit.app%2Fapi%2Fauth%2Fdiscord%2Fcallback&scope=identify%20guilds&integration_type=0 400 (Bad Request)
+(anonymous) @ sentry.28ed92cf6482fb4e.js:1
+(anonymous) @ sentry.28ed92cf6482fb4e.js:17
+(anonymous) @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+E @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+I @ web.a7542b529c8c12cb.js:12
+p @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+oX @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+sT @ web.a7542b529c8c12cb.js:12
+sS @ web.a7542b529c8c12cb.js:12
+lq @ web.a7542b529c8c12cb.js:12
+lK @ web.a7542b529c8c12cb.js:12
+lW @ web.a7542b529c8c12cb.js:12
+lN @ web.a7542b529c8c12cb.js:12
+lS @ web.a7542b529c8c12cb.js:12
+ca @ web.a7542b529c8c12cb.js:12
+ct @ web.a7542b529c8c12cb.js:12
+lK @ web.a7542b529c8c12cb.js:12
+lW @ web.a7542b529c8c12cb.js:12
+lN @ web.a7542b529c8c12cb.js:12
+lS @ web.a7542b529c8c12cb.js:12
+ci @ web.a7542b529c8c12cb.js:12
+C @ web.a7542b529c8c12cb.js:12
+(anonymous) @ web.a7542b529c8c12cb.js:12
+R @ web.a7542b529c8c12cb.js:12
+w @ web.a7542b529c8c12cb.js:12
+sentry.28ed92cf6482fb4e.js:14 Hold Up!
+sentry.28ed92cf6482fb4e.js:14 If someone told you to copy/paste something here you have an 11/10 chance you're being scammed.
+sentry.28ed92cf6482fb4e.js:14 Pasting anything in here could give attackers access to your Discord account.
+sentry.28ed92cf6482fb4e.js:14 Hold Up!
+sentry.28ed92cf6482fb4e.js:14 If someone told you to copy/paste something here you have an 11/10 chance you're being scammed.
+sentry.28ed92cf6482fb4e.js:14 Pasting anything in here could give attackers access to your Discord account.
+sentry.28ed92cf6482fb4e.js:14 Hold Up!
+sentry.28ed92cf6482fb4e.js:14 If someone told you to copy/paste something here you have an 11/10 chance you're being scammed.
+sentry.28ed92cf6482fb4e.js:14 Pasting anything in here could give attackers access to your Discord account.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+sentry.28ed92cf6482fb4e.js:14 Hold Up!
+sentry.28ed92cf6482fb4e.js:14 If someone told you to copy/paste something here you have an 11/10 chance you're being scammed.
+sentry.28ed92cf6482fb4e.js:14 Pasting anything in here could give attackers access to your Discord account.
+sentry.28ed92cf6482fb4e.js:14 Unless you understand exactly what you are doing, close this window and stay safe.
+sentry.28ed92cf6482fb4e.js:14 If you do understand exactly what you are doing, you should come work with us https://discord.com/jobs

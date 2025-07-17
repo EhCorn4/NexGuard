@@ -169,6 +169,7 @@ Changelog:
 - July 17, 2025. Fixed React Query URL construction issue that was preventing server configuration pages from loading properly by correcting queryKey array handling in the default query function
 - July 17, 2025. Successfully connected all server configuration controls to database: all switches, inputs, and selects in the moderation dashboard now save to PostgreSQL database instead of just showing toast notifications, including anti-raid protection, message filters, rate limiting, warning system, and punishment settings
 - July 17, 2025. Fixed Discord OAuth login issue by correcting redirect URI to use proper Replit domain instead of localhost, now using REPLIT_DOMAINS environment variable for proper authentication flow
+- July 17, 2025. Fixed Discord OAuth 400 Bad Request error by updating redirect URI to use correct nexguard.replit.app domain that matches Discord application configuration
 
 ## User Preferences
 
