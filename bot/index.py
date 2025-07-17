@@ -245,14 +245,18 @@ bot = NexGuard()
 # Run the bot
 if __name__ == "__main__":
     try:
-        token = os.getenv('DISCORD_TOKEN', '').strip()
+        token = os.getenv('DISCORD_BOT_TOKEN', '').strip()
+        
+        # Fallback to DISCORD_TOKEN if DISCORD_BOT_TOKEN not found
+        if not token:
+            token = os.getenv('DISCORD_TOKEN', '').strip()
         
         # Handle cases where token might have the format "DISCORD_TOKEN=actual_token"
         if '=' in token and token.startswith('DISCORD_TOKEN='):
             token = token.split('=', 1)[1].strip()
         
         if not token or token == 'your_bot_token_here':
-            logger.error('No valid Discord token found. Please set the DISCORD_TOKEN environment variable.')
+            logger.error('No valid Discord token found. Please set the DISCORD_BOT_TOKEN environment variable.')
             exit(1)
         
         logger.info(f'Starting bot with token length: {len(token)}')

@@ -120,7 +120,7 @@ export class DirectBotStarter {
           guilds: statusData.guilds || 0,
           users: statusData.users || 0,
           uptime: this.getUptime(),
-          commands: 11,
+          commands: statusData.commands || 25,
           lastHeartbeat: new Date().toISOString(),
           version: '2.3.2',
           lastUpdated: new Date().toISOString()

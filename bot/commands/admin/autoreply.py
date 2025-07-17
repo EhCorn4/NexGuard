@@ -9,9 +9,8 @@ from discord import app_commands
 import json
 import asyncio
 import logging
-from nexguard.utils.database_helper import get_db_connection
-from nexguard.utils.constants import Colors as COLORS, Emojis as EMOJIS
-from nexguard.utils.checks import is_admin_or_moderator
+from utils.helpers import EmbedBuilder
+from utils.checks import is_moderator
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +24,12 @@ class AutoReply(commands.Cog):
     def setup_database(self):
         """Initialize auto-reply database tables"""
         try:
-            with get_db_connection() as conn:
-                cursor = conn.cursor()
-                
-                # Create auto-reply rules table
-                cursor.execute('''
+            import sqlite3
+            conn = sqlite3.connect(self.bot.db_path)
+            cursor = conn.cursor()
+            
+            # Create auto-reply rules table
+            cursor.execute('''
                     CREATE TABLE IF NOT EXISTS autoreply_rules (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         guild_id TEXT NOT NULL,
@@ -45,8 +45,8 @@ class AutoReply(commands.Cog):
                     )
                 ''')
                 
-                # Create auto-reply stats table
-                cursor.execute('''
+            # Create auto-reply stats table
+            cursor.execute('''
                     CREATE TABLE IF NOT EXISTS autoreply_stats (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         guild_id TEXT NOT NULL,
@@ -58,8 +58,8 @@ class AutoReply(commands.Cog):
                     )
                 ''')
                 
-                # Create auto-reply cooldowns table
-                cursor.execute('''
+            # Create auto-reply cooldowns table
+            cursor.execute('''
                     CREATE TABLE IF NOT EXISTS autoreply_cooldowns (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         guild_id TEXT NOT NULL,
@@ -71,8 +71,9 @@ class AutoReply(commands.Cog):
                     )
                 ''')
                 
-                conn.commit()
-                logger.info("Auto-reply database tables initialized")
+            conn.commit()
+            conn.close()
+            logger.info("Auto-reply database tables initialized")
         except Exception as e:
             logger.error(f"Error setting up auto-reply database: {e}")
     
@@ -98,11 +99,12 @@ class AutoReply(commands.Cog):
         cooldown: int = 10
     ):
         """Create a new auto-reply rule"""
-        if not await is_admin_or_moderator(interaction):
+        if not interaction.user.guild_permissions.manage_guild:
             await interaction.response.send_message(
-                f"{EMOJIS.ERROR} You don't have permission to use this command.", 
+                "❌ You don't have permission to use this command.", 
                 ephemeral=True
             )
+            return
             return
         
         try:

@@ -7,8 +7,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import logging
-from ...utils.api_integration import api
-from ...utils.checks import is_moderator
+from utils.api_integration import api
+from utils.checks import is_moderator
 
 logger = logging.getLogger(__name__)
 

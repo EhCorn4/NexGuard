@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 import json
 import logging
-from nexguard.utils.database_helper import get_db_connection
+import sqlite3
 
 logger = logging.getLogger(__name__)
 

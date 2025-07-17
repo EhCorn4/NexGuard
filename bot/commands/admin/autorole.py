@@ -3,7 +3,8 @@ from discord.ext import commands
 from discord import app_commands
 import logging
 import json
-from ...utils.helpers import EmbedBuilder
+from utils.helpers import EmbedBuilder
+from utils.checks import is_moderator
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,9 @@ class RoleSelectDropdown(discord.ui.Select):
         selected_roles = [role for role in selected_roles if role]
         
         # Save to database
-        from ...database.persistent_db import DatabaseManager
-        db = DatabaseManager("nexguard/database/nexguard.db")
+        import sqlite3
+        conn = sqlite3.connect(self.view.bot.db_path)
+        cursor = conn.cursor()
         
         autorole_data = {
             "enabled": len(selected_roles) > 0,
