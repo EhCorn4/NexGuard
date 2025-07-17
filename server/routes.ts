@@ -12,17 +12,25 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on environment
 function getDiscordRedirectUri(req: any) {
-  // Always use the host from request headers for Replit
-  const host = req.get('host');
+  // Check for Replit environment variables
+  const replitDomain = process.env.REPLIT_DOMAINS;
+  
+  if (replitDomain) {
+    // Use the first domain from REPLIT_DOMAINS
+    const domain = replitDomain.split(',')[0];
+    const redirectUri = `https://${domain}/api/auth/discord/callback`;
+    return redirectUri;
+  }
+  
+  // Fallback to request headers
+  const host = req.get('x-forwarded-host') || req.get('host');
   const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
   
-  // Build the redirect URI using the actual host
-  const redirectUri = `${protocol}://${host}/api/auth/discord/callback`;
+  // If running on Replit, use https
+  const finalProtocol = host && host.includes('replit.dev') ? 'https' : protocol;
   
-  console.log('=== Discord OAuth Redirect URI ===');
-  console.log('Host:', host);
-  console.log('Protocol:', protocol);
-  console.log('Generated URI:', redirectUri);
+  // Build the redirect URI using the actual host
+  const redirectUri = `${finalProtocol}://${host}/api/auth/discord/callback`;
   
   return redirectUri;
 }
@@ -166,10 +174,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const redirectUri = getDiscordRedirectUri(req);
-    console.log('=== Discord OAuth Debug ===');
-    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Generated redirect URI:', redirectUri);
-    console.log('Expected redirect URI should be:', `https://${process.env.REPLIT_DOMAINS}/api/auth/discord/callback`);
     
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,

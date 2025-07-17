@@ -168,6 +168,7 @@ Changelog:
 - July 17, 2025. Completed fully functional dashboard with database integration: updated features to reflect actual bot capabilities (64 slash commands, moderation, tickets, welcome system, server management, utilities, custom commands), connected all server configuration endpoints to PostgreSQL database instead of mock data, implemented working toggles/switches/inputs for all settings, added proper custom command management with CRUD operations, and verified all dashboard controls save and load settings correctly
 - July 17, 2025. Fixed React Query URL construction issue that was preventing server configuration pages from loading properly by correcting queryKey array handling in the default query function
 - July 17, 2025. Successfully connected all server configuration controls to database: all switches, inputs, and selects in the moderation dashboard now save to PostgreSQL database instead of just showing toast notifications, including anti-raid protection, message filters, rate limiting, warning system, and punishment settings
+- July 17, 2025. Fixed Discord OAuth login issue by correcting redirect URI to use proper Replit domain instead of localhost, now using REPLIT_DOMAINS environment variable for proper authentication flow
 
 ## User Preferences
 
