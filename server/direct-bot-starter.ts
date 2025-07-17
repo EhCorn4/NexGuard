@@ -41,7 +41,7 @@ export class DirectBotStarter {
       }
 
       // Start the bot using the background script
-      const startProcess = spawn('bash', ['-c', 'cd bot && DISCORD_TOKEN="${DISCORD_BOT_TOKEN}" python3 index.py > /tmp/nexguard_bot.log 2>&1 &'], {
+      const startProcess = spawn('bash', ['-c', 'cd bot && DISCORD_BOT_TOKEN="${DISCORD_BOT_TOKEN}" nohup python3 index.py > /tmp/nexguard_bot.log 2>&1 &'], {
         env: {
           ...process.env,
           DISCORD_TOKEN: process.env.DISCORD_BOT_TOKEN,
@@ -103,7 +103,7 @@ export class DirectBotStarter {
     try {
       if (existsSync('/tmp/nexguard_bot_status.json')) {
         const statusData = JSON.parse(readFileSync('/tmp/nexguard_bot_status.json', 'utf8'));
-        return statusData.status === 'ready';
+        return statusData.online === true;
       }
     } catch (e) {
       // Ignore errors
@@ -121,13 +121,13 @@ export class DirectBotStarter {
           users: statusData.users || 0,
           uptime: this.getUptime(),
           commands: statusData.commands || 25,
-          lastHeartbeat: new Date().toISOString(),
+          lastHeartbeat: statusData.lastHeartbeat || new Date().toISOString(),
           version: '2.3.2',
-          lastUpdated: new Date().toISOString()
+          lastUpdated: statusData.lastUpdated || new Date().toISOString()
         };
       }
     } catch (e) {
-      // Ignore errors
+      console.error('Error getting bot status:', e);
     }
 
     return {
