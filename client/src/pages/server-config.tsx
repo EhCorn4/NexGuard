@@ -357,13 +357,8 @@ export default function ServerConfig() {
                             <Label htmlFor="raid" className="text-white">Anti-Raid Protection</Label>
                             <Switch
                               id="raid"
-                              checked={true}
-                              onCheckedChange={(checked) => {
-                                toast({ 
-                                  title: checked ? "Anti-Raid Protection Enabled" : "Anti-Raid Protection Disabled",
-                                  description: checked ? "Server is protected against mass join attacks" : "Anti-raid protection has been disabled"
-                                });
-                              }}
+                              checked={config.antiRaidEnabled}
+                              onCheckedChange={(checked) => handleToggle('antiRaidEnabled', checked)}
                             />
                           </div>
                         </CardContent>
@@ -385,39 +380,24 @@ export default function ServerConfig() {
                             <Label htmlFor="caps" className="text-white">Caps Filter</Label>
                             <Switch
                               id="caps"
-                              checked={false}
-                              onCheckedChange={(checked) => {
-                                toast({ 
-                                  title: checked ? "Caps Filter Enabled" : "Caps Filter Disabled",
-                                  description: checked ? "Messages with excessive caps will be filtered" : "Caps filter has been disabled"
-                                });
-                              }}
+                              checked={config.capsFilter}
+                              onCheckedChange={(checked) => handleToggle('capsFilter', checked)}
                             />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label htmlFor="duplicate" className="text-white">Duplicate Messages</Label>
                             <Switch
                               id="duplicate"
-                              checked={true}
-                              onCheckedChange={(checked) => {
-                                toast({ 
-                                  title: checked ? "Duplicate Filter Enabled" : "Duplicate Filter Disabled",
-                                  description: checked ? "Duplicate messages will be automatically removed" : "Duplicate message filter has been disabled"
-                                });
-                              }}
+                              checked={config.duplicateMessageFilter}
+                              onCheckedChange={(checked) => handleToggle('duplicateMessageFilter', checked)}
                             />
                           </div>
                           <div className="flex items-center justify-between">
                             <Label htmlFor="mentions" className="text-white">Mention Spam</Label>
                             <Switch
                               id="mentions"
-                              checked={true}
-                              onCheckedChange={(checked) => {
-                                toast({ 
-                                  title: checked ? "Mention Spam Protection Enabled" : "Mention Spam Protection Disabled",
-                                  description: checked ? "Excessive mentions will be filtered" : "Mention spam protection has been disabled"
-                                });
-                              }}
+                              checked={config.mentionSpamFilter}
+                              onCheckedChange={(checked) => handleToggle('mentionSpamFilter', checked)}
                             />
                           </div>
                           <div className="space-y-2">
@@ -425,17 +405,14 @@ export default function ServerConfig() {
                             <Input
                               id="maxMentions"
                               type="number"
-                              defaultValue="5"
+                              defaultValue={config.maxMentions}
                               min="1"
                               max="20"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 1 && value <= 20) {
-                                  toast({
-                                    title: "Max Mentions Updated",
-                                    description: `Maximum mentions per message set to ${value}`
-                                  });
+                                  handleInputChange('maxMentions', value);
                                 }
                               }}
                             />
@@ -455,13 +432,8 @@ export default function ServerConfig() {
                             <Label htmlFor="slowmode" className="text-white">Slowmode</Label>
                             <Switch
                               id="slowmode"
-                              checked={false}
-                              onCheckedChange={(checked) => {
-                                toast({ 
-                                  title: checked ? "Slowmode Enabled" : "Slowmode Disabled",
-                                  description: checked ? "Rate limiting is now active" : "Rate limiting has been disabled"
-                                });
-                              }}
+                              checked={config.slowmodeEnabled}
+                              onCheckedChange={(checked) => handleToggle('slowmodeEnabled', checked)}
                             />
                           </div>
                           <div className="space-y-2">
@@ -469,17 +441,14 @@ export default function ServerConfig() {
                             <Input
                               id="slowmodeSeconds"
                               type="number"
-                              defaultValue="5"
+                              defaultValue={config.slowmodeSeconds}
                               min="1"
                               max="300"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 1 && value <= 300) {
-                                  toast({
-                                    title: "Slowmode Duration Updated",
-                                    description: `Users can send messages every ${value} seconds`
-                                  });
+                                  handleInputChange('slowmodeSeconds', value);
                                 }
                               }}
                             />
@@ -489,17 +458,14 @@ export default function ServerConfig() {
                             <Input
                               id="spamCount"
                               type="number"
-                              defaultValue="5"
+                              defaultValue={config.spamMessageCount}
                               min="2"
                               max="20"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 2 && value <= 20) {
-                                  toast({
-                                    title: "Spam Threshold Updated",
-                                    description: `${value} messages in 10 seconds will trigger spam protection`
-                                  });
+                                  handleInputChange('spamMessageCount', value);
                                 }
                               }}
                             />
@@ -524,17 +490,14 @@ export default function ServerConfig() {
                             <Input
                               id="maxWarnings"
                               type="number"
-                              defaultValue="3"
+                              defaultValue={config.maxWarnings}
                               min="1"
                               max="10"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 1 && value <= 10) {
-                                  toast({
-                                    title: "Max Warnings Updated",
-                                    description: `Users will receive up to ${value} warnings before punishment`
-                                  });
+                                  handleInputChange('maxWarnings', value);
                                 }
                               }}
                             />
@@ -544,34 +507,22 @@ export default function ServerConfig() {
                             <Input
                               id="warningExpire"
                               type="number"
-                              defaultValue="30"
+                              defaultValue={config.warningExpireDays}
                               min="1"
                               max="365"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 1 && value <= 365) {
-                                  toast({
-                                    title: "Warning Expiry Updated",
-                                    description: `Warnings will expire after ${value} days`
-                                  });
+                                  handleInputChange('warningExpireDays', value);
                                 }
                               }}
                             />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="warnAction" className="text-white">After Max Warnings</Label>
-                            <Select defaultValue="mute" onValueChange={(value) => {
-                              const actions = {
-                                warn: "Additional Warning",
-                                mute: "Mute User",
-                                kick: "Kick User",
-                                ban: "Ban User"
-                              };
-                              toast({
-                                title: "Warning Action Updated",
-                                description: `After max warnings: ${actions[value as keyof typeof actions]}`
-                              });
+                            <Select defaultValue={config.warnAction} onValueChange={(value) => {
+                              handleInputChange('warnAction', value);
                             }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
@@ -597,16 +548,8 @@ export default function ServerConfig() {
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label htmlFor="muteAction" className="text-white">Mute Action</Label>
-                            <Select defaultValue="mute" onValueChange={(value) => {
-                              const actions = {
-                                mute: "Mute User",
-                                kick: "Kick User", 
-                                ban: "Ban User"
-                              };
-                              toast({
-                                title: "Mute Action Updated",
-                                description: `Mute violations will result in: ${actions[value as keyof typeof actions]}`
-                              });
+                            <Select defaultValue={config.muteAction} onValueChange={(value) => {
+                              handleInputChange('muteAction', value);
                             }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
@@ -620,15 +563,8 @@ export default function ServerConfig() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="kickAction" className="text-white">Kick Action</Label>
-                            <Select defaultValue="kick" onValueChange={(value) => {
-                              const actions = {
-                                kick: "Kick User",
-                                ban: "Ban User"
-                              };
-                              toast({
-                                title: "Kick Action Updated",
-                                description: `Kick violations will result in: ${actions[value as keyof typeof actions]}`
-                              });
+                            <Select defaultValue={config.kickAction} onValueChange={(value) => {
+                              handleInputChange('kickAction', value);
                             }}>
                               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                                 <SelectValue />
@@ -644,20 +580,14 @@ export default function ServerConfig() {
                             <Input
                               id="tempbanDuration"
                               type="number"
-                              defaultValue="24"
+                              defaultValue={config.tempbanDuration}
                               min="1"
                               max="8760"
                               className="bg-slate-800 border-slate-600 text-white"
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
                                 if (value >= 1 && value <= 8760) {
-                                  const days = Math.floor(value / 24);
-                                  const hours = value % 24;
-                                  const duration = days > 0 ? `${days} days${hours > 0 ? ` ${hours} hours` : ''}` : `${hours} hours`;
-                                  toast({
-                                    title: "Temp Ban Duration Updated",
-                                    description: `Temporary bans will last ${duration}`
-                                  });
+                                  handleInputChange('tempbanDuration', value);
                                 }
                               }}
                             />

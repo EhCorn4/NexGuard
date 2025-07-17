@@ -152,16 +152,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware for Discord OAuth
   setupSession(app);
   
-  // Debug middleware for server routes only
+  // Minimal logging for server routes
   app.use('/api/servers', (req, res, next) => {
-    console.log('=== Server Route Debug ===');
-    console.log('Full URL:', req.url);
-    console.log('Path:', req.path);
-    console.log('Method:', req.method);
-    console.log('Session exists:', !!req.session);
-    console.log('Has User:', !!req.session?.user);
-    console.log('User ID:', req.session?.user?.id);
-    console.log('Guilds count:', req.session?.guilds?.length || 0);
+    console.log(`${req.method} ${req.url} - User: ${req.session?.user?.id || 'none'}`);
     next();
   });
 
@@ -376,11 +369,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Session guilds count:', req.session?.guilds?.length || 0);
     
     if (!req.session?.user) {
-      console.log('Auth failed - no user in session');
       return res.status(401).json({ error: 'Not authenticated' });
     }
-    
-    console.log('Auth passed - user authenticated');
     next();
   };
 
@@ -437,6 +427,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           spamProtection: true,
           linkProtection: false,
           profanityFilter: true,
+          antiRaidEnabled: true,
+          
+          // Filter Settings
+          capsFilter: false,
+          duplicateMessageFilter: true,
+          mentionSpamFilter: true,
+          maxMentions: 5,
+          
+          // Rate Limiting
+          slowmodeEnabled: false,
+          slowmodeSeconds: 5,
+          spamMessageCount: 5,
+          
+          // Warning System
+          maxWarnings: 3,
+          warningExpireDays: 30,
+          warnAction: "warn",
+          
+          // Punishment Actions
+          muteAction: "mute",
+          kickAction: "kick",
+          tempbanDuration: 24,
           
           // Logging Settings
           modLogChannel: null,
