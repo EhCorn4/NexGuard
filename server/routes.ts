@@ -41,12 +41,16 @@ function setupSession(app: Express) {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    name: 'nexguard.sid',
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+      sameSite: 'lax', // Add sameSite attribute
     },
   }));
+  
+  console.log('Session middleware configured');
 }
 
 // Discord API helper functions
@@ -147,6 +151,17 @@ async function checkBotInGuild(guildId: string) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware for Discord OAuth
   setupSession(app);
+  
+  // Test session middleware
+  app.use((req, res, next) => {
+    console.log('Session middleware check:', {
+      hasSession: !!req.session,
+      sessionId: req.session?.id,
+      hasUser: !!req.session?.user,
+      path: req.path
+    });
+    next();
+  });
 
   // Discord OAuth routes
   app.get('/api/auth/discord', (req, res) => {
@@ -198,6 +213,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const guilds = await getDiscordGuilds(tokenData.access_token);
 
       // Store user session
+      console.log('=== Storing Session Data ===');
+      console.log('User ID:', user.id);
+      console.log('Guilds count:', guilds.length);
+      console.log('Session ID before save:', req.session.id);
+      
       (req.session as any).user = {
         ...user,
         access_token: tokenData.access_token,
@@ -210,6 +230,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Session save error:', err);
           return res.redirect('/dashboard?error=session_failed');
         }
+        console.log('Session saved successfully');
+        console.log('Session ID after save:', req.session.id);
         console.log('Discord OAuth successful, redirecting to dashboard');
         res.redirect('/dashboard');
       });
@@ -219,6 +241,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test session endpoint
+  app.get('/api/test/session', (req, res) => {
+    console.log('=== Session Test ===');
+    console.log('Session exists:', !!req.session);
+    console.log('Session ID:', req.session?.id);
+    
+    if (!req.session.views) {
+      req.session.views = 0;
+    }
+    req.session.views++;
+    
+    res.json({
+      sessionExists: !!req.session,
+      sessionId: req.session.id,
+      views: req.session.views,
+      hasUser: !!req.session.user
+    });
+  });
+
   app.get('/api/auth/user', (req, res) => {
     if (!DISCORD_CLIENT_SECRET) {
       return res.status(500).json({ 
@@ -226,6 +267,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
 
+    console.log('=== User Auth Check ===');
+    console.log('Session exists:', !!req.session);
+    console.log('Session ID:', req.session?.id);
+    console.log('Session user exists:', !!req.session?.user);
+    
     const user = (req.session as any)?.user;
     console.log('Session user:', user ? 'exists' : 'not found');
     if (!user) {
@@ -320,10 +366,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Middleware to check if user is authenticated
   const requireAuth = (req: any, res: any, next: any) => {
-    console.log('Auth check - Session:', !!req.session?.user);
-    if (!req.session.user) {
+    console.log('=== Auth Check Debug ===');
+    console.log('Session exists:', !!req.session);
+    console.log('Session ID:', req.session?.id);
+    console.log('Session user exists:', !!req.session?.user);
+    console.log('Session user ID:', req.session?.user?.id);
+    console.log('Session guilds count:', req.session?.guilds?.length || 0);
+    
+    if (!req.session?.user) {
+      console.log('Auth failed - no user in session');
       return res.status(401).json({ error: 'Not authenticated' });
     }
+    
+    console.log('Auth passed - user authenticated');
     next();
   };
 
