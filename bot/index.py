@@ -206,7 +206,7 @@ class NexGuard(commands.Bot):
         
         for extension in extensions:
             try:
-                await self.load_extension(f'nexguard.{extension}')
+                await self.load_extension(extension)
                 logger.info(f'Loaded {extension}')
             except Exception as e:
                 logger.error(f'Failed to load {extension}: {e}')

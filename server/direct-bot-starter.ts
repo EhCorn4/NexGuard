@@ -41,7 +41,7 @@ export class DirectBotStarter {
       }
 
       // Start the bot using the background script
-      const startProcess = spawn('bash', ['-c', 'cd bot-python && python3 simple_bot.py > /tmp/nexguard_bot.log 2>&1 &'], {
+      const startProcess = spawn('bash', ['-c', 'cd bot && DISCORD_TOKEN="${DISCORD_BOT_TOKEN}" python3 index.py > /tmp/nexguard_bot.log 2>&1 &'], {
         env: {
           ...process.env,
           DISCORD_TOKEN: process.env.DISCORD_BOT_TOKEN,
