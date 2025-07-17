@@ -10,7 +10,7 @@ export class DirectBotStarter {
     online: false,
     guilds: 0,
     users: 0,
-    commands: 43, // Commands from actual Python bot files
+    commands: 43,
     timestamp: new Date().toISOString(),
     lastHeartbeat: new Date().toISOString(),
     lastUpdated: new Date().toISOString()
