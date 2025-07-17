@@ -145,7 +145,7 @@ async function checkBotInGuild(guildId: string) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup session middleware
+  // Setup session middleware for Discord OAuth
   setupSession(app);
 
   // Discord OAuth routes
