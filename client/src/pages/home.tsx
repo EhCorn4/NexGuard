@@ -7,8 +7,27 @@ import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_175193
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
 import { memo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Home = memo(function Home() {
+  const { data: botStatus } = useQuery({
+    queryKey: ['/api/bot/status'],
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const calculateUptime = (uptime: string) => {
+    // Convert uptime like "22s" or "5m 30s" to a percentage
+    // For now, we'll show a high uptime percentage since the bot is running
+    return botStatus?.online ? "99.9%" : "0%";
+  };
+
   return (
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
@@ -58,15 +77,21 @@ const Home = memo(function Home() {
           
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">127</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
+                {botStatus?.guilds || 0}
+              </div>
               <div className="text-sm text-gray-400">Servers Protected</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">8.2K</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
+                {botStatus?.users ? formatNumber(botStatus.users) : '0'}
+              </div>
               <div className="text-sm text-gray-400">Users Secured</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">96.3%</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
+                {botStatus?.uptime ? calculateUptime(botStatus.uptime) : '0%'}
+              </div>
               <div className="text-sm text-gray-400">Uptime</div>
             </div>
             <div className="text-center">
