@@ -358,6 +358,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Debug endpoint to show OAuth configuration
+  app.get('/api/auth/debug', (req, res) => {
+    const redirectUri = getDiscordRedirectUri(req);
+    res.json({
+      clientId: DISCORD_CLIENT_ID,
+      redirectUri,
+      hasClientSecret: !!DISCORD_CLIENT_SECRET,
+      authUrl: `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify+guilds`,
+      instructions: [
+        "1. Go to https://discord.com/developers/applications",
+        "2. Select your NexGuard application",
+        "3. Go to OAuth2 → General",
+        "4. In the Redirects section, add this EXACT URL:",
+        redirectUri,
+        "5. Click Save Changes",
+        "6. Try logging in again"
+      ]
+    });
+  });
+
   // Middleware to check if user is authenticated
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('=== Auth Check Debug ===');
