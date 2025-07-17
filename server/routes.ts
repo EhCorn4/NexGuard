@@ -12,19 +12,11 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // Function to get the correct redirect URI based on environment
 function getDiscordRedirectUri(req: any) {
-  // In production, use the configured domain
-  if (process.env.NODE_ENV === 'production' || process.env.REPL_SLUG) {
-    const domain = process.env.REPL_SLUG 
-      ? `https://${process.env.REPL_ID}.${process.env.REPL_SLUG}.replit.dev`
-      : `https://${process.env.REPL_ID}.replit.dev`;
-    return `${domain}/api/auth/discord/callback`;
-  }
-  
-  // For development, try to use the host from request headers
+  // Always use the host from request headers for Replit
   const host = req.get('host');
   const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
   
-  // Build the redirect URI dynamically
+  // Build the redirect URI using the actual host
   const redirectUri = `${protocol}://${host}/api/auth/discord/callback`;
   
   console.log('=== Discord OAuth Redirect URI ===');
