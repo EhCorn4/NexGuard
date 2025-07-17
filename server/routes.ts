@@ -740,7 +740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         guilds: botStatus.guilds,
         users: botStatus.users,
         uptime: botStatus.uptime,
-        commands: botStatus.online ? 25 : 0,
+        commands: botStatus.commands,
         lastHeartbeat: new Date(),
         version: '2.3.2',
         lastUpdated: botStatus.lastUpdated
@@ -801,9 +801,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configuration endpoint for frontend
   app.get("/api/config", (req, res) => {
     res.json({
-      discordClientId: process.env.DISCORD_CLIENT_ID || "1389775821794705429",
-      discordInviteUrl: `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || "1389775821794705429"}&permissions=8&scope=bot`,
-      supportServerUrl: "https://discord.gg/wpjZMPXaRT"
+      platform: "discord",
+      status: "active",
+      version: "2.3.2"
     });
   });
 
