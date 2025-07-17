@@ -152,14 +152,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware for Discord OAuth
   setupSession(app);
   
-  // Test session middleware
-  app.use((req, res, next) => {
-    console.log('Session middleware check:', {
-      hasSession: !!req.session,
-      sessionId: req.session?.id,
-      hasUser: !!req.session?.user,
-      path: req.path
-    });
+  // Debug middleware for server routes only
+  app.use('/api/servers', (req, res, next) => {
+    console.log('=== Server Route Debug ===');
+    console.log('Full URL:', req.url);
+    console.log('Path:', req.path);
+    console.log('Method:', req.method);
+    console.log('Session exists:', !!req.session);
+    console.log('Has User:', !!req.session?.user);
+    console.log('User ID:', req.session?.user?.id);
+    console.log('Guilds count:', req.session?.guilds?.length || 0);
     next();
   });
 
@@ -413,6 +415,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/servers/:guildId/config', requireAuth, requireGuildAdmin, async (req, res) => {
     const { guildId } = req.params;
     
+    console.log('=== Server Config Endpoint Hit ===');
+    console.log('Guild ID:', guildId);
+    console.log('User ID:', req.session?.user?.id);
+    console.log('Guild from middleware:', req.guild?.name);
+    
     try {
       // Try to get existing config from database
       let serverConfig = await storage.getServerConfig(guildId);
@@ -457,9 +464,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxCustomCommands: 20,
         };
         
+        console.log('Creating new config for guild:', guildId);
         serverConfig = await storage.createServerConfig(defaultConfig);
       }
       
+      console.log('Returning config for guild:', guildId);
       res.json(serverConfig);
     } catch (error) {
       console.error('Error fetching server config:', error);

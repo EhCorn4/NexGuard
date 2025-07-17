@@ -29,7 +29,19 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // Construct URL from queryKey array
+    let url: string;
+    if (Array.isArray(queryKey) && queryKey.length > 1) {
+      // Handle array-based queryKeys like ['/api/servers', guildId, 'config']
+      url = queryKey.join('/');
+    } else {
+      // Handle simple string queryKeys
+      url = queryKey[0] as string;
+    }
+    
+    console.log('Query URL:', url);
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 
