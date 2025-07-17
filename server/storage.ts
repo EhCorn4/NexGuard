@@ -88,49 +88,63 @@ export class MemStorage implements IStorage {
       }
     ];
 
-    // Initialize features
+    // Initialize features based on actual bot capabilities
     const feats: Feature[] = [
       {
         id: 1,
-        title: "Advanced Moderation",
-        description: "Automated rule enforcement, smart spam detection, and customizable punishment systems to keep your server clean.",
-        icon: "gavel",
-        benefits: ["Auto-moderation with AI detection", "Customizable warning system", "Raid protection & anti-spam", "Temporary bans & mutes"]
+        title: "Advanced Moderation System",
+        description: "Comprehensive moderation tools with spam protection, profanity filtering, and automated punishments to maintain server quality.",
+        icon: "shield",
+        benefits: ["Anti-spam protection", "Profanity filter", "Link protection", "Automated warnings & timeouts", "Mass join raid protection"]
       },
       {
         id: 2,
-        title: "Server Analytics",
-        description: "Comprehensive insights into your server's activity, member engagement, and moderation statistics.",
-        icon: "chart-line",
-        benefits: ["Member activity tracking", "Detailed moderation logs", "Channel usage statistics", "Growth analytics"]
+        title: "Custom Commands",
+        description: "Create unlimited custom commands for your server with dynamic responses and variable support.",
+        icon: "terminal",
+        benefits: ["Unlimited custom commands", "Dynamic responses", "Variable substitution", "Permission-based access", "Easy management via dashboard"]
       },
       {
         id: 3,
-        title: "Role Management",
-        description: "Automated role assignment, reaction roles, and advanced permission management for seamless server organization.",
-        icon: "users",
-        benefits: ["Reaction role system", "Auto-role assignment", "Permission templates", "Role hierarchy management"]
+        title: "Welcome & Leave Messages",
+        description: "Customizable welcome and goodbye messages to create a friendly atmosphere for new members.",
+        icon: "user-plus",
+        benefits: ["Custom welcome messages", "Goodbye notifications", "Channel-specific messages", "Variable support", "Rich embed formatting"]
       },
       {
         id: 4,
-        title: "Smart Notifications",
-        description: "Customizable notification system for server events, moderation actions, and important updates.",
-        icon: "bell",
-        benefits: ["Welcome & goodbye messages", "Moderation alerts", "Custom event notifications", "Scheduled announcements"]
+        title: "Auto-Role Assignment",
+        description: "Automatically assign roles to new members and manage role hierarchies with ease.",
+        icon: "users",
+        benefits: ["Auto-role on join", "Muted role management", "Role hierarchy support", "Permission integration", "Bulk role operations"]
       },
       {
         id: 5,
-        title: "Entertainment & Games",
-        description: "Engaging mini-games, trivia, and interactive features to keep your community active and entertained.",
-        icon: "gamepad",
-        benefits: ["Interactive games & trivia", "Economy system", "Leaderboards", "Custom commands"]
+        title: "Comprehensive Logging",
+        description: "Track all moderation actions and server events with detailed audit logs and monitoring.",
+        icon: "file-text",
+        benefits: ["Moderation action logs", "Audit trail tracking", "Channel-specific logging", "Export capabilities", "Real-time monitoring"]
       },
       {
         id: 6,
-        title: "Easy Configuration",
-        description: "Intuitive web dashboard and slash commands make setup and management effortless for any server size.",
-        icon: "cog",
-        benefits: ["Web-based dashboard", "Slash command interface", "One-click setup templates", "Backup & restore settings"]
+        title: "Web Dashboard",
+        description: "Intuitive web-based control panel with Discord OAuth for secure server management from anywhere.",
+        icon: "monitor",
+        benefits: ["Discord OAuth login", "Real-time configuration", "Server-specific settings", "Live bot status", "Mobile-friendly interface"]
+      },
+      {
+        id: 7,
+        title: "Economy System",
+        description: "Engaging economy features with daily rewards and currency management to boost community interaction.",
+        icon: "coins",
+        benefits: ["Daily reward system", "Currency management", "Balance tracking", "Configurable rewards", "Economy statistics"]
+      },
+      {
+        id: 8,
+        title: "Slash Commands",
+        description: "Modern Discord slash commands for quick access to all bot features with autocomplete and validation.",
+        icon: "slash",
+        benefits: ["64+ slash commands", "Autocomplete support", "Input validation", "Permission checking", "Context-aware responses"]
       }
     ];
 
