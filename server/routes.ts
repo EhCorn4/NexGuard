@@ -779,6 +779,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add health check endpoint for deployment monitoring
+  app.get('/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      service: 'nexguard-website',
+      version: '1.0.0'
+    });
+  });
+
+  // Add simple root endpoint for deployment verification
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'NexGuard API is running',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

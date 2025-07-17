@@ -1,1 +1,0 @@
-# NexGuard Discord Bot Package
