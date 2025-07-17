@@ -359,48 +359,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { guildId } = req.params;
     
     try {
-      // This would fetch server-specific configuration from your database
-      const serverConfig = {
-        id: 1,
-        guildId,
-        guildName: req.guild.name,
-        ownerId: req.guild.owner_id || req.session.user.id,
+      // Try to get existing config from database
+      let serverConfig = await storage.getServerConfig(guildId);
+      
+      // If no config exists, create a default one
+      if (!serverConfig) {
+        const defaultConfig = {
+          guildId,
+          guildName: req.guild.name,
+          ownerId: req.guild.owner_id || req.session.user.id,
+          
+          // Moderation Settings
+          moderationEnabled: true,
+          autoModEnabled: true,
+          spamProtection: true,
+          linkProtection: false,
+          profanityFilter: true,
+          
+          // Logging Settings
+          modLogChannel: null,
+          auditLogChannel: null,
+          
+          // Welcome/Leave Settings
+          welcomeEnabled: false,
+          welcomeChannel: null,
+          welcomeMessage: "Welcome to {server}, {user}!",
+          leaveEnabled: false,
+          leaveChannel: null,
+          leaveMessage: "{user} has left the server.",
+          
+          // Role Settings
+          autoRoleEnabled: false,
+          autoRoleId: null,
+          mutedRoleId: null,
+          
+          // Economy Settings
+          economyEnabled: false,
+          dailyReward: 100,
+          
+          // Custom Commands
+          customCommandsEnabled: true,
+          maxCustomCommands: 20,
+        };
         
-        // Moderation Settings
-        moderationEnabled: true,
-        autoModEnabled: true,
-        spamProtection: true,
-        linkProtection: false,
-        profanityFilter: true,
-        
-        // Logging Settings
-        modLogChannel: null,
-        auditLogChannel: null,
-        
-        // Welcome/Leave Settings
-        welcomeEnabled: false,
-        welcomeChannel: null,
-        welcomeMessage: "Welcome to {server}, {user}!",
-        leaveEnabled: false,
-        leaveChannel: null,
-        leaveMessage: "{user} has left the server.",
-        
-        // Role Settings
-        autoRoleEnabled: false,
-        autoRoleId: null,
-        mutedRoleId: null,
-        
-        // Economy Settings
-        economyEnabled: false,
-        dailyReward: 100,
-        
-        // Custom Commands
-        customCommandsEnabled: true,
-        maxCustomCommands: 20,
-        
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        serverConfig = await storage.createServerConfig(defaultConfig);
+      }
       
       res.json(serverConfig);
     } catch (error) {
@@ -411,15 +414,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/servers/:guildId/config', requireAuth, requireGuildAdmin, async (req, res) => {
     const { guildId } = req.params;
-    const config = req.body;
+    const updates = req.body;
     
     try {
-      // This would update server-specific configuration in your database
-      // For now, just return the updated config
+      // Update server configuration in database
+      const updatedConfig = await storage.updateServerConfig(guildId, updates);
+      
       res.json({ 
         success: true, 
         message: 'Server configuration updated successfully',
-        config 
+        config: updatedConfig 
       });
     } catch (error) {
       console.error('Error updating server config:', error);
@@ -431,26 +435,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { guildId } = req.params;
     
     try {
-      // This would fetch custom commands from your database
-      const commands = [
-        {
-          id: 1,
-          guildId,
-          name: 'rules',
-          response: 'Please follow our server rules:\n1. Be respectful\n2. No spam\n3. Keep discussions on topic',
-          createdBy: req.session.user.id,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          guildId,
-          name: 'discord',
-          response: 'Join our Discord community at https://discord.gg/example',
-          createdBy: req.session.user.id,
-          createdAt: new Date().toISOString(),
-        }
-      ];
-      
+      // Fetch custom commands from database
+      const commands = await storage.getCustomCommands(guildId);
       res.json(commands);
     } catch (error) {
       console.error('Error fetching commands:', error);
@@ -463,15 +449,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { name, response } = req.body;
     
     try {
-      // This would create a new command in your database
-      const command = {
-        id: Date.now(), // Simple ID for demo
+      // Create a new command in database
+      const command = await storage.createCustomCommand({
         guildId,
         name,
         response,
         createdBy: req.session.user.id,
-        createdAt: new Date().toISOString(),
-      };
+      });
       
       res.status(201).json(command);
     } catch (error) {
@@ -484,8 +468,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { guildId, commandId } = req.params;
     
     try {
-      // This would delete the command from your database
-      res.json({ success: true, message: 'Command deleted successfully' });
+      // Delete the command from database
+      const deleted = await storage.deleteCustomCommand(parseInt(commandId));
+      
+      if (deleted) {
+        res.json({ success: true, message: 'Command deleted successfully' });
+      } else {
+        res.status(404).json({ error: 'Command not found' });
+      }
     } catch (error) {
       console.error('Error deleting command:', error);
       res.status(500).json({ error: 'Failed to delete command' });
