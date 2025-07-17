@@ -62,6 +62,14 @@ class SimpleNexGuard(commands.Bot):
         try:
             synced = await self.tree.sync()
             logger.info(f'Synced {len(synced)} slash commands globally')
+            
+            # Also sync for each guild for immediate availability
+            for guild in self.guilds:
+                try:
+                    guild_synced = await self.tree.sync(guild=guild)
+                    logger.info(f'Synced {len(guild_synced)} commands for guild: {guild.name}')
+                except Exception as guild_e:
+                    logger.error(f'Failed to sync commands for guild {guild.name}: {guild_e}')
         except Exception as e:
             logger.error(f'Failed to sync slash commands: {e}')
 
@@ -105,6 +113,140 @@ async def info_command(ctx):
     embed.add_field(name="Users", value=len(bot.users), inline=True)
     embed.add_field(name="Latency", value=f"{bot.latency*1000:.2f}ms", inline=True)
     await ctx.send(embed=embed)
+
+# Add slash commands
+@bot.tree.command(name='ping', description='Check if the bot is responsive')
+async def ping_slash(interaction: discord.Interaction):
+    """Ping slash command"""
+    await interaction.response.send_message('Pong! 🏓')
+
+@bot.tree.command(name='info', description='Get bot information')
+async def info_slash(interaction: discord.Interaction):
+    """Info slash command"""
+    embed = discord.Embed(
+        title="NexGuard Bot Info",
+        description="Simple Discord moderation bot",
+        color=0x00ff00
+    )
+    embed.add_field(name="Guilds", value=len(bot.guilds), inline=True)
+    embed.add_field(name="Users", value=len(bot.users), inline=True)
+    embed.add_field(name="Latency", value=f"{bot.latency*1000:.2f}ms", inline=True)
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name='ban', description='Ban a user from the server')
+async def ban_slash(interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
+    """Ban slash command"""
+    if not interaction.user.guild_permissions.ban_members:
+        await interaction.response.send_message("❌ You don't have permission to ban members!", ephemeral=True)
+        return
+    
+    try:
+        await user.ban(reason=reason)
+        embed = discord.Embed(
+            title="User Banned",
+            description=f"✅ {user.mention} has been banned from the server.",
+            color=0xff0000
+        )
+        embed.add_field(name="Reason", value=reason, inline=False)
+        embed.add_field(name="Banned by", value=interaction.user.mention, inline=True)
+        await interaction.response.send_message(embed=embed)
+    except discord.Forbidden:
+        await interaction.response.send_message("❌ I don't have permission to ban this user!", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error banning user: {str(e)}", ephemeral=True)
+
+@bot.tree.command(name='kick', description='Kick a user from the server')
+async def kick_slash(interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
+    """Kick slash command"""
+    if not interaction.user.guild_permissions.kick_members:
+        await interaction.response.send_message("❌ You don't have permission to kick members!", ephemeral=True)
+        return
+    
+    try:
+        await user.kick(reason=reason)
+        embed = discord.Embed(
+            title="User Kicked",
+            description=f"✅ {user.mention} has been kicked from the server.",
+            color=0xff9900
+        )
+        embed.add_field(name="Reason", value=reason, inline=False)
+        embed.add_field(name="Kicked by", value=interaction.user.mention, inline=True)
+        await interaction.response.send_message(embed=embed)
+    except discord.Forbidden:
+        await interaction.response.send_message("❌ I don't have permission to kick this user!", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error kicking user: {str(e)}", ephemeral=True)
+
+@bot.tree.command(name='mute', description='Timeout a user')
+async def mute_slash(interaction: discord.Interaction, user: discord.Member, duration: int = 60, reason: str = "No reason provided"):
+    """Mute/timeout slash command"""
+    if not interaction.user.guild_permissions.moderate_members:
+        await interaction.response.send_message("❌ You don't have permission to timeout members!", ephemeral=True)
+        return
+    
+    try:
+        import datetime
+        timeout_duration = datetime.timedelta(minutes=duration)
+        await user.timeout(timeout_duration, reason=reason)
+        embed = discord.Embed(
+            title="User Timed Out",
+            description=f"✅ {user.mention} has been timed out for {duration} minutes.",
+            color=0xffff00
+        )
+        embed.add_field(name="Reason", value=reason, inline=False)
+        embed.add_field(name="Timed out by", value=interaction.user.mention, inline=True)
+        await interaction.response.send_message(embed=embed)
+    except discord.Forbidden:
+        await interaction.response.send_message("❌ I don't have permission to timeout this user!", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error timing out user: {str(e)}", ephemeral=True)
+
+@bot.tree.command(name='unmute', description='Remove timeout from a user')
+async def unmute_slash(interaction: discord.Interaction, user: discord.Member):
+    """Unmute slash command"""
+    if not interaction.user.guild_permissions.moderate_members:
+        await interaction.response.send_message("❌ You don't have permission to remove timeouts!", ephemeral=True)
+        return
+    
+    try:
+        await user.timeout(None)
+        embed = discord.Embed(
+            title="User Timeout Removed",
+            description=f"✅ {user.mention}'s timeout has been removed.",
+            color=0x00ff00
+        )
+        embed.add_field(name="Removed by", value=interaction.user.mention, inline=True)
+        await interaction.response.send_message(embed=embed)
+    except discord.Forbidden:
+        await interaction.response.send_message("❌ I don't have permission to remove timeout from this user!", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Error removing timeout: {str(e)}", ephemeral=True)
+
+@bot.tree.command(name='purge', description='Delete multiple messages')
+async def purge_slash(interaction: discord.Interaction, amount: int):
+    """Purge slash command"""
+    if not interaction.user.guild_permissions.manage_messages:
+        await interaction.response.send_message("❌ You don't have permission to manage messages!", ephemeral=True)
+        return
+    
+    if amount < 1 or amount > 100:
+        await interaction.response.send_message("❌ Amount must be between 1 and 100!", ephemeral=True)
+        return
+    
+    try:
+        await interaction.response.defer()
+        deleted = await interaction.channel.purge(limit=amount)
+        embed = discord.Embed(
+            title="Messages Purged",
+            description=f"✅ Deleted {len(deleted)} messages.",
+            color=0x0099ff
+        )
+        embed.add_field(name="Purged by", value=interaction.user.mention, inline=True)
+        await interaction.followup.send(embed=embed)
+    except discord.Forbidden:
+        await interaction.followup.send("❌ I don't have permission to delete messages!", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"❌ Error purging messages: {str(e)}", ephemeral=True)
 
 async def main():
     """Main function to start the bot"""

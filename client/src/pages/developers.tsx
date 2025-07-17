@@ -39,7 +39,7 @@ const Developers = memo(function Developers() {
           description="The talented team behind NexGuard, dedicated to creating the best Discord moderation experience."
         />
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="flex justify-center max-w-6xl mx-auto">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={i} className="bg-[hsl(var(--nexguard-dark))]/50 backdrop-blur-sm border-[hsl(var(--nexguard-cyan))]/20">
