@@ -1109,6 +1109,93 @@ export class DirectBotStarter {
               required: true
             }
           ]
+        },
+        // Auto-Reply System Commands
+        {
+          name: 'autoreply-create',
+          description: 'Create a new auto-reply rule',
+          options: [
+            {
+              name: 'name',
+              description: 'Name for the auto-reply rule',
+              type: 3,
+              required: true
+            },
+            {
+              name: 'keywords',
+              description: 'Keywords to trigger response (comma-separated)',
+              type: 3,
+              required: true
+            },
+            {
+              name: 'response',
+              description: 'Response message',
+              type: 3,
+              required: true
+            },
+            {
+              name: 'match-type',
+              description: 'How to match keywords',
+              type: 3,
+              required: true,
+              choices: [
+                { name: 'contains', value: 'contains' },
+                { name: 'exact', value: 'exact' },
+                { name: 'starts_with', value: 'starts_with' },
+                { name: 'ends_with', value: 'ends_with' }
+              ]
+            },
+            {
+              name: 'cooldown',
+              description: 'Cooldown in seconds (default: 60)',
+              type: 4,
+              required: false
+            }
+          ]
+        },
+        {
+          name: 'autoreply-list',
+          description: 'View all auto-reply rules',
+        },
+        {
+          name: 'autoreply-toggle',
+          description: 'Enable or disable an auto-reply rule',
+          options: [
+            {
+              name: 'id',
+              description: 'Rule ID to toggle',
+              type: 4,
+              required: true
+            }
+          ]
+        },
+        {
+          name: 'autoreply-delete',
+          description: 'Delete an auto-reply rule',
+          options: [
+            {
+              name: 'id',
+              description: 'Rule ID to delete',
+              type: 4,
+              required: true
+            }
+          ]
+        },
+        {
+          name: 'autoreply-stats',
+          description: 'View auto-reply usage statistics',
+        },
+        {
+          name: 'autoreply-test',
+          description: 'Test if a message would trigger auto-reply',
+          options: [
+            {
+              name: 'message',
+              description: 'Message to test',
+              type: 3,
+              required: true
+            }
+          ]
         }
       ];
 
@@ -1144,6 +1231,7 @@ export class DirectBotStarter {
               { name: 'Utility', value: '`/userinfo` `/serverinfo` `/avatar` `/roleinfo`', inline: false },
               { name: 'Systems', value: '`/welcome` `/ticket` `/balance` `/daily` `/leaderboard`', inline: false },
               { name: 'Management', value: '`/customcmd` `/config` `/lockdown` `/unlockdown`', inline: false },
+              { name: 'Auto-Reply', value: '`/autoreply-create` `/autoreply-list` `/autoreply-toggle` `/autoreply-delete` `/autoreply-stats` `/autoreply-test`', inline: false },
               { name: 'Fun', value: '`/poll` `/announce`', inline: false }
             ],
             footer: { text: 'Visit https://nexguard.replit.app for more information!' }
@@ -1224,6 +1312,20 @@ export class DirectBotStarter {
         } else if (commandName === 'announce') {
           const message = interaction.options.getString('message');
           await interaction.reply(`📢 **Announcement:** ${message}`);
+        
+        // Auto-Reply Commands
+        } else if (commandName === 'autoreply-create') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to configure auto-reply rules.');
+        } else if (commandName === 'autoreply-list') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to view auto-reply rules.');
+        } else if (commandName === 'autoreply-toggle') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to manage auto-reply rules.');
+        } else if (commandName === 'autoreply-delete') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to delete auto-reply rules.');
+        } else if (commandName === 'autoreply-stats') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to view auto-reply statistics.');
+        } else if (commandName === 'autoreply-test') {
+          await interaction.reply('⚠️ Auto-reply system is currently under development. Please use the dashboard at https://nexguard.replit.app to test auto-reply rules.');
         
         } else {
           await interaction.reply('Unknown command. Use `/help` to see all available commands.');

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
+import { insertTestimonialSchema, insertFeedbackSchema, insertAutoreplyRuleSchema } from "@shared/schema";
 import { directBotStarter } from "./direct-bot-starter";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -805,6 +805,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       status: "active",
       version: "2.3.2"
     });
+  });
+
+  // Auto-reply management endpoints
+  app.get("/api/servers/:guildId/autoreply", requireAuth, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const rules = await storage.getAutoreplyRules(guildId);
+      res.json(rules);
+    } catch (error) {
+      console.error('Error fetching auto-reply rules:', error);
+      res.status(500).json({ error: 'Failed to fetch auto-reply rules' });
+    }
+  });
+
+  app.post("/api/servers/:guildId/autoreply", requireAuth, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const ruleData = insertAutoreplyRuleSchema.parse({ ...req.body, guildId });
+      const rule = await storage.createAutoreplyRule(ruleData);
+      res.json(rule);
+    } catch (error) {
+      console.error('Error creating auto-reply rule:', error);
+      res.status(500).json({ error: 'Failed to create auto-reply rule' });
+    }
+  });
+
+  app.put("/api/servers/:guildId/autoreply/:ruleId", requireAuth, async (req, res) => {
+    try {
+      const { ruleId } = req.params;
+      const rule = await storage.updateAutoreplyRule(parseInt(ruleId), req.body);
+      res.json(rule);
+    } catch (error) {
+      console.error('Error updating auto-reply rule:', error);
+      res.status(500).json({ error: 'Failed to update auto-reply rule' });
+    }
+  });
+
+  app.delete("/api/servers/:guildId/autoreply/:ruleId", requireAuth, async (req, res) => {
+    try {
+      const { ruleId } = req.params;
+      const success = await storage.deleteAutoreplyRule(parseInt(ruleId));
+      res.json({ success });
+    } catch (error) {
+      console.error('Error deleting auto-reply rule:', error);
+      res.status(500).json({ error: 'Failed to delete auto-reply rule' });
+    }
+  });
+
+  app.post("/api/servers/:guildId/autoreply/:ruleId/toggle", requireAuth, async (req, res) => {
+    try {
+      const { ruleId } = req.params;
+      const rule = await storage.toggleAutoreplyRule(parseInt(ruleId));
+      res.json(rule);
+    } catch (error) {
+      console.error('Error toggling auto-reply rule:', error);
+      res.status(500).json({ error: 'Failed to toggle auto-reply rule' });
+    }
+  });
+
+  app.get("/api/servers/:guildId/autoreply/:ruleId/stats", requireAuth, async (req, res) => {
+    try {
+      const { guildId, ruleId } = req.params;
+      const stats = await storage.getAutoreplyStats(guildId, parseInt(ruleId));
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching auto-reply stats:', error);
+      res.status(500).json({ error: 'Failed to fetch auto-reply stats' });
+    }
+  });
+
+  app.get("/api/servers/:guildId/autoreply/stats", requireAuth, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const stats = await storage.getAutoreplyStats(guildId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching auto-reply stats:', error);
+      res.status(500).json({ error: 'Failed to fetch auto-reply stats' });
+    }
   });
 
   // API routes for NexGuard website

@@ -68,6 +68,38 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Auto-Reply System Tables
+export const autoreplyRules = pgTable("autoreply_rules", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  name: text("name").notNull(),
+  keywords: text("keywords").notNull(),
+  responseData: text("response_data").notNull(),
+  matchType: text("match_type").notNull(), // contains, exact, starts_with, ends_with
+  enabled: boolean("enabled").default(true).notNull(),
+  cooldown: integer("cooldown").default(60).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const autoreplyCooldowns = pgTable("autoreply_cooldowns", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  ruleId: integer("rule_id").notNull().references(() => autoreplyRules.id),
+  userId: text("user_id").notNull(),
+  channelId: text("channel_id").notNull(),
+  lastTriggered: timestamp("last_triggered").defaultNow().notNull(),
+});
+
+export const autoreplyStats = pgTable("autoreply_stats", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  ruleId: integer("rule_id").notNull().references(() => autoreplyRules.id),
+  userId: text("user_id").notNull(),
+  channelId: text("channel_id").notNull(),
+  triggeredAt: timestamp("triggered_at").defaultNow().notNull(),
+});
+
 export const serverConfigs = pgTable("server_configs", {
   id: serial("id").primaryKey(),
   guildId: text("guild_id").notNull().unique(),
@@ -188,6 +220,22 @@ export const insertCustomCommandSchema = createInsertSchema(customCommands).omit
   createdAt: true,
 });
 
+export const insertAutoreplyRuleSchema = createInsertSchema(autoreplyRules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAutoreplyCooldownSchema = createInsertSchema(autoreplyCooldowns).omit({
+  id: true,
+  lastTriggered: true,
+});
+
+export const insertAutoreplyStatSchema = createInsertSchema(autoreplyStats).omit({
+  id: true,
+  triggeredAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type NewsUpdate = typeof newsUpdates.$inferSelect;
@@ -197,6 +245,9 @@ export type Testimonial = typeof testimonials.$inferSelect;
 export type Feedback = typeof feedback.$inferSelect;
 export type ServerConfig = typeof serverConfigs.$inferSelect;
 export type CustomCommand = typeof customCommands.$inferSelect;
+export type AutoreplyRule = typeof autoreplyRules.$inferSelect;
+export type AutoreplyCooldown = typeof autoreplyCooldowns.$inferSelect;
+export type AutoreplyStats = typeof autoreplyStats.$inferSelect;
 export type InsertNewsUpdate = z.infer<typeof insertNewsUpdateSchema>;
 export type InsertDeveloper = z.infer<typeof insertDeveloperSchema>;
 export type InsertFeature = z.infer<typeof insertFeatureSchema>;
@@ -204,3 +255,6 @@ export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 export type InsertServerConfig = z.infer<typeof insertServerConfigSchema>;
 export type InsertCustomCommand = z.infer<typeof insertCustomCommandSchema>;
+export type InsertAutoreplyRule = z.infer<typeof insertAutoreplyRuleSchema>;
+export type InsertAutoreplyCooldown = z.infer<typeof insertAutoreplyCooldownSchema>;
+export type InsertAutoreplyStats = z.infer<typeof insertAutoreplyStatSchema>;

@@ -1,4 +1,4 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, serverConfigs, customCommands, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type ServerConfig, type InsertServerConfig, type CustomCommand, type InsertCustomCommand } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, serverConfigs, customCommands, autoreplyRules, autoreplyCooldowns, autoreplyStats, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type ServerConfig, type InsertServerConfig, type CustomCommand, type InsertCustomCommand, type AutoreplyRule, type InsertAutoreplyRule, type AutoreplyCooldown, type InsertAutoreplyCooldown, type AutoreplyStats, type InsertAutoreplyStats } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -23,6 +23,22 @@ export interface IStorage {
   createCustomCommand(command: InsertCustomCommand): Promise<CustomCommand>;
   updateCustomCommand(id: number, command: Partial<CustomCommand>): Promise<CustomCommand>;
   deleteCustomCommand(id: number): Promise<boolean>;
+  
+  // Auto-reply methods
+  getAutoreplyRules(guildId: string): Promise<AutoreplyRule[]>;
+  createAutoreplyRule(rule: InsertAutoreplyRule): Promise<AutoreplyRule>;
+  updateAutoreplyRule(id: number, rule: Partial<AutoreplyRule>): Promise<AutoreplyRule>;
+  deleteAutoreplyRule(id: number): Promise<boolean>;
+  toggleAutoreplyRule(id: number): Promise<AutoreplyRule>;
+  
+  // Auto-reply cooldown methods
+  getAutoreplyCooldown(guildId: string, ruleId: number, userId: string, channelId: string): Promise<AutoreplyCooldown | undefined>;
+  createAutoreplyCooldown(cooldown: InsertAutoreplyCooldown): Promise<AutoreplyCooldown>;
+  updateAutoreplyCooldown(id: number, cooldown: Partial<AutoreplyCooldown>): Promise<AutoreplyCooldown>;
+  
+  // Auto-reply stats methods
+  getAutoreplyStats(guildId: string, ruleId?: number): Promise<AutoreplyStats[]>;
+  createAutoreplyStats(stats: InsertAutoreplyStats): Promise<AutoreplyStats>;
 }
 
 export class MemStorage implements IStorage {
@@ -420,6 +436,82 @@ export class DatabaseStorage implements IStorage {
   async deleteCustomCommand(id: number): Promise<boolean> {
     const result = await db.delete(customCommands).where(eq(customCommands.id, id));
     return result.rowCount > 0;
+  }
+
+  // Auto-reply methods implementation
+  async getAutoreplyRules(guildId: string): Promise<AutoreplyRule[]> {
+    return await db.select().from(autoreplyRules).where(eq(autoreplyRules.guildId, guildId));
+  }
+
+  async createAutoreplyRule(rule: InsertAutoreplyRule): Promise<AutoreplyRule> {
+    const [newRule] = await db.insert(autoreplyRules).values(rule).returning();
+    return newRule;
+  }
+
+  async updateAutoreplyRule(id: number, rule: Partial<AutoreplyRule>): Promise<AutoreplyRule> {
+    const [updatedRule] = await db
+      .update(autoreplyRules)
+      .set({ ...rule, updatedAt: new Date() })
+      .where(eq(autoreplyRules.id, id))
+      .returning();
+    return updatedRule;
+  }
+
+  async deleteAutoreplyRule(id: number): Promise<boolean> {
+    const result = await db.delete(autoreplyRules).where(eq(autoreplyRules.id, id));
+    return result.rowCount > 0;
+  }
+
+  async toggleAutoreplyRule(id: number): Promise<AutoreplyRule> {
+    const [rule] = await db.select().from(autoreplyRules).where(eq(autoreplyRules.id, id));
+    if (!rule) {
+      throw new Error('Auto-reply rule not found');
+    }
+    
+    const [updatedRule] = await db
+      .update(autoreplyRules)
+      .set({ enabled: !rule.enabled, updatedAt: new Date() })
+      .where(eq(autoreplyRules.id, id))
+      .returning();
+    return updatedRule;
+  }
+
+  async getAutoreplyCooldown(guildId: string, ruleId: number, userId: string, channelId: string): Promise<AutoreplyCooldown | undefined> {
+    const [cooldown] = await db.select().from(autoreplyCooldowns)
+      .where(eq(autoreplyCooldowns.guildId, guildId))
+      .where(eq(autoreplyCooldowns.ruleId, ruleId))
+      .where(eq(autoreplyCooldowns.userId, userId))
+      .where(eq(autoreplyCooldowns.channelId, channelId));
+    return cooldown;
+  }
+
+  async createAutoreplyCooldown(cooldown: InsertAutoreplyCooldown): Promise<AutoreplyCooldown> {
+    const [newCooldown] = await db.insert(autoreplyCooldowns).values(cooldown).returning();
+    return newCooldown;
+  }
+
+  async updateAutoreplyCooldown(id: number, cooldown: Partial<AutoreplyCooldown>): Promise<AutoreplyCooldown> {
+    const [updatedCooldown] = await db
+      .update(autoreplyCooldowns)
+      .set(cooldown)
+      .where(eq(autoreplyCooldowns.id, id))
+      .returning();
+    return updatedCooldown;
+  }
+
+  async getAutoreplyStats(guildId: string, ruleId?: number): Promise<AutoreplyStats[]> {
+    let query = db.select().from(autoreplyStats).where(eq(autoreplyStats.guildId, guildId));
+    
+    if (ruleId) {
+      query = query.where(eq(autoreplyStats.ruleId, ruleId));
+    }
+    
+    return await query.orderBy(desc(autoreplyStats.triggeredAt));
+  }
+
+  async createAutoreplyStats(stats: InsertAutoreplyStats): Promise<AutoreplyStats> {
+    const [newStats] = await db.insert(autoreplyStats).values(stats).returning();
+    return newStats;
   }
 }
 
