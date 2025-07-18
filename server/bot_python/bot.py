@@ -117,6 +117,7 @@ class NexGuardBot(commands.Bot):
         
         # Check if bot is mentioned
         if self.user in message.mentions:
+            logger.info(f"🔥 Bot mentioned by {message.author.name} - showing enhanced bio")
             latency = round(self.latency * 1000)
             
             embed = discord.Embed(
@@ -167,6 +168,7 @@ class NexGuardBot(commands.Bot):
             await message.reply(response)
             return
         
+        # Only process auto-replies and other commands if bot wasn't mentioned
         # Check for auto-replies
         autoreply_cog = self.get_cog('AutoReply')
         if autoreply_cog:
