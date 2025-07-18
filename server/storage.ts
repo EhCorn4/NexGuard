@@ -331,6 +331,17 @@ export class MemStorage implements IStorage {
 
   // Bot-related methods
   async getBotStatus(): Promise<BotStatus | null> {
+    try {
+      // Try to get from database first (live data from Python bot)
+      const result = await db.select().from(botStatus).limit(1);
+      if (result[0]) {
+        return result[0];
+      }
+    } catch (error) {
+      console.error("Failed to fetch bot status from database:", error);
+    }
+    
+    // Fallback to in-memory data
     return this.botStatusData.get(1) || null;
   }
 
