@@ -16,8 +16,8 @@ This is a comprehensive NexGuard Discord bot with a professional website showcas
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Bot Framework**: Discord.js v14 with slash commands
+- **Database**: PostgreSQL with asyncpg
+- **Bot Framework**: Discord.py v2 with slash commands
 - **Development**: Hot reload with Vite middleware integration
 - **API Structure**: RESTful endpoints for content management and bot data
 - **Bot Features**: Admin, moderation, ticket, and utility commands
@@ -145,7 +145,7 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Complete NexGuard Discord bot implementation with full functionality
 - July 18, 2025: Added comprehensive command system (admin, moderation, ticket, utility)
 - July 18, 2025: Implemented live bot status monitoring and statistics
-- July 18, 2025: Added PostgreSQL database integration with Drizzle ORM
+- July 18, 2025: Added PostgreSQL database integration with asyncpg
 - July 18, 2025: Created interactive documentation with command reference
 - July 18, 2025: Added ticket system with categories and priority management
 - July 18, 2025: Implemented moderation logging and user management
@@ -167,6 +167,11 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Enhanced moderation commands to automatically populate banlist and warning history
 - July 18, 2025: Created complete ban tracking with appeal system, search functionality, and history management
 - July 18, 2025: Implemented warning points system with automatic severity detection
+- July 18, 2025: **MAJOR ARCHITECTURE CHANGE** - Converted Discord bot from Node.js/Discord.js to Python/Discord.py
+- July 18, 2025: Rebuilt all bot commands in Python with async/await patterns and proper error handling
+- July 18, 2025: Updated database integration to use asyncpg for better performance and reliability
+- July 18, 2025: Enhanced bot startup process with automatic restart on failure
+- July 18, 2025: Improved command structure with proper Discord.py app_commands integration
 
 ## User Preferences
 

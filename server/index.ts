@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { NexGuardBot } from "./bot/index";
+// import { NexGuardBot } from "./bot/index";
+import { spawn } from 'child_process';
 
 const app = express();
 app.use(express.json());
@@ -71,9 +72,30 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Start the Discord bot
-  const bot = new NexGuardBot();
-  await bot.start();
+  // Start the Python Discord bot
+  let pythonBot: any = null;
+  
+  function startPythonBot() {
+    console.log('🚀 Starting Python NexGuard Bot...');
+    pythonBot = spawn('python', ['server/bot_python/run.py'], {
+      stdio: 'inherit',
+      env: process.env
+    });
+    
+    pythonBot.on('close', (code: number) => {
+      console.log(`Python bot process exited with code ${code}`);
+      if (code !== 0) {
+        console.log('Restarting Python bot in 5 seconds...');
+        setTimeout(startPythonBot, 5000);
+      }
+    });
+    
+    pythonBot.on('error', (error: Error) => {
+      console.error('Python bot error:', error);
+    });
+  }
+  
+  startPythonBot();
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
@@ -90,13 +112,17 @@ app.use((req, res, next) => {
   // Graceful shutdown
   process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down gracefully...');
-    await bot.stop();
+    if (pythonBot) {
+      pythonBot.kill('SIGINT');
+    }
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
     console.log('\n🛑 Shutting down gracefully...');
-    await bot.stop();
+    if (pythonBot) {
+      pythonBot.kill('SIGTERM');
+    }
     process.exit(0);
   });
 })();

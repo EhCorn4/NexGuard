@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+
+import discord
+from discord.ext import commands, tasks
+import asyncio
+import asyncpg
+import os
+import json
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class NexGuardBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.default()
+        intents.message_content = True
+        intents.members = True
+        
+        super().__init__(
+            command_prefix='!',
+            intents=intents,
+            help_command=None,
+            case_insensitive=True
+        )
+        
+        self.db_pool = None
+        self.bot_start_time = datetime.utcnow()
+        
+    async def setup_hook(self):
+        """Called when the bot is starting up"""
+        await self.setup_database()
+        await self.load_extensions()
+        
+        # Start background tasks
+        self.update_bot_status.start()
+        
+        # Sync commands
+        try:
+            synced = await self.tree.sync()
+            logger.info(f"Synced {len(synced)} command(s)")
+        except Exception as e:
+            logger.error(f"Failed to sync commands: {e}")
+    
+    async def setup_database(self):
+        """Setup database connection pool"""
+        try:
+            self.db_pool = await asyncpg.create_pool(
+                os.getenv('DATABASE_URL'),
+                min_size=1,
+                max_size=10,
+                command_timeout=60
+            )
+            logger.info("Database connection pool established")
+        except Exception as e:
+            logger.error(f"Failed to setup database: {e}")
+    
+    async def load_extensions(self):
+        """Load all command extensions"""
+        extensions = [
+            'server.bot_python.commands.admin',
+            'server.bot_python.commands.moderation', 
+            'server.bot_python.commands.utility',
+            'server.bot_python.commands.tickets'
+        ]
+        
+        for extension in extensions:
+            try:
+                await self.load_extension(extension)
+                logger.info(f"Loaded extension: {extension}")
+            except Exception as e:
+                logger.error(f"Failed to load extension {extension}: {e}")
+    
+    async def on_ready(self):
+        """Called when bot is ready"""
+        logger.info(f'✅ {self.user} is online!')
+        logger.info(f'Bot ID: {self.user.id}')
+        logger.info(f'Connected to {len(self.guilds)} guilds')
+        
+        # Update bot status in database
+        await self.update_status_in_db()
+    
+    async def on_guild_join(self, guild):
+        """Called when bot joins a guild"""
+        await self.handle_guild_join(guild)
+    
+    async def on_guild_remove(self, guild):
+        """Called when bot leaves a guild"""
+        await self.handle_guild_leave(guild)
+    
+    async def on_member_join(self, member):
+        """Called when a member joins a guild"""
+        await self.handle_welcome_message(member)
+    
+    async def handle_guild_join(self, guild):
+        """Handle bot joining a guild"""
+        if not self.db_pool:
+            return
+            
+        try:
+            async with self.db_pool.acquire() as conn:
+                await conn.execute("""
+                    INSERT INTO guilds (id, name, member_count, joined_at, updated_at)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        member_count = EXCLUDED.member_count,
+                        updated_at = EXCLUDED.updated_at
+                """, guild.id, guild.name, guild.member_count, datetime.utcnow(), datetime.utcnow())
+                
+                logger.info(f"Registered guild: {guild.name} ({guild.id})")
+        except Exception as e:
+            logger.error(f"Failed to register guild: {e}")
+    
+    async def handle_guild_leave(self, guild):
+        """Handle bot leaving a guild"""
+        if not self.db_pool:
+            return
+            
+        try:
+            async with self.db_pool.acquire() as conn:
+                await conn.execute("""
+                    UPDATE guilds SET updated_at = $1 WHERE id = $2
+                """, datetime.utcnow(), guild.id)
+                
+                logger.info(f"Updated guild leave: {guild.name} ({guild.id})")
+        except Exception as e:
+            logger.error(f"Failed to update guild leave: {e}")
+    
+    async def handle_welcome_message(self, member):
+        """Handle welcome message for new members"""
+        if not self.db_pool:
+            return
+            
+        try:
+            async with self.db_pool.acquire() as conn:
+                # Get guild welcome settings
+                settings = await conn.fetchrow("""
+                    SELECT welcome_channel_id, welcome_message 
+                    FROM guilds WHERE id = $1
+                """, str(member.guild.id))
+                
+                if not settings or not settings['welcome_channel_id']:
+                    return
+                
+                channel = self.get_channel(int(settings['welcome_channel_id']))
+                if not channel:
+                    return
+                
+                # Replace placeholders in welcome message
+                message = settings['welcome_message'] or "Welcome {user.mention} to {guild.name}!"
+                message = message.replace("{user.mention}", member.mention)
+                message = message.replace("{user.name}", member.name)
+                message = message.replace("{guild.name}", member.guild.name)
+                message = message.replace("{member.count}", str(member.guild.member_count))
+                
+                await channel.send(message)
+                logger.info(f"Sent welcome message for {member.name} in {member.guild.name}")
+                
+        except Exception as e:
+            logger.error(f"Failed to send welcome message: {e}")
+    
+    @tasks.loop(seconds=30)
+    async def update_bot_status(self):
+        """Update bot status every 30 seconds"""
+        await self.update_status_in_db()
+    
+    async def update_status_in_db(self):
+        """Update bot status in database"""
+        if not self.db_pool:
+            return
+            
+        try:
+            # Calculate uptime
+            uptime = datetime.utcnow() - self.bot_start_time
+            uptime_str = str(uptime).split('.')[0]  # Remove microseconds
+            
+            async with self.db_pool.acquire() as conn:
+                await conn.execute("""
+                    UPDATE bot_status SET
+                        is_online = $1,
+                        guilds_count = $2,
+                        users_count = $3,
+                        uptime = $4,
+                        updated_at = $5
+                    WHERE id = 1
+                """, True, len(self.guilds), sum(guild.member_count for guild in self.guilds), 
+                uptime_str, datetime.utcnow())
+                
+                logger.info(f"📊 Bot status updated: Online=True, Guilds={len(self.guilds)}, Users={sum(guild.member_count for guild in self.guilds)}")
+        except Exception as e:
+            logger.error(f"Failed to update bot status: {e}")
+    
+    async def get_guild_config(self, guild_id: str) -> Dict[str, Any]:
+        """Get guild configuration from database"""
+        if not self.db_pool:
+            return {}
+            
+        try:
+            async with self.db_pool.acquire() as conn:
+                config = await conn.fetchrow("""
+                    SELECT * FROM guilds WHERE id = $1
+                """, guild_id)
+                
+                if config:
+                    return dict(config)
+                else:
+                    # Create default config
+                    await conn.execute("""
+                        INSERT INTO guilds (id, name, settings)
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT (id) DO NOTHING
+                    """, guild_id, "Unknown", json.dumps({}))
+                    return {}
+        except Exception as e:
+            logger.error(f"Failed to get guild config: {e}")
+            return {}
+    
+    async def update_guild_config(self, guild_id: str, **kwargs):
+        """Update guild configuration in database"""
+        if not self.db_pool:
+            return
+            
+        try:
+            async with self.db_pool.acquire() as conn:
+                # Build update query dynamically
+                set_clauses = []
+                values = []
+                param_count = 1
+                
+                for key, value in kwargs.items():
+                    set_clauses.append(f"{key} = ${param_count}")
+                    values.append(value)
+                    param_count += 1
+                
+                set_clauses.append(f"updated_at = ${param_count}")
+                values.append(datetime.utcnow())
+                values.append(guild_id)
+                
+                query = f"""
+                    UPDATE guilds SET {', '.join(set_clauses)}
+                    WHERE id = ${param_count + 1}
+                """
+                
+                await conn.execute(query, *values)
+                logger.info(f"Updated guild config for {guild_id}")
+        except Exception as e:
+            logger.error(f"Failed to update guild config: {e}")
+    
+    async def close(self):
+        """Cleanup when bot shuts down"""
+        if self.db_pool:
+            await self.db_pool.close()
+        await super().close()
+
+# Global bot instance
+bot = NexGuardBot()
+
+async def main():
+    """Main entry point"""
+    discord_token = os.getenv('DISCORD_TOKEN')
+    if not discord_token:
+        logger.error("DISCORD_TOKEN environment variable not set")
+        return
+    
+    try:
+        await bot.start(discord_token)
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.error(f"Bot crashed: {e}")
+    finally:
+        await bot.close()
+
+if __name__ == "__main__":
+    asyncio.run(main())

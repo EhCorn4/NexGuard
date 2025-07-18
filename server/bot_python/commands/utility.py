@@ -1,0 +1,240 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+import logging
+from datetime import datetime
+import platform
+import psutil
+import os
+
+logger = logging.getLogger(__name__)
+
+class UtilityCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    
+    @app_commands.command(name="ping", description="Check the bot's latency")
+    async def ping(self, interaction: discord.Interaction):
+        """Check the bot's latency"""
+        latency = round(self.bot.latency * 1000)
+        
+        embed = discord.Embed(
+            title="🏓 Pong!",
+            description=f"Bot latency: **{latency}ms**",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="userinfo", description="Get information about a user")
+    @app_commands.describe(user="The user to get information about")
+    async def userinfo(self, interaction: discord.Interaction, user: discord.Member = None):
+        """Get information about a user"""
+        if user is None:
+            user = interaction.user
+        
+        embed = discord.Embed(
+            title=f"👤 User Information - {user.name}",
+            color=user.color if user.color != discord.Color.default() else 0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.set_thumbnail(url=user.display_avatar.url)
+        
+        embed.add_field(name="Username", value=user.name, inline=True)
+        embed.add_field(name="Display Name", value=user.display_name, inline=True)
+        embed.add_field(name="ID", value=user.id, inline=True)
+        
+        embed.add_field(name="Bot", value="Yes" if user.bot else "No", inline=True)
+        embed.add_field(name="Account Created", value=discord.utils.format_dt(user.created_at, "F"), inline=True)
+        embed.add_field(name="Joined Server", value=discord.utils.format_dt(user.joined_at, "F") if user.joined_at else "Unknown", inline=True)
+        
+        roles = [role.mention for role in user.roles[1:]]  # Skip @everyone
+        embed.add_field(name=f"Roles ({len(roles)})", value=" ".join(roles) if roles else "None", inline=False)
+        
+        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="serverinfo", description="Get information about the server")
+    async def serverinfo(self, interaction: discord.Interaction):
+        """Get information about the server"""
+        guild = interaction.guild
+        
+        embed = discord.Embed(
+            title=f"🏠 Server Information - {guild.name}",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        
+        embed.add_field(name="Server Name", value=guild.name, inline=True)
+        embed.add_field(name="Server ID", value=guild.id, inline=True)
+        embed.add_field(name="Owner", value=guild.owner.mention if guild.owner else "Unknown", inline=True)
+        
+        embed.add_field(name="Created", value=discord.utils.format_dt(guild.created_at, "F"), inline=True)
+        embed.add_field(name="Members", value=guild.member_count, inline=True)
+        embed.add_field(name="Verification Level", value=guild.verification_level.name.title(), inline=True)
+        
+        embed.add_field(name="Text Channels", value=len(guild.text_channels), inline=True)
+        embed.add_field(name="Voice Channels", value=len(guild.voice_channels), inline=True)
+        embed.add_field(name="Roles", value=len(guild.roles), inline=True)
+        
+        embed.add_field(name="Boost Level", value=guild.premium_tier, inline=True)
+        embed.add_field(name="Boost Count", value=guild.premium_subscription_count, inline=True)
+        embed.add_field(name="File Size Limit", value=f"{guild.filesize_limit // 1024 // 1024}MB", inline=True)
+        
+        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="avatar", description="Get a user's avatar")
+    @app_commands.describe(user="The user to get the avatar of")
+    async def avatar(self, interaction: discord.Interaction, user: discord.Member = None):
+        """Get a user's avatar"""
+        if user is None:
+            user = interaction.user
+        
+        embed = discord.Embed(
+            title=f"🖼️ Avatar - {user.name}",
+            color=user.color if user.color != discord.Color.default() else 0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.set_image(url=user.display_avatar.url)
+        embed.add_field(name="Download Links", value=f"[PNG]({user.display_avatar.with_format('png').url}) | [JPG]({user.display_avatar.with_format('jpg').url}) | [WEBP]({user.display_avatar.with_format('webp').url})", inline=False)
+        
+        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="botstats", description="Get bot statistics")
+    async def botstats(self, interaction: discord.Interaction):
+        """Get bot statistics"""
+        # Get system info
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # Calculate uptime
+        uptime = datetime.utcnow() - self.bot.bot_start_time
+        uptime_str = str(uptime).split('.')[0]  # Remove microseconds
+        
+        embed = discord.Embed(
+            title="🤖 Bot Statistics",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.add_field(name="Servers", value=len(self.bot.guilds), inline=True)
+        embed.add_field(name="Users", value=sum(guild.member_count for guild in self.bot.guilds), inline=True)
+        embed.add_field(name="Channels", value=sum(len(guild.channels) for guild in self.bot.guilds), inline=True)
+        
+        embed.add_field(name="Uptime", value=uptime_str, inline=True)
+        embed.add_field(name="Latency", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
+        embed.add_field(name="Python Version", value=platform.python_version(), inline=True)
+        
+        embed.add_field(name="CPU Usage", value=f"{cpu_percent}%", inline=True)
+        embed.add_field(name="Memory Usage", value=f"{memory.percent}%", inline=True)
+        embed.add_field(name="Disk Usage", value=f"{disk.percent}%", inline=True)
+        
+        embed.set_footer(text=f"NexGuard v2.3.2 | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="help", description="Get help with bot commands")
+    @app_commands.describe(command="Get detailed help for a specific command")
+    async def help(self, interaction: discord.Interaction, command: str = None):
+        """Get help with bot commands"""
+        if command:
+            # Get specific command help
+            cmd = self.bot.tree.get_command(command)
+            if cmd:
+                embed = discord.Embed(
+                    title=f"📖 Help - /{command}",
+                    description=cmd.description,
+                    color=0x00FFFF,
+                    timestamp=datetime.utcnow()
+                )
+                
+                if hasattr(cmd, 'parameters') and cmd.parameters:
+                    params = []
+                    for param in cmd.parameters:
+                        required = "Required" if param.required else "Optional"
+                        params.append(f"`{param.name}` - {param.description} ({required})")
+                    embed.add_field(name="Parameters", value="\n".join(params), inline=False)
+                
+                await interaction.response.send_message(embed=embed)
+            else:
+                await interaction.response.send_message(f"❌ Command `{command}` not found.", ephemeral=True)
+        else:
+            # General help
+            embed = discord.Embed(
+                title="📖 NexGuard Help",
+                description="Here are the available command categories:",
+                color=0x00FFFF,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="🔧 Admin Commands",
+                value="`/setprefix` `/configure` `/welcome` `/settings`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🛡️ Moderation Commands", 
+                value="`/ban` `/kick` `/warn` `/timeout` `/unban` `/purge`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🎫 Ticket Commands",
+                value="`/ticket` `/ticketinfo` `/ticketmanage`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🔍 Utility Commands",
+                value="`/ping` `/userinfo` `/serverinfo` `/avatar` `/botstats`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="Need more help?",
+                value="Use `/help <command>` for detailed information about a specific command.",
+                inline=False
+            )
+            
+            embed.set_footer(text=f"NexGuard v2.3.2 | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+            
+            await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="uptime", description="Check how long the bot has been running")
+    async def uptime(self, interaction: discord.Interaction):
+        """Check how long the bot has been running"""
+        uptime = datetime.utcnow() - self.bot.bot_start_time
+        
+        days = uptime.days
+        hours, remainder = divmod(uptime.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        uptime_str = f"{days}d {hours}h {minutes}m {seconds}s"
+        
+        embed = discord.Embed(
+            title="⏱️ Bot Uptime",
+            description=f"I've been running for **{uptime_str}**",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.add_field(name="Started", value=discord.utils.format_dt(self.bot.bot_start_time, "F"), inline=False)
+        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+
+async def setup(bot):
+    await bot.add_cog(UtilityCommands(bot))

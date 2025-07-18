@@ -89,9 +89,28 @@ class NexGuardBot {
     
     try {
       console.log('🔄 Refreshing slash commands...');
+      
+      // Clear existing commands first
       await rest.put(
         Routes.applicationCommands(this.client.user!.id),
-        { body: allCommands.map(cmd => cmd.data.toJSON()) }
+        { body: [] }
+      );
+      console.log('🧹 Cleared existing commands');
+      
+      // Wait a moment before registering new commands
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Filter out duplicate commands by name
+      const uniqueCommands = allCommands.filter((command, index, self) => 
+        index === self.findIndex(c => c.data.name === command.data.name)
+      );
+      
+      console.log(`📝 Registering ${uniqueCommands.length} unique commands...`);
+      
+      // Register new commands
+      await rest.put(
+        Routes.applicationCommands(this.client.user!.id),
+        { body: uniqueCommands.map(cmd => cmd.data.toJSON()) }
       );
       console.log('✅ Slash commands registered successfully!');
     } catch (error) {

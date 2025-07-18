@@ -370,7 +370,7 @@ export class MemStorage implements IStorage {
       description: ticket.description ?? null,
       priority: ticket.priority ?? 'medium',
       assignedTo: ticket.assignedTo ?? null,
-      assignedToName: ticket.assignedToName ?? null,
+      assignedBy: ticket.assignedBy ?? null,
       tags: ticket.tags ?? [],
       slaDeadline: ticket.slaDeadline ?? null,
       firstResponseAt: ticket.firstResponseAt ?? null,
