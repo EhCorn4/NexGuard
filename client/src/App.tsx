@@ -22,9 +22,7 @@ const Community = lazy(() => import("@/pages/community"));
 const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
 const Docs = lazy(() => import("@/pages/docs"));
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const DashboardDemo = lazy(() => import("@/pages/dashboard-demo"));
-const ServerConfig = lazy(() => import("@/pages/server-config"));
+// Dashboard functionality removed
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const CookiesPolicy = lazy(() => import("@/pages/cookies-policy"));
@@ -99,27 +97,7 @@ function Router() {
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
-              <Route path="/dashboard" component={() => (
-                <PageTransition key="dashboard">
-                  <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
-                    <Dashboard />
-                  </PerformanceWrapper>
-                </PageTransition>
-              )} />
-              <Route path="/dashboard-demo" component={() => (
-                <PageTransition key="dashboard-demo">
-                  <PerformanceWrapper skeletonType="grid" skeletonCount={4}>
-                    <DashboardDemo />
-                  </PerformanceWrapper>
-                </PageTransition>
-              )} />
-              <Route path="/server/:guildId" component={() => (
-                <PageTransition key="server-config">
-                  <PerformanceWrapper skeletonType="card" skeletonCount={6}>
-                    <ServerConfig />
-                  </PerformanceWrapper>
-                </PageTransition>
-              )} />
+              {/* Dashboard functionality removed */}
               <Route path="/terms-of-service" component={() => (
                 <PageTransition key="terms-of-service">
                   <PerformanceWrapper skeletonType="card" skeletonCount={1}>

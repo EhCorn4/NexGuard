@@ -5,7 +5,7 @@ import { AnimatedShield } from "@/components/ui/animated-shield";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { BotStatusBadge } from "@/components/ui/bot-status";
+// Bot status badge removed
 import { HoverScale } from "@/components/ui/hover-scale";
 import { motion } from "framer-motion";
 import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
@@ -82,18 +82,9 @@ export function Navbar() {
                 </Link>
               </motion.div>
             ))}
-            <div className="flex items-center">
-              <BotStatusBadge />
-            </div>
+            {/* Bot status badge removed */}
             <ThemeToggle />
-            <HoverScale scale={1.05}>
-              <Button
-                onClick={() => window.location.href = '/dashboard'}
-                className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg"
-              >
-                NexGuard Dashboard
-              </Button>
-            </HoverScale>
+            {/* Dashboard functionality removed */}
           </div>
           
           <div className="md:hidden flex items-center space-x-2">
@@ -117,14 +108,7 @@ export function Navbar() {
                       {item.label}
                     </Link>
                   ))}
-                  <HoverScale scale={1.05}>
-                    <Button
-                      onClick={() => window.location.href = '/dashboard'}
-                      className="bg-gradient-to-r from-[#5865F2] to-[#7289DA] hover:from-[#4752C4] hover:to-[#677BC4] text-white border-0 shadow-lg w-full"
-                    >
-                      NexGuard Dashboard
-                    </Button>
-                  </HoverScale>
+                  {/* Dashboard functionality removed */}
                 </div>
               </SheetContent>
             </Sheet>

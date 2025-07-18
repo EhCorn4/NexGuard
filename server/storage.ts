@@ -1,4 +1,4 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, serverConfigs, customCommands, autoreplyRules, autoreplyCooldowns, autoreplyStats, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type ServerConfig, type InsertServerConfig, type CustomCommand, type InsertCustomCommand, type AutoreplyRule, type InsertAutoreplyRule, type AutoreplyCooldown, type InsertAutoreplyCooldown, type AutoreplyStats, type InsertAutoreplyStats } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -6,39 +6,13 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getNewsUpdates(): Promise<NewsUpdate[]>;
+  getNews(): Promise<NewsUpdate[]>;
   getDevelopers(): Promise<Developer[]>;
   getFeatures(): Promise<Feature[]>;
   getTestimonials(): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  getFeedback(): Promise<Feedback[]>;
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
-  
-  // Server configuration methods
-  getServerConfig(guildId: string): Promise<ServerConfig | undefined>;
-  createServerConfig(config: InsertServerConfig): Promise<ServerConfig>;
-  updateServerConfig(guildId: string, config: Partial<ServerConfig>): Promise<ServerConfig>;
-  
-  // Custom commands methods
-  getCustomCommands(guildId: string): Promise<CustomCommand[]>;
-  createCustomCommand(command: InsertCustomCommand): Promise<CustomCommand>;
-  updateCustomCommand(id: number, command: Partial<CustomCommand>): Promise<CustomCommand>;
-  deleteCustomCommand(id: number): Promise<boolean>;
-  
-  // Auto-reply methods
-  getAutoreplyRules(guildId: string): Promise<AutoreplyRule[]>;
-  createAutoreplyRule(rule: InsertAutoreplyRule): Promise<AutoreplyRule>;
-  updateAutoreplyRule(id: number, rule: Partial<AutoreplyRule>): Promise<AutoreplyRule>;
-  deleteAutoreplyRule(id: number): Promise<boolean>;
-  toggleAutoreplyRule(id: number): Promise<AutoreplyRule>;
-  
-  // Auto-reply cooldown methods
-  getAutoreplyCooldown(guildId: string, ruleId: number, userId: string, channelId: string): Promise<AutoreplyCooldown | undefined>;
-  createAutoreplyCooldown(cooldown: InsertAutoreplyCooldown): Promise<AutoreplyCooldown>;
-  updateAutoreplyCooldown(id: number, cooldown: Partial<AutoreplyCooldown>): Promise<AutoreplyCooldown>;
-  
-  // Auto-reply stats methods
-  getAutoreplyStats(guildId: string, ruleId?: number): Promise<AutoreplyStats[]>;
-  createAutoreplyStats(stats: InsertAutoreplyStats): Promise<AutoreplyStats>;
 }
 
 export class MemStorage implements IStorage {
@@ -74,203 +48,134 @@ export class MemStorage implements IStorage {
       console.log('Storage initialized successfully');
     } catch (error) {
       console.error('Error initializing storage:', error);
-      throw error;
     }
   }
 
   private initializeData() {
-    try {
-      console.log('Initializing developer data...');
-      // Initialize developers
-      const devs: Developer[] = [
-        {
-          id: 7,
-          name: "Caleb Weston",
-          role: "Lead Developer & Founder",
-          bio: "Passionate full-stack developer with 3+ years of experience in web development, Discord bot development, and server management. Created NexGuard to provide comprehensive moderation solutions for Discord communities.",
-          githubUrl: "https://github.com/calebweston",
-          twitterUrl: "https://twitter.com/calebweston",
-          linkedinUrl: "https://linkedin.com/in/calebweston",
-          location: "United States",
-          experience: "3+ years in full-stack development with expertise in Discord bot architecture, database design, and scalable web applications",
-          skills: [
-            "JavaScript/TypeScript",
-            "Node.js",
-            "Discord.js",
-            "React",
-            "PostgreSQL",
-            "Express.js",
-            "Docker",
-            "Git/GitHub",
-            "API Development",
-            "Database Design",
-            "Server Administration",
-            "Web Development"
-          ],
-          specialties: [
-            "Discord Bot Development",
-            "Server Moderation Systems",
-            "Database Optimization",
-            "API Architecture",
-            "Real-time Applications",
-            "Community Management Tools"
-          ],
-          achievements: [
-            "Successfully deployed NexGuard to 8+ Discord servers",
-            "Developed 64+ slash commands for comprehensive server management",
-            "Created advanced moderation system with AI-powered spam detection",
-            "Built secure OAuth2 authentication system",
-            "Implemented real-time dashboard with PostgreSQL integration",
-            "Designed scalable bot architecture handling 157+ users"
-          ],
-          projects: [
-            "NexGuard Discord Bot - Advanced moderation and management bot",
-            "NexGuard Web Dashboard - Full-stack admin panel with OAuth2",
-            "Custom Command System - Dynamic command creation and management",
-            "Anti-Raid Protection - Automated server protection system",
-            "Economy System - Currency and rewards management",
-            "Ticket System - Support ticket automation"
-          ],
-          education: "Self-taught developer with continuous learning through practical projects and modern web technologies",
-          email: "nexguards@gmail.com",
-          discord: "calebweston",
-          website: "https://nexguard.replit.app",
-          yearsOfExperience: 3
-        }
-      ];
-      console.log('Developer data created with', devs.length, 'developers');
-
-      // Initialize features based on actual bot capabilities
-    const feats: Feature[] = [
-      {
-        id: 1,
-        title: "Advanced Moderation System",
-        description: "Comprehensive moderation tools with spam protection, profanity filtering, and automated punishments to maintain server quality.",
-        icon: "shield",
-        benefits: ["Anti-spam protection", "Profanity filter", "Link protection", "Automated warnings & timeouts", "Mass join raid protection"]
-      },
-      {
-        id: 2,
-        title: "Custom Commands",
-        description: "Create unlimited custom commands for your server with dynamic responses and variable support.",
-        icon: "terminal",
-        benefits: ["Unlimited custom commands", "Dynamic responses", "Variable substitution", "Permission-based access", "Easy management via dashboard"]
-      },
-      {
-        id: 3,
-        title: "Welcome & Leave Messages",
-        description: "Customizable welcome and goodbye messages to create a friendly atmosphere for new members.",
-        icon: "user-plus",
-        benefits: ["Custom welcome messages", "Goodbye notifications", "Channel-specific messages", "Variable support", "Rich embed formatting"]
-      },
-      {
-        id: 4,
-        title: "Auto-Role Assignment",
-        description: "Automatically assign roles to new members and manage role hierarchies with ease.",
-        icon: "users",
-        benefits: ["Auto-role on join", "Muted role management", "Role hierarchy support", "Permission integration", "Bulk role operations"]
-      },
-      {
-        id: 5,
-        title: "Comprehensive Logging",
-        description: "Track all moderation actions and server events with detailed audit logs and monitoring.",
-        icon: "file-text",
-        benefits: ["Moderation action logs", "Audit trail tracking", "Channel-specific logging", "Export capabilities", "Real-time monitoring"]
-      },
-      {
-        id: 6,
-        title: "Web Dashboard",
-        description: "Intuitive web-based control panel with Discord OAuth for secure server management from anywhere.",
-        icon: "monitor",
-        benefits: ["Discord OAuth login", "Real-time configuration", "Server-specific settings", "Live bot status", "Mobile-friendly interface"]
-      },
-      {
-        id: 7,
-        title: "Economy System",
-        description: "Engaging economy features with daily rewards and currency management to boost community interaction.",
-        icon: "coins",
-        benefits: ["Daily reward system", "Currency management", "Balance tracking", "Configurable rewards", "Economy statistics"]
-      },
-      {
-        id: 8,
-        title: "Slash Commands",
-        description: "Modern Discord slash commands for quick access to all bot features with autocomplete and validation.",
-        icon: "slash",
-        benefits: ["64+ slash commands", "Autocomplete support", "Input validation", "Permission checking", "Context-aware responses"]
-      }
-    ];
-
     // Initialize news updates
-    const news: NewsUpdate[] = [
-      {
-        id: 1,
-        title: "AI-Powered Spam Detection",
-        content: "Our new machine learning algorithm can now detect sophisticated spam patterns with 99.2% accuracy, providing better protection for your server.",
-        category: "NEW FEATURE",
-        publishedAt: new Date("2024-01-15"),
-        likes: 127,
-        comments: 23
-      },
-      {
-        id: 2,
-        title: "100K+ Servers Milestone",
-        content: "We've reached an incredible milestone! Thank you to all 100,000+ servers and their communities for trusting NexGuard with their moderation needs.",
-        category: "COMMUNITY",
-        publishedAt: new Date("2024-01-12"),
-        likes: 892,
-        comments: 156
-      },
-      {
-        id: 3,
-        title: "Dashboard 2.0 Released",
-        content: "Our completely redesigned web dashboard offers a more intuitive experience with advanced analytics and one-click configuration templates.",
-        category: "UPDATE",
-        publishedAt: new Date("2024-01-10"),
-        likes: 324,
-        comments: 67
-      },
-      {
-        id: 4,
-        title: "Enhanced Raid Protection",
-        content: "New anti-raid features include IP tracking, join pattern analysis, and automatic lockdown capabilities to protect against coordinated attacks.",
-        category: "SECURITY",
-        publishedAt: new Date("2024-01-08"),
-        likes: 456,
-        comments: 89
-      },
-      {
-        id: 5,
-        title: "New Mini-Games Added",
-        content: "Keep your community engaged with our new collection of mini-games including trivia, word games, and interactive challenges.",
-        category: "GAMES",
-        publishedAt: new Date("2024-01-05"),
-        likes: 278,
-        comments: 45
-      },
-      {
-        id: 6,
-        title: "Server of the Month",
-        content: "Congratulations to \"TechHub Community\" for being our featured server! Their innovative use of NexGuard's features creates an amazing experience.",
-        category: "FEATURED",
-        publishedAt: new Date("2024-01-03"),
-        likes: 189,
-        comments: 34
-      }
-    ];
+    this.newsUpdates.set(1, {
+      id: 1,
+      title: "NexGuard v2.3.2 Released",
+      content: "We're excited to announce the release of NexGuard v2.3.2! This update includes improved moderation tools, enhanced security features, and better performance optimizations.",
+      category: "Updates",
+      publishedAt: new Date('2024-01-15'),
+      likes: 45,
+      comments: 12,
+    });
 
-      devs.forEach(dev => this.developers.set(dev.id, dev));
-      feats.forEach(feat => this.features.set(feat.id, feat));
-      news.forEach(update => this.newsUpdates.set(update.id, update));
+    this.newsUpdates.set(2, {
+      id: 2,
+      title: "New Anti-Spam Protection",
+      content: "Our latest anti-spam protection system is now live! It provides real-time detection and automatic response to spam attacks, keeping your server clean and safe.",
+      category: "Features",
+      publishedAt: new Date('2024-01-10'),
+      likes: 38,
+      comments: 8,
+    });
 
-      this.currentDevId = devs.length + 1;
-      this.currentFeatureId = feats.length + 1;
-      this.currentNewsId = news.length + 1;
-      
-      console.log('Storage initialization completed successfully');
-    } catch (error) {
-      console.error('Error during storage initialization:', error);
-      throw error;
-    }
+    this.newsUpdates.set(3, {
+      id: 3,
+      title: "Community Spotlight: BlueLine RolePlay",
+      content: "We're featuring BlueLine RolePlay this month! They've been using NexGuard to maintain order in their 500+ member community with great success.",
+      category: "Community",
+      publishedAt: new Date('2024-01-05'),
+      likes: 67,
+      comments: 23,
+    });
+
+    this.currentNewsId = 4;
+
+    // Initialize developers
+    this.developers.set(1, {
+      id: 1,
+      name: "Caleb Weston",
+      role: "Lead Developer",
+      bio: "Passionate full-stack developer with expertise in Discord bot development, web technologies, and system architecture. Leading NexGuard's development with a focus on creating robust, scalable solutions for Discord communities.",
+      githubUrl: "https://github.com/calebweston",
+      twitterUrl: "https://twitter.com/calebweston",
+      linkedinUrl: "https://linkedin.com/in/calebweston",
+      location: "United States",
+      experience: "5+ years of experience in software development, specializing in Discord bot development, web applications, and community management tools.",
+      skills: ["JavaScript", "TypeScript", "Node.js", "React", "Discord.js", "PostgreSQL", "Docker", "AWS", "Python", "Express.js"],
+      specialties: ["Discord Bot Development", "Full-Stack Web Development", "Database Architecture", "API Design", "Community Management Tools"],
+      achievements: ["Built and maintained NexGuard serving 100+ Discord servers", "Developed advanced moderation systems", "Created comprehensive ticket management solutions", "Implemented real-time monitoring and analytics"],
+      projects: ["NexGuard Discord Bot", "Advanced Moderation Dashboard", "Custom Command System", "Real-time Analytics Platform"],
+      education: "Computer Science",
+      email: "caleb@nexguard.com",
+      discord: "calebweston",
+      website: "https://calebweston.dev",
+      yearsOfExperience: 5,
+    });
+
+    this.currentDevId = 2;
+
+    // Initialize features
+    this.features.set(1, {
+      id: 1,
+      title: "Advanced Moderation",
+      description: "Comprehensive moderation tools including auto-moderation, warning systems, and customizable punishment workflows.",
+      icon: "shield",
+      benefits: ["Automated rule enforcement", "Customizable warning system", "Detailed moderation logs", "Role-based permissions"],
+    });
+
+    this.features.set(2, {
+      id: 2,
+      title: "Ticket System",
+      description: "Professional support ticket system with categories, priorities, and staff assignment capabilities.",
+      icon: "ticket",
+      benefits: ["Organized support workflow", "Staff assignment", "Ticket categories", "Response time tracking"],
+    });
+
+    this.features.set(3, {
+      id: 3,
+      title: "Custom Commands",
+      description: "Create and manage custom commands with variables, permissions, and advanced response options.",
+      icon: "command",
+      benefits: ["Unlimited custom commands", "Variable support", "Permission controls", "Rich embed responses"],
+    });
+
+    this.features.set(4, {
+      id: 4,
+      title: "Welcome System",
+      description: "Automated welcome messages, role assignment, and member verification for new server members.",
+      icon: "users",
+      benefits: ["Automated greetings", "Role assignment", "Member verification", "Customizable messages"],
+    });
+
+    this.currentFeatureId = 5;
+
+    // Initialize testimonials with some sample data
+    this.testimonialsData.set(1, {
+      id: 1,
+      username: "ServerOwner123",
+      serverName: "BlueLine RolePlay",
+      content: "NexGuard has been instrumental in managing our 500+ member roleplay community. The moderation tools are top-notch and the support is excellent!",
+      rating: 5,
+      isApproved: true,
+      createdAt: new Date('2024-01-12'),
+    });
+
+    this.testimonialsData.set(2, {
+      id: 2,
+      username: "AdminMike",
+      serverName: "Gaming Central",
+      content: "The ticket system alone makes NexGuard worth it. Our support workflow has never been smoother.",
+      rating: 5,
+      isApproved: true,
+      createdAt: new Date('2024-01-08'),
+    });
+
+    this.testimonialsData.set(3, {
+      id: 3,
+      username: "CommunityMod",
+      serverName: "Tech Hub",
+      content: "Great bot with reliable uptime and responsive support. Highly recommend for any serious Discord community.",
+      rating: 4,
+      isApproved: true,
+      createdAt: new Date('2024-01-05'),
+    });
+
+    this.currentTestimonialId = 4;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -278,34 +183,31 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    for (const user of this.users.values()) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createUser(user: InsertUser): Promise<User> {
+    const newUser: User = {
+      id: this.currentUserId++,
+      ...user,
+    };
+    this.users.set(newUser.id, newUser);
+    return newUser;
   }
 
-  async getNewsUpdates(): Promise<NewsUpdate[]> {
+  async getNews(): Promise<NewsUpdate[]> {
     return Array.from(this.newsUpdates.values()).sort((a, b) => 
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     );
   }
 
   async getDevelopers(): Promise<Developer[]> {
-    try {
-      console.log('getDevelopers called, developers count:', this.developers.size);
-      const developers = Array.from(this.developers.values());
-      console.log('Returning developers:', developers.length);
-      return developers;
-    } catch (error) {
-      console.error('Error in getDevelopers:', error);
-      throw error;
-    }
+    return Array.from(this.developers.values());
   }
 
   async getFeatures(): Promise<Feature[]> {
@@ -314,56 +216,55 @@ export class MemStorage implements IStorage {
 
   async getTestimonials(): Promise<Testimonial[]> {
     return Array.from(this.testimonialsData.values())
-      .filter(t => t.isApproved)
+      .filter(testimonial => testimonial.isApproved)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
-  async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
-    const id = this.currentTestimonialId++;
-    const testimonial: Testimonial = {
-      ...insertTestimonial,
-      id,
-      isApproved: false,
-      createdAt: new Date()
+  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
+    const newTestimonial: Testimonial = {
+      id: this.currentTestimonialId++,
+      ...testimonial,
+      createdAt: new Date(),
     };
-    this.testimonialsData.set(id, testimonial);
-    return testimonial;
+    this.testimonialsData.set(newTestimonial.id, newTestimonial);
+    return newTestimonial;
   }
 
-  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
-    const id = this.currentFeedbackId++;
-    const feedback: Feedback = {
-      ...insertFeedback,
-      id,
-      status: "pending",
-      createdAt: new Date()
+  async getFeedback(): Promise<Feedback[]> {
+    return Array.from(this.feedbackData.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createFeedback(feedback: InsertFeedback): Promise<Feedback> {
+    const newFeedback: Feedback = {
+      id: this.currentFeedbackId++,
+      ...feedback,
+      createdAt: new Date(),
     };
-    this.feedbackData.set(id, feedback);
-    return feedback;
+    this.feedbackData.set(newFeedback.id, newFeedback);
+    return newFeedback;
   }
 }
 
+// Database storage implementation
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+  async createUser(user: InsertUser): Promise<User> {
+    const result = await db.insert(users).values(user).returning();
+    return result[0];
   }
 
-  async getNewsUpdates(): Promise<NewsUpdate[]> {
-    return await db.select().from(newsUpdates);
+  async getNews(): Promise<NewsUpdate[]> {
+    return await db.select().from(newsUpdates).orderBy(desc(newsUpdates.publishedAt));
   }
 
   async getDevelopers(): Promise<Developer[]> {
@@ -380,139 +281,20 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(testimonials.createdAt));
   }
 
-  async createTestimonial(insertTestimonial: InsertTestimonial): Promise<Testimonial> {
-    const [testimonial] = await db
-      .insert(testimonials)
-      .values(insertTestimonial)
-      .returning();
-    return testimonial;
+  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
+    const result = await db.insert(testimonials).values(testimonial).returning();
+    return result[0];
   }
 
-  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
-    const [feedbackResult] = await db
-      .insert(feedback)
-      .values(insertFeedback)
-      .returning();
-    return feedbackResult;
+  async getFeedback(): Promise<Feedback[]> {
+    return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
   }
 
-  async getServerConfig(guildId: string): Promise<ServerConfig | undefined> {
-    const [config] = await db.select().from(serverConfigs).where(eq(serverConfigs.guildId, guildId));
-    return config;
-  }
-
-  async createServerConfig(config: InsertServerConfig): Promise<ServerConfig> {
-    const [newConfig] = await db.insert(serverConfigs).values(config).returning();
-    return newConfig;
-  }
-
-  async updateServerConfig(guildId: string, config: Partial<ServerConfig>): Promise<ServerConfig> {
-    const [updatedConfig] = await db
-      .update(serverConfigs)
-      .set({ ...config, updatedAt: new Date() })
-      .where(eq(serverConfigs.guildId, guildId))
-      .returning();
-    return updatedConfig;
-  }
-
-  async getCustomCommands(guildId: string): Promise<CustomCommand[]> {
-    return await db.select().from(customCommands).where(eq(customCommands.guildId, guildId));
-  }
-
-  async createCustomCommand(command: InsertCustomCommand): Promise<CustomCommand> {
-    const [newCommand] = await db.insert(customCommands).values(command).returning();
-    return newCommand;
-  }
-
-  async updateCustomCommand(id: number, command: Partial<CustomCommand>): Promise<CustomCommand> {
-    const [updatedCommand] = await db
-      .update(customCommands)
-      .set(command)
-      .where(eq(customCommands.id, id))
-      .returning();
-    return updatedCommand;
-  }
-
-  async deleteCustomCommand(id: number): Promise<boolean> {
-    const result = await db.delete(customCommands).where(eq(customCommands.id, id));
-    return result.rowCount > 0;
-  }
-
-  // Auto-reply methods implementation
-  async getAutoreplyRules(guildId: string): Promise<AutoreplyRule[]> {
-    return await db.select().from(autoreplyRules).where(eq(autoreplyRules.guildId, guildId));
-  }
-
-  async createAutoreplyRule(rule: InsertAutoreplyRule): Promise<AutoreplyRule> {
-    const [newRule] = await db.insert(autoreplyRules).values(rule).returning();
-    return newRule;
-  }
-
-  async updateAutoreplyRule(id: number, rule: Partial<AutoreplyRule>): Promise<AutoreplyRule> {
-    const [updatedRule] = await db
-      .update(autoreplyRules)
-      .set({ ...rule, updatedAt: new Date() })
-      .where(eq(autoreplyRules.id, id))
-      .returning();
-    return updatedRule;
-  }
-
-  async deleteAutoreplyRule(id: number): Promise<boolean> {
-    const result = await db.delete(autoreplyRules).where(eq(autoreplyRules.id, id));
-    return result.rowCount > 0;
-  }
-
-  async toggleAutoreplyRule(id: number): Promise<AutoreplyRule> {
-    const [rule] = await db.select().from(autoreplyRules).where(eq(autoreplyRules.id, id));
-    if (!rule) {
-      throw new Error('Auto-reply rule not found');
-    }
-    
-    const [updatedRule] = await db
-      .update(autoreplyRules)
-      .set({ enabled: !rule.enabled, updatedAt: new Date() })
-      .where(eq(autoreplyRules.id, id))
-      .returning();
-    return updatedRule;
-  }
-
-  async getAutoreplyCooldown(guildId: string, ruleId: number, userId: string, channelId: string): Promise<AutoreplyCooldown | undefined> {
-    const [cooldown] = await db.select().from(autoreplyCooldowns)
-      .where(eq(autoreplyCooldowns.guildId, guildId))
-      .where(eq(autoreplyCooldowns.ruleId, ruleId))
-      .where(eq(autoreplyCooldowns.userId, userId))
-      .where(eq(autoreplyCooldowns.channelId, channelId));
-    return cooldown;
-  }
-
-  async createAutoreplyCooldown(cooldown: InsertAutoreplyCooldown): Promise<AutoreplyCooldown> {
-    const [newCooldown] = await db.insert(autoreplyCooldowns).values(cooldown).returning();
-    return newCooldown;
-  }
-
-  async updateAutoreplyCooldown(id: number, cooldown: Partial<AutoreplyCooldown>): Promise<AutoreplyCooldown> {
-    const [updatedCooldown] = await db
-      .update(autoreplyCooldowns)
-      .set(cooldown)
-      .where(eq(autoreplyCooldowns.id, id))
-      .returning();
-    return updatedCooldown;
-  }
-
-  async getAutoreplyStats(guildId: string, ruleId?: number): Promise<AutoreplyStats[]> {
-    let query = db.select().from(autoreplyStats).where(eq(autoreplyStats.guildId, guildId));
-    
-    if (ruleId) {
-      query = query.where(eq(autoreplyStats.ruleId, ruleId));
-    }
-    
-    return await query.orderBy(desc(autoreplyStats.triggeredAt));
-  }
-
-  async createAutoreplyStats(stats: InsertAutoreplyStats): Promise<AutoreplyStats> {
-    const [newStats] = await db.insert(autoreplyStats).values(stats).returning();
-    return newStats;
+  async createFeedback(feedbackData: InsertFeedback): Promise<Feedback> {
+    const result = await db.insert(feedback).values(feedbackData).returning();
+    return result[0];
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use in-memory storage for development, database for production
+export const storage = new MemStorage();
