@@ -1,7 +1,5 @@
 import { Client, GatewayIntentBits, Collection, REST, Routes } from 'discord.js';
-import { db } from '../db';
-import { botStatus, guilds, commands, moderationLogs, tickets, changelogs } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { storage } from '../storage';
 
 // Import command handlers
 import { adminCommands } from './commands/admin';
@@ -163,26 +161,17 @@ class NexGuardBot {
     const usersCount = this.client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
 
     try {
-      // Update or insert bot status
-      await db.insert(botStatus).values({
-        id: 1,
+      // Use storage interface instead of direct database calls
+      await storage.updateBotStatus({
         isOnline: true,
         guildsCount,
         usersCount,
         uptime: this.formatUptime(uptime),
         version: '2.3.2',
         lastRestart: new Date(this.startTime),
-        updatedAt: new Date(),
-      }).onConflictDoUpdate({
-        target: botStatus.id,
-        set: {
-          isOnline: true,
-          guildsCount,
-          usersCount,
-          uptime: this.formatUptime(uptime),
-          updatedAt: new Date(),
-        }
       });
+      
+      console.log(`📊 Bot status updated: Online=true, Guilds=${guildsCount}, Users=${usersCount}`);
     } catch (error) {
       console.error('Error updating bot status:', error);
     }

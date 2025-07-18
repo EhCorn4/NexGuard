@@ -210,7 +210,7 @@ export class MemStorage implements IStorage {
     // Initialize bot status
     this.botStatusData.set(1, {
       id: 1,
-      isOnline: false,
+      isOnline: true,
       guildsCount: 0,
       usersCount: 0,
       commandsExecuted: 0,
