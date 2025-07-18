@@ -89,7 +89,7 @@ class NexGuardBot(commands.Bot):
         # Set custom activity status
         activity = discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{len(self.guilds)} servers | /help for commands"
+            name=f"{len(self.guilds)} servers | /commands for help"
         )
         await self.change_presence(activity=activity, status=discord.Status.online)
         logger.info(f'🎯 Activity set: Watching {len(self.guilds)} servers')
@@ -140,7 +140,7 @@ class NexGuardBot(commands.Bot):
             
             embed.add_field(
                 name="🚀 Get Started",
-                value="Use `/help` to explore **41+ slash commands**\nVisit our website for full documentation and setup guides",
+                value="Use `/commands` to explore **41+ slash commands**\nVisit our website for full documentation and setup guides",
                 inline=False
             )
             
@@ -323,7 +323,7 @@ class NexGuardBot(commands.Bot):
         # Update Discord activity status
         activity = discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{len(self.guilds)} servers | /help for commands"
+            name=f"{len(self.guilds)} servers | /commands for help"
         )
         await self.change_presence(activity=activity, status=discord.Status.online)
     
