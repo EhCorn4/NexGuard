@@ -88,17 +88,24 @@ class AdminCommands(commands.Cog):
             logger.error(f"Error configuring server: {e}")
             await interaction.response.send_message("❌ Failed to update configuration. Please try again.", ephemeral=True)
     
-    @app_commands.command(name="welcome", description="Set welcome message for new members")
+    @app_commands.command(name="welcome", description="Configure welcome messages for new members")
     @app_commands.describe(
         action="Action to perform",
-        message="Welcome message (use {user.mention}, {user.name}, {guild.name}, {member.count} placeholders)"
+        message="Welcome message (use {user.mention}, {user.name}, {guild.name}, {member.count} placeholders)",
+        channel="Channel for welcome messages",
+        embed_mode="Enable embed mode for welcome messages"
     )
     @app_commands.choices(action=[
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
         app_commands.Choice(name="set", value="set"),
         app_commands.Choice(name="test", value="test"),
-        app_commands.Choice(name="view", value="view")
+        app_commands.Choice(name="view", value="view"),
+        app_commands.Choice(name="channel", value="channel"),
+        app_commands.Choice(name="embed", value="embed")
     ])
-    async def welcome(self, interaction: discord.Interaction, action: str, message: str = None):
+    async def welcome(self, interaction: discord.Interaction, action: str, message: str = None, 
+                     channel: discord.TextChannel = None, embed_mode: bool = None):
         """Set welcome message for new members"""
         if not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
@@ -107,7 +114,32 @@ class AdminCommands(commands.Cog):
         try:
             guild_id = str(interaction.guild.id)
             
-            if action == "set":
+            if action == "enable":
+                await self.bot.update_guild_config(guild_id, welcome_enabled=True)
+                await interaction.response.send_message("✅ Welcome messages enabled! Use `/welcome channel` to set a welcome channel.", ephemeral=True)
+                
+            elif action == "disable":
+                await self.bot.update_guild_config(guild_id, welcome_enabled=False)
+                await interaction.response.send_message("❌ Welcome messages disabled.", ephemeral=True)
+                
+            elif action == "channel":
+                if not channel:
+                    await interaction.response.send_message("❌ Please specify a channel.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, welcome_channel_id=str(channel.id))
+                await interaction.response.send_message(f"✅ Welcome channel set to {channel.mention}", ephemeral=True)
+                
+            elif action == "embed":
+                if embed_mode is None:
+                    await interaction.response.send_message("❌ Please specify whether to enable or disable embed mode.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, welcome_embed=embed_mode)
+                status = "enabled" if embed_mode else "disabled"
+                await interaction.response.send_message(f"✅ Welcome embed mode {status}.", ephemeral=True)
+                
+            elif action == "set":
                 if not message:
                     await interaction.response.send_message("❌ Please provide a welcome message.", ephemeral=True)
                     return
@@ -117,31 +149,51 @@ class AdminCommands(commands.Cog):
                 
             elif action == "test":
                 config = await self.bot.get_guild_config(guild_id)
-                welcome_msg = config.get('welcome_message', 'Welcome {user.mention} to {guild.name}!')
+                welcome_msg = config.get('welcome_message') or 'Welcome {user.mention} to {guild.name}!'
                 
                 # Replace placeholders for test
-                test_message = welcome_msg.replace("{user.mention}", interaction.user.mention)
+                test_message = str(welcome_msg).replace("{user.mention}", interaction.user.mention)
                 test_message = test_message.replace("{user.name}", interaction.user.name)
                 test_message = test_message.replace("{guild.name}", interaction.guild.name)
                 test_message = test_message.replace("{member.count}", str(interaction.guild.member_count))
-                
-                await interaction.response.send_message(f"**Welcome Message Preview:**\n{test_message}", ephemeral=True)
-                
-            elif action == "view":
-                config = await self.bot.get_guild_config(guild_id)
-                welcome_msg = config.get('welcome_message', 'Welcome {user.mention} to {guild.name}!')
-                channel_id = config.get('welcome_channel_id')
-                
-                channel_info = f"<#{channel_id}>" if channel_id else "Not set"
+                test_message = test_message.replace("{user.id}", str(interaction.user.id))
+                test_message = test_message.replace("{user.display_name}", interaction.user.display_name)
                 
                 embed = discord.Embed(
-                    title="Welcome Configuration",
+                    title="🎉 Welcome Message Test",
+                    description=test_message,
                     color=0x00FFFF,
                     timestamp=datetime.utcnow()
                 )
-                embed.add_field(name="Channel", value=channel_info, inline=False)
+                embed.set_thumbnail(url=interaction.user.display_avatar.url)
+                embed.add_field(name="📅 Account Created", value=discord.utils.format_dt(interaction.user.created_at, "R"), inline=True)
+                embed.add_field(name="🆔 User ID", value=f"`{interaction.user.id}`", inline=True)
+                embed.add_field(name="👥 Member Count", value=f"**{interaction.guild.member_count}**", inline=True)
+                embed.set_footer(text=f"Member #{interaction.guild.member_count}", icon_url=interaction.guild.icon.url if interaction.guild.icon else None)
+                
+                await interaction.response.send_message("**Welcome Message Preview:**", embed=embed, ephemeral=True)
+                
+            elif action == "view":
+                config = await self.bot.get_guild_config(guild_id)
+                welcome_enabled = config.get('welcome_enabled', False)
+                welcome_msg = config.get('welcome_message', 'Welcome {user.mention} to {guild.name}!')
+                welcome_embed = config.get('welcome_embed', False)
+                channel_id = config.get('welcome_channel_id')
+                
+                channel_info = f"<#{channel_id}>" if channel_id else "Not set"
+                status = "✅ Enabled" if welcome_enabled else "❌ Disabled"
+                embed_status = "✅ Enabled" if welcome_embed else "❌ Disabled"
+                
+                embed = discord.Embed(
+                    title="🎉 Welcome Configuration",
+                    color=0x00FFFF,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Status", value=status, inline=True)
+                embed.add_field(name="Channel", value=channel_info, inline=True)
+                embed.add_field(name="Embed Mode", value=embed_status, inline=True)
                 embed.add_field(name="Message", value=f"```{welcome_msg}```", inline=False)
-                embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{guild.name}`, `{member.count}`", inline=False)
+                embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{user.display_name}`, `{user.id}`, `{guild.name}`, `{member.count}`", inline=False)
                 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 

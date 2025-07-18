@@ -349,6 +349,8 @@ class UtilityCommands(commands.Cog):
             "`/uptime` - Check bot uptime",
             "`/embed` - Create custom embeds",
             "`/embedbuilder` - Create advanced embeds with fields and buttons",
+            "`/embedhelp` - Get help with embed formatting",
+            "`/embedexample` - View embed examples",
             "`/commands` - List all commands"
         ]
         embed.add_field(name="🔍 Utility Commands", value="\n".join(util_commands), inline=False)
@@ -367,7 +369,7 @@ class UtilityCommands(commands.Cog):
             inline=False
         )
         
-        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 23", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 27", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
     

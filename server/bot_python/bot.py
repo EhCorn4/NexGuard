@@ -138,28 +138,99 @@ class NexGuardBot(commands.Bot):
             
         try:
             async with self.db_pool.acquire() as conn:
-                # Get guild welcome settings
+                # Get comprehensive guild welcome settings
                 settings = await conn.fetchrow("""
-                    SELECT welcome_channel_id, welcome_message 
+                    SELECT welcome_enabled, welcome_channel_id, welcome_message, welcome_embed,
+                           welcome_embed_title, welcome_embed_description, welcome_embed_color,
+                           welcome_embed_thumbnail, welcome_embed_footer
                     FROM guilds WHERE id = $1
                 """, str(member.guild.id))
                 
-                if not settings or not settings['welcome_channel_id']:
+                if not settings or not settings['welcome_enabled'] or not settings['welcome_channel_id']:
                     return
                 
                 channel = self.get_channel(int(settings['welcome_channel_id']))
                 if not channel:
                     return
                 
-                # Replace placeholders in welcome message
-                message = settings['welcome_message'] or "Welcome {user.mention} to {guild.name}!"
-                message = message.replace("{user.mention}", member.mention)
-                message = message.replace("{user.name}", member.name)
-                message = message.replace("{guild.name}", member.guild.name)
-                message = message.replace("{member.count}", str(member.guild.member_count))
+                # Enhanced placeholders
+                placeholders = {
+                    '{user.mention}': member.mention,
+                    '{user.name}': member.name,
+                    '{user.display_name}': member.display_name,
+                    '{user.id}': str(member.id),
+                    '{guild.name}': member.guild.name,
+                    '{guild.member_count}': str(member.guild.member_count),
+                    '{member.count}': str(member.guild.member_count),
+                    '{server}': member.guild.name,
+                    '{user}': member.mention,
+                    '{created_at}': discord.utils.format_dt(member.created_at, "R"),
+                    '{joined_at}': discord.utils.format_dt(member.joined_at, "R") if member.joined_at else "Just now"
+                }
                 
-                await channel.send(message)
-                logger.info(f"Sent welcome message for {member.name} in {member.guild.name}")
+                def replace_placeholders(text):
+                    if not text:
+                        return text
+                    for placeholder, value in placeholders.items():
+                        text = text.replace(placeholder, value)
+                    return text
+                
+                if settings['welcome_embed']:
+                    # Create enhanced welcome embed
+                    embed_title = replace_placeholders(settings['welcome_embed_title'] or 'Welcome to {guild.name}!')
+                    embed_description = replace_placeholders(settings['welcome_embed_description'] or 'Hello {user.mention}, welcome to **{guild.name}**! We\'re excited to have you here.')
+                    embed_footer = replace_placeholders(settings['welcome_embed_footer'] or 'Member #{member.count}')
+                    
+                    # Parse color
+                    try:
+                        embed_color = settings['welcome_embed_color'] or '#00FFFF'
+                        if embed_color.startswith('#'):
+                            embed_color = embed_color[1:]
+                        color_int = int(embed_color, 16)
+                    except ValueError:
+                        color_int = 0x00FFFF
+                    
+                    embed = discord.Embed(
+                        title=embed_title,
+                        description=embed_description,
+                        color=color_int,
+                        timestamp=datetime.utcnow()
+                    )
+                    
+                    # Add thumbnail if enabled
+                    if settings['welcome_embed_thumbnail']:
+                        embed.set_thumbnail(url=member.display_avatar.url)
+                    
+                    # Add comprehensive fields
+                    embed.add_field(name="📅 Account Created", value=discord.utils.format_dt(member.created_at, "R"), inline=True)
+                    embed.add_field(name="🆔 User ID", value=f"`{member.id}`", inline=True)
+                    embed.add_field(name="👥 Member Count", value=f"**{member.guild.member_count}**", inline=True)
+                    
+                    # Add server info
+                    embed.add_field(name="🌟 Server Info", value=f"**{member.guild.name}** has been your home since {discord.utils.format_dt(member.guild.created_at, 'R')}", inline=False)
+                    
+                    # Add footer
+                    embed.set_footer(text=embed_footer, icon_url=member.guild.icon.url if member.guild.icon else None)
+                    
+                    # Add welcome reactions
+                    message = await channel.send(embed=embed)
+                    try:
+                        await message.add_reaction("👋")
+                        await message.add_reaction("🎉")
+                        await message.add_reaction("💫")
+                    except:
+                        pass  # Ignore reaction errors
+                else:
+                    # Send enhanced text message
+                    welcome_message = replace_placeholders(settings['welcome_message'] or 'Welcome {user.mention} to {guild.name}! You are our #{member.count} member.')
+                    
+                    message = await channel.send(welcome_message)
+                    try:
+                        await message.add_reaction("👋")
+                    except:
+                        pass  # Ignore reaction errors
+                
+                logger.info(f"Sent enhanced welcome message for {member.name} in {member.guild.name}")
                 
         except Exception as e:
             logger.error(f"Failed to send welcome message: {e}")
