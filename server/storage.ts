@@ -85,35 +85,85 @@ export class MemStorage implements IStorage {
     // Initialize news updates
     this.newsUpdates.set(1, {
       id: 1,
-      title: "NexGuard v2.3.2 Released",
-      content: "We're excited to announce the release of NexGuard v2.3.2! This update includes improved moderation tools, enhanced security features, and better performance optimizations.",
-      category: "Updates",
-      publishedAt: new Date('2024-01-15'),
-      likes: 45,
-      comments: 12,
+      title: "🚀 Advanced Auto-Reply System Launched",
+      content: "Revolutionary auto-reply system with smart keyword matching, rich embed responses, and comprehensive analytics. Create custom automated responses with multiple trigger types and detailed statistics tracking.",
+      category: "NEW FEATURE",
+      publishedAt: new Date(),
+      likes: 187,
+      comments: 34,
     });
 
     this.newsUpdates.set(2, {
       id: 2,
-      title: "New Anti-Spam Protection",
-      content: "Our latest anti-spam protection system is now live! It provides real-time detection and automatic response to spam attacks, keeping your server clean and safe.",
-      category: "Features",
-      publishedAt: new Date('2024-01-10'),
-      likes: 38,
-      comments: 8,
+      title: "🛡️ Comprehensive AutoMod System",
+      content: "State-of-the-art moderation automation with 6 specialized commands. Features spam protection, link filtering, bad words detection, and real-time message monitoring with escalation actions.",
+      category: "SECURITY",
+      publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+      likes: 243,
+      comments: 51,
     });
 
     this.newsUpdates.set(3, {
       id: 3,
-      title: "Community Spotlight: BlueLine RolePlay",
-      content: "We're featuring BlueLine RolePlay this month! They've been using NexGuard to maintain order in their 500+ member community with great success.",
-      category: "Community",
-      publishedAt: new Date('2024-01-05'),
-      likes: 67,
-      comments: 23,
+      title: "⚡ Custom Moderation Role Management",
+      content: "Advanced permission system allowing administrators to set custom moderation roles with hierarchy validation. Precise control over who can moderate your server beyond Discord's defaults.",
+      category: "NEW FEATURE",
+      publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      likes: 156,
+      comments: 28,
     });
 
-    this.currentNewsId = 4;
+    this.newsUpdates.set(4, {
+      id: 4,
+      title: "📊 Live Bot Statistics Integration",
+      content: "Real-time bot status monitoring now displaying live data: 9+ servers, 167+ users, and accurate uptime tracking. Enhanced transparency and performance monitoring.",
+      category: "UPDATE",
+      publishedAt: new Date(Date.now() - 36 * 60 * 60 * 1000),
+      likes: 92,
+      comments: 15,
+    });
+
+    this.newsUpdates.set(5, {
+      id: 5,
+      title: "🎫 Multi-Category Ticket System",
+      content: "Enhanced ticket system with category management and Discord channel integration. Organized support with automatic ticket placement and comprehensive filtering options.",
+      category: "NEW FEATURE",
+      publishedAt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+      likes: 134,
+      comments: 22,
+    });
+
+    this.newsUpdates.set(6, {
+      id: 6,
+      title: "🎯 41+ Commands Now Available",
+      content: "Massive expansion to 41+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management. Most comprehensive Discord bot feature set available.",
+      category: "FEATURED",
+      publishedAt: new Date(Date.now() - 60 * 60 * 60 * 1000),
+      likes: 298,
+      comments: 67,
+    });
+
+    this.newsUpdates.set(7, {
+      id: 7,
+      title: "💬 Community Milestone: 167+ Users Protected",
+      content: "NexGuard is now actively protecting 167+ users across 9+ Discord servers! Thank you to our growing community for trusting us with your server management needs.",
+      category: "COMMUNITY",
+      publishedAt: new Date(Date.now() - 72 * 60 * 60 * 1000),
+      likes: 89,
+      comments: 19,
+    });
+
+    this.newsUpdates.set(8, {
+      id: 8,
+      title: "🔧 Enhanced Welcome System",
+      content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support and comprehensive configuration options for new member onboarding.",
+      category: "UPDATE",
+      publishedAt: new Date(Date.now() - 84 * 60 * 60 * 1000),
+      likes: 76,
+      comments: 12,
+    });
+
+    this.currentNewsId = 9;
 
     // Initialize developers
     this.developers.set(1, {
