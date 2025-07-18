@@ -6,10 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Heart, MessageCircle, Rocket, Users, Wrench, Star, Shield, Gamepad2 } from "lucide-react";
+import { AlertCircle, Heart, MessageCircle, Rocket, Users, Wrench, Star, Shield, Gamepad2, ChevronDown, ChevronUp } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import type { NewsUpdate } from "@shared/schema";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 const categoryIcons = {
   "NEW FEATURE": { icon: Rocket, color: "from-[hsl(var(--nexguard-cyan))] to-[hsl(var(--nexguard-purple))]", textColor: "text-[hsl(var(--nexguard-cyan))]" },
@@ -20,10 +20,35 @@ const categoryIcons = {
   "FEATURED": { icon: Star, color: "from-indigo-400 to-purple-600", textColor: "text-indigo-400" },
 };
 
+// Extended content for each news update
+const extendedContent: Record<number, string> = {
+  1: "The Advanced Auto-Reply System represents a breakthrough in Discord automation. Built with sophisticated keyword matching algorithms, it supports multiple trigger types including exact matches, partial matches, starts-with, and ends-with patterns. Each auto-reply can feature rich embeds with custom colors, titles, descriptions, and footers. The system includes comprehensive analytics showing trigger counts, user engagement, and performance metrics. With built-in cooldown protection and spam prevention, administrators can create responsive, intelligent conversations while maintaining server quality and user experience.",
+  2: "Our Comprehensive AutoMod System provides enterprise-level content moderation with real-time message scanning and intelligent threat detection. The six specialized commands cover spam protection with configurable message limits and time windows, advanced link filtering with Discord invite blocking, sophisticated bad words detection with strict mode options, and comprehensive word management tools. Each violation triggers customizable escalation actions including warnings, timeouts, kicks, and bans. The system integrates seamlessly with PostgreSQL for persistent settings and provides detailed logging for administrative oversight.",
+  3: "The Custom Moderation Role Management system revolutionizes Discord server permissions by allowing administrators to define custom moderation roles beyond Discord's default permissions. With advanced hierarchy validation, the system prevents privilege escalation while ensuring proper bot permissions. The `/modrole` command provides intuitive role setting with visual confirmation, while `/modpermissions` offers detailed permission analysis. Role conflicts are automatically resolved, and all settings persist across server restarts with comprehensive PostgreSQL integration.",
+  4: "Live Bot Statistics Integration brings unprecedented transparency to NexGuard's performance monitoring. The real-time system displays live data including server count (9+), user count (167+), and accurate uptime tracking with sub-second precision. Statistics update every 15 seconds through automated background processes, providing administrators and users with current operational status. The integration spans across all website pages, ensuring consistent and reliable information display with database persistence and error handling.",
+  5: "The Multi-Category Ticket System transforms Discord support management with advanced organization and automation. Featuring Discord channel integration, administrators can create custom ticket categories that automatically place new tickets in appropriate Discord categories. The system supports comprehensive filtering by status, priority, category, and assignment. Staff can manage tickets efficiently with role-based permissions, automatic notifications, and detailed tracking. The PostgreSQL backend ensures data persistence and enables advanced reporting capabilities.",
+  6: "With 41+ commands now available, NexGuard offers the most comprehensive Discord bot feature set in its class. The massive expansion covers six major categories: admin commands for server configuration, moderation commands for user management, ticket commands for support systems, utility commands for server information, auto-reply commands for automated responses, and automod commands for content filtering. Each command includes detailed help documentation, permission validation, error handling, and logging integration, providing administrators with professional-grade tools for community management.",
+  7: "Reaching our community milestone of 167+ users protected across 9+ Discord servers represents the growing trust in NexGuard's advanced capabilities. This achievement reflects our commitment to providing reliable, sophisticated moderation tools that scale with community needs. Our user base spans gaming communities, educational servers, business organizations, and hobby groups, each benefiting from NexGuard's comprehensive feature set. We continue expanding our reach while maintaining the high-quality experience that defines the NexGuard platform.",
+  8: "The Enhanced Welcome System delivers a premium first-impression experience for new server members. Rich embed support enables custom colors, thumbnails, images, and interactive elements that reflect your server's unique identity. The advanced placeholder system supports dynamic content including user mentions, server statistics, and custom variables. Channel-specific setup allows different welcome messages for various entry points, while comprehensive configuration options provide flexibility for servers of all sizes and purposes."
+};
+
 const Community = memo(function Community() {
   const { data: news, isLoading, error } = useQuery<NewsUpdate[]>({
     queryKey: ["/api/news"],
   });
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (id: number) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   if (error) {
     return (
@@ -79,6 +104,8 @@ const Community = memo(function Community() {
             news?.map((update) => {
               const categoryInfo = categoryIcons[update.category as keyof typeof categoryIcons] || categoryIcons["NEW FEATURE"];
               const IconComponent = categoryInfo.icon;
+              const isExpanded = expandedCards.has(update.id);
+              const hasExtendedContent = extendedContent[update.id];
               
               return (
                 <Card 
@@ -100,7 +127,18 @@ const Community = memo(function Community() {
                       </div>
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-3">{update.title}</h3>
+                    
+                    {/* Main content */}
                     <p className="text-gray-300 mb-4">{update.content}</p>
+                    
+                    {/* Extended content - shown when expanded */}
+                    {isExpanded && hasExtendedContent && (
+                      <div className="mb-4 p-4 bg-[hsl(var(--nexguard-dark))]/30 rounded-lg border border-[hsl(var(--nexguard-cyan))]/10">
+                        <h4 className="text-lg font-semibold text-[hsl(var(--nexguard-cyan))] mb-3">Detailed Overview</h4>
+                        <p className="text-gray-300 leading-relaxed">{hasExtendedContent}</p>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-400">
                         <span className="flex items-center">
@@ -112,9 +150,24 @@ const Community = memo(function Community() {
                           {update.comments}
                         </span>
                       </div>
-                      <button className="text-[hsl(var(--nexguard-cyan))] hover:text-[hsl(var(--nexguard-cyan))]/80 text-sm font-semibold">
-                        Read More
-                      </button>
+                      {hasExtendedContent && (
+                        <button 
+                          onClick={() => toggleExpanded(update.id)}
+                          className="flex items-center text-[hsl(var(--nexguard-cyan))] hover:text-[hsl(var(--nexguard-cyan))]/80 text-sm font-semibold transition-colors duration-200"
+                        >
+                          {isExpanded ? (
+                            <>
+                              Show Less
+                              <ChevronUp className="ml-1" size={16} />
+                            </>
+                          ) : (
+                            <>
+                              Read More
+                              <ChevronDown className="ml-1" size={16} />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
