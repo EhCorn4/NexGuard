@@ -58,21 +58,71 @@ const Docs = memo(function Docs() {
       content: [
         "Click the 'Invite to Server' button on the home page",
         "Select your server and grant the required permissions",
-        "Ensure the bot has Administrator permissions for full functionality"
+        "Ensure the bot has Administrator permissions for full functionality",
+        "The bot needs Manage Messages, Manage Roles, Ban Members, and Kick Members permissions"
       ]
     },
     {
-      title: "2. Configure Server Settings",
-      description: "Set up your server configuration using the /configure command.",
+      title: "2. Configure Moderation Roles",
+      description: "Set up custom moderation roles with hierarchy validation using /modrole.",
       content: [
-        "Use `/configure roles` to set admin, moderator, and mute roles",
-        "Use `/configure channels` to set log and welcome channels",
-        "Use `/configure moderation` to enable/disable moderation features",
-        "Use `/configure tickets` to enable/disable the ticket system"
+        "Use `/modrole @Moderator` to set a custom moderation role",
+        "Use `/modrole` without parameters to view current moderation role",
+        "Use `/resetmodrole` to revert to default Discord permissions",
+        "Use `/modpermissions @user` to check moderation permissions for specific users",
+        "Ensure moderation roles are below the bot's role in the hierarchy"
       ]
     },
     {
-      title: "3. Set Command Prefix",
+      title: "3. Set Up AutoMod System",
+      description: "Configure comprehensive auto-moderation with multiple protection layers.",
+      content: [
+        "Use `/automod-config` to view current automod status and settings",
+        "Configure spam protection: `/automod-spam True 5 10 timeout`",
+        "Set up link filtering: `/automod-links True delete`",
+        "Enable bad word filtering: `/automod-badwords True True warn`",
+        "Manage custom word lists: `/automod-words add [word]` or `/automod-words list`",
+        "Reset all settings: `/automod-reset` (with confirmation prompt)"
+      ]
+    },
+    {
+      title: "4. Configure Auto-Reply System",
+      description: "Create intelligent auto-reply rules with rich embed responses.",
+      content: [
+        "Create rules: `/autoreply-create welcome-rule hello 'Welcome!' contains blue`",
+        "List all rules: `/autoreply-list` to see active rules and statistics",
+        "Toggle rules: `/autoreply-toggle rule-name` to enable/disable specific rules",
+        "Delete rules: `/autoreply-delete rule-name` with confirmation",
+        "View statistics: `/autoreply-stats` for usage analytics and trigger counts",
+        "Supports trigger types: contains, exact, starts_with, ends_with"
+      ]
+    },
+    {
+      title: "5. Set Up Ticket System",
+      description: "Configure multi-category ticket system with Discord integration.",
+      content: [
+        "Create ticket categories: `/ticketcategory create technical 'Tech Support'`",
+        "List categories: `/ticketcategory list` to view all available categories",
+        "Users create tickets: `/ticket Need help technical` (with category)",
+        "Manage tickets: `/tickets open` to filter and view tickets",
+        "Close tickets: `/close-ticket Issue resolved` to archive tickets",
+        "Categories are automatically linked to Discord channel categories"
+      ]
+    },
+    {
+      title: "6. Configure Welcome System",
+      description: "Set up advanced welcome messages with rich embeds and placeholders.",
+      content: [
+        "Enable welcome: `/welcome enable #welcome-channel`",
+        "Set custom message: `/welcome message 'Welcome {user} to {server}!'`",
+        "Configure embed mode: `/welcome embed True` for rich embed welcomes",
+        "Disable welcome: `/welcome disable` to turn off welcome messages",
+        "Supports placeholders: {user}, {server}, {membercount}, {mention}",
+        "Customize colors, thumbnails, and interactive elements"
+      ]
+    },
+    {
+      title: "7. Test Basic Commands",
       description: "Customize your server's command prefix (default is !).",
       content: [
         "Use `/setprefix <new_prefix>` to change the command prefix",

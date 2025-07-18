@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 import logging
 from datetime import datetime, timedelta
@@ -10,6 +10,62 @@ logger = logging.getLogger(__name__)
 class ModerationCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.check_expired_bans.start()
+    
+    def cog_unload(self):
+        self.check_expired_bans.cancel()
+    
+    @tasks.loop(minutes=5)  # Check every 5 minutes
+    async def check_expired_bans(self):
+        """Check for expired temporary bans and automatically unban users"""
+        try:
+            if not self.bot.db_pool:
+                return
+                
+            async with self.bot.db_pool.acquire() as conn:
+                # Get expired bans
+                expired_bans = await conn.fetch("""
+                    SELECT guild_id, user_id, username 
+                    FROM ban_list 
+                    WHERE ban_type = 'temporary' 
+                    AND expires_at <= $1 
+                    AND is_active = TRUE
+                """, datetime.utcnow())
+                
+                for ban_record in expired_bans:
+                    try:
+                        guild = self.bot.get_guild(int(ban_record['guild_id']))
+                        if not guild:
+                            continue
+                            
+                        # Unban the user
+                        user = await self.bot.fetch_user(int(ban_record['user_id']))
+                        await guild.unban(user, reason="Temporary ban expired")
+                        
+                        # Update ban record as inactive
+                        await conn.execute("""
+                            UPDATE ban_list SET is_active = FALSE, updated_at = $1
+                            WHERE guild_id = $2 AND user_id = $3 AND is_active = TRUE
+                        """, datetime.utcnow(), ban_record['guild_id'], ban_record['user_id'])
+                        
+                        # Log the automatic unban
+                        await conn.execute("""
+                            INSERT INTO moderation_logs (guild_id, user_id, moderator_id, action, reason)
+                            VALUES ($1, $2, $3, $4, $5)
+                        """, ban_record['guild_id'], ban_record['user_id'], str(self.bot.user.id), 
+                            "auto_unban", "Temporary ban expired")
+                        
+                        logger.info(f"Automatically unbanned {ban_record['username']} (ID: {ban_record['user_id']}) from guild {ban_record['guild_id']}")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to auto-unban user {ban_record['user_id']}: {e}")
+                        
+        except Exception as e:
+            logger.error(f"Error checking expired bans: {e}")
+    
+    @check_expired_bans.before_loop
+    async def before_check_expired_bans(self):
+        await self.bot.wait_until_ready()
     
     async def log_moderation_action(self, guild_id: str, user_id: str, moderator_id: str, action: str, reason: str = None, duration: str = None):
         """Log moderation action to database"""
@@ -25,6 +81,31 @@ class ModerationCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to log moderation action: {e}")
     
+    def parse_duration(self, duration_str: str) -> timedelta:
+        """Parse duration string like '7d', '2h', '30m' into timedelta"""
+        import re
+        if not duration_str:
+            return None
+            
+        # Match pattern like '7d', '2h', '30m', '1w'
+        match = re.match(r'^(\d+)([dhwm])$', duration_str.lower())
+        if not match:
+            return None
+            
+        amount = int(match.group(1))
+        unit = match.group(2)
+        
+        if unit == 'm':  # minutes
+            return timedelta(minutes=amount)
+        elif unit == 'h':  # hours
+            return timedelta(hours=amount)
+        elif unit == 'd':  # days
+            return timedelta(days=amount)
+        elif unit == 'w':  # weeks
+            return timedelta(weeks=amount)
+        
+        return None
+
     async def add_to_banlist(self, guild_id: str, user_id: str, username: str, moderator_id: str, moderator_name: str, reason: str = None, ban_type: str = "permanent", duration: str = None):
         """Add user to banlist"""
         try:
@@ -33,8 +114,9 @@ class ModerationCommands(commands.Cog):
                 
             expires_at = None
             if ban_type == "temporary" and duration:
-                # Parse duration (e.g., "7d", "1h", "30m")
-                expires_at = datetime.utcnow() + timedelta(days=7)  # Default 7 days
+                duration_delta = self.parse_duration(duration)
+                if duration_delta:
+                    expires_at = datetime.utcnow() + duration_delta
                 
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute("""
@@ -65,9 +147,10 @@ class ModerationCommands(commands.Cog):
     @app_commands.describe(
         user="The user to ban",
         reason="Reason for the ban",
+        duration="Duration for temporary ban (e.g., 7d, 2h, 30m) - leave empty for permanent",
         delete_days="Number of days of messages to delete (0-7)"
     )
-    async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided", delete_days: int = 0):
+    async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided", duration: str = None, delete_days: int = 0):
         """Ban a user from the server"""
         if not interaction.user.guild_permissions.ban_members:
             await interaction.response.send_message("❌ You don't have permission to ban members.", ephemeral=True)
@@ -77,44 +160,84 @@ class ModerationCommands(commands.Cog):
             await interaction.response.send_message("❌ You cannot ban this user due to role hierarchy.", ephemeral=True)
             return
         
+        # Validate duration if provided
+        duration_delta = None
+        expires_at = None
+        ban_type = "permanent"
+        
+        if duration:
+            duration_delta = self.parse_duration(duration)
+            if not duration_delta:
+                await interaction.response.send_message("❌ Invalid duration format. Use formats like: 7d, 2h, 30m, 1w", ephemeral=True)
+                return
+            expires_at = datetime.utcnow() + duration_delta
+            ban_type = "temporary"
+        
         try:
             # Send DM to user
             try:
-                embed = discord.Embed(
-                    title="You have been banned",
-                    description=f"You have been banned from **{interaction.guild.name}**",
-                    color=0xFF0000,
-                    timestamp=datetime.utcnow()
-                )
-                embed.add_field(name="Reason", value=reason, inline=False)
-                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+                if ban_type == "temporary":
+                    embed = discord.Embed(
+                        title="You have been temporarily banned",
+                        description=f"You have been temporarily banned from **{interaction.guild.name}**",
+                        color=0xFF6600,
+                        timestamp=datetime.utcnow()
+                    )
+                    embed.add_field(name="Duration", value=duration, inline=True)
+                    embed.add_field(name="Expires", value=f"<t:{int(expires_at.timestamp())}:F>", inline=True)
+                    embed.add_field(name="Reason", value=reason, inline=False)
+                    embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+                else:
+                    embed = discord.Embed(
+                        title="You have been banned",
+                        description=f"You have been permanently banned from **{interaction.guild.name}**",
+                        color=0xFF0000,
+                        timestamp=datetime.utcnow()
+                    )
+                    embed.add_field(name="Reason", value=reason, inline=False)
+                    embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
                 await user.send(embed=embed)
             except:
                 pass  # User has DMs disabled
             
             # Ban the user
-            await user.ban(reason=reason, delete_message_days=max(0, min(7, delete_days)))
+            ban_reason = f"{'Temporary ban' if ban_type == 'temporary' else 'Permanent ban'}: {reason}"
+            await user.ban(reason=ban_reason, delete_message_days=max(0, min(7, delete_days)))
             
             # Log the action
+            action_type = "tempban" if ban_type == "temporary" else "ban"
             await self.log_moderation_action(
                 str(interaction.guild.id), str(user.id), str(interaction.user.id), 
-                "ban", reason
+                action_type, reason, duration
             )
             
             # Add to banlist
             await self.add_to_banlist(
                 str(interaction.guild.id), str(user.id), user.name,
-                str(interaction.user.id), interaction.user.name, reason
+                str(interaction.user.id), interaction.user.name, reason, ban_type, duration
             )
             
-            embed = discord.Embed(
-                title="User Banned",
-                description=f"**{user.name}** has been banned from the server.",
-                color=0xFF0000,
-                timestamp=datetime.utcnow()
-            )
-            embed.add_field(name="Reason", value=reason, inline=False)
-            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            # Create response embed
+            if ban_type == "temporary":
+                embed = discord.Embed(
+                    title="User Temporarily Banned",
+                    description=f"**{user.name}** has been temporarily banned from the server.",
+                    color=0xFF6600,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Duration", value=duration, inline=True)
+                embed.add_field(name="Expires", value=f"<t:{int(expires_at.timestamp())}:F>", inline=True)
+                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            else:
+                embed = discord.Embed(
+                    title="User Banned",
+                    description=f"**{user.name}** has been permanently banned from the server.",
+                    color=0xFF0000,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
             
             await interaction.response.send_message(embed=embed)
             
