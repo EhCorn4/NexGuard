@@ -235,6 +235,132 @@ class UtilityCommands(commands.Cog):
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="embed", description="Create a custom embed message")
+    @app_commands.describe(
+        title="Title of the embed",
+        description="Description of the embed",
+        color="Color in hex format (e.g., #00FFFF)",
+        thumbnail="URL for thumbnail image",
+        image="URL for main image",
+        footer="Footer text",
+        channel="Channel to send the embed to"
+    )
+    async def embed(self, interaction: discord.Interaction, title: str, description: str, 
+                   color: str = "#00FFFF", thumbnail: str = None, image: str = None, 
+                   footer: str = None, channel: discord.TextChannel = None):
+        """Create a custom embed message"""
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
+            return
+        
+        try:
+            # Parse color
+            if color.startswith('#'):
+                color = color[1:]
+            color_int = int(color, 16)
+        except ValueError:
+            color_int = 0x00FFFF
+        
+        # Create embed
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=color_int,
+            timestamp=datetime.utcnow()
+        )
+        
+        if thumbnail:
+            embed.set_thumbnail(url=thumbnail)
+        
+        if image:
+            embed.set_image(url=image)
+        
+        if footer:
+            embed.set_footer(text=footer)
+        else:
+            embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        # Send to specified channel or current channel
+        target_channel = channel or interaction.channel
+        
+        try:
+            await target_channel.send(embed=embed)
+            
+            # Confirm to user
+            confirm_embed = discord.Embed(
+                title="✅ Embed Created",
+                description=f"Your embed has been sent to {target_channel.mention}",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            
+            await interaction.response.send_message(embed=confirm_embed, ephemeral=True)
+            
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
+    
+    @app_commands.command(name="commands", description="List all available bot commands")
+    async def commands_list(self, interaction: discord.Interaction):
+        """List all available bot commands"""
+        embed = discord.Embed(
+            title="📋 NexGuard Commands",
+            description="Here are all the available commands organized by category:",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        # Admin Commands
+        admin_commands = [
+            "`/setprefix` - Set command prefix",
+            "`/configure` - Configure server settings",
+            "`/welcome` - Manage welcome messages",
+            "`/settings` - View server settings"
+        ]
+        embed.add_field(name="🔧 Admin Commands", value="\n".join(admin_commands), inline=False)
+        
+        # Moderation Commands
+        mod_commands = [
+            "`/ban` - Ban a user",
+            "`/kick` - Kick a user",
+            "`/warn` - Warn a user",
+            "`/timeout` - Timeout a user",
+            "`/unban` - Unban a user",
+            "`/purge` - Delete multiple messages"
+        ]
+        embed.add_field(name="🛡️ Moderation Commands", value="\n".join(mod_commands), inline=False)
+        
+        # Utility Commands
+        util_commands = [
+            "`/ping` - Check bot latency",
+            "`/userinfo` - Get user information",
+            "`/serverinfo` - Get server information",
+            "`/avatar` - Get user avatar",
+            "`/botstats` - Get bot statistics",
+            "`/help` - Get help with commands",
+            "`/uptime` - Check bot uptime",
+            "`/embed` - Create custom embeds",
+            "`/commands` - List all commands"
+        ]
+        embed.add_field(name="🔍 Utility Commands", value="\n".join(util_commands), inline=False)
+        
+        # Ticket Commands
+        ticket_commands = [
+            "`/ticket` - Create support ticket",
+            "`/ticketinfo` - Get ticket information",
+            "`/ticketmanage` - Manage tickets (staff only)"
+        ]
+        embed.add_field(name="🎫 Ticket Commands", value="\n".join(ticket_commands), inline=False)
+        
+        embed.add_field(
+            name="Need Help?",
+            value="Use `/help <command>` for detailed information about any command.",
+            inline=False
+        )
+        
+        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 20", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot))

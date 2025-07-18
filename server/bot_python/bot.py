@@ -109,7 +109,7 @@ class NexGuardBot(commands.Bot):
                         name = EXCLUDED.name,
                         member_count = EXCLUDED.member_count,
                         updated_at = EXCLUDED.updated_at
-                """, guild.id, guild.name, guild.member_count, datetime.utcnow(), datetime.utcnow())
+                """, str(guild.id), guild.name, guild.member_count, datetime.utcnow(), datetime.utcnow())
                 
                 logger.info(f"Registered guild: {guild.name} ({guild.id})")
         except Exception as e:
@@ -124,7 +124,7 @@ class NexGuardBot(commands.Bot):
             async with self.db_pool.acquire() as conn:
                 await conn.execute("""
                     UPDATE guilds SET updated_at = $1 WHERE id = $2
-                """, datetime.utcnow(), guild.id)
+                """, datetime.utcnow(), str(guild.id))
                 
                 logger.info(f"Updated guild leave: {guild.name} ({guild.id})")
         except Exception as e:
