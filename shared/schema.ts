@@ -246,7 +246,6 @@ export const botStatus = pgTable("bot_status", {
   isOnline: boolean("is_online").default(false).notNull(),
   guildsCount: integer("guilds_count").default(0),
   usersCount: integer("users_count").default(0),
-  commandsExecuted: integer("commands_executed").default(0),
   uptime: text("uptime").default("0").notNull(),
   lastRestart: timestamp("last_restart").defaultNow().notNull(),
   version: text("version").default("1.0.0").notNull(),
