@@ -68,7 +68,8 @@ class NexGuardBot(commands.Bot):
             'server.bot_python.commands.tickets',
             'server.bot_python.commands.embedhelp',
             'server.bot_python.commands.autoreply',
-            'server.bot_python.commands.automod'
+            'server.bot_python.commands.automod',
+            'server.bot_python.commands.modrole'
         ]
         
         for extension in extensions:

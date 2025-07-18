@@ -20,7 +20,7 @@ This is a comprehensive NexGuard Discord bot with a professional website showcas
 - **Bot Framework**: Discord.py v2 with slash commands
 - **Development**: Hot reload with Vite middleware integration
 - **API Structure**: RESTful endpoints for content management and bot data
-- **Bot Features**: Admin, moderation, ticket, and utility commands
+- **Bot Features**: Admin, moderation, ticket, utility, autoreply, automod, and role management commands
 
 ## Key Components
 
@@ -131,7 +131,7 @@ NexGuard includes comprehensive Discord bot functionality:
 ## Current Status
 
 The system is a complete Discord bot with integrated website that:
-- Fully functional Discord bot with 32+ commands
+- Fully functional Discord bot with 41+ commands
 - Live bot status monitoring and statistics (9+ servers, 167+ users)
 - Professional website showcasing bot features
 - Interactive documentation with command reference
@@ -224,6 +224,15 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Implemented real-time message monitoring with automatic enforcement and action escalation
 - July 18, 2025: Enhanced permission system requiring manage server/messages permissions for all automod functions
 - July 18, 2025: Added comprehensive logging, error handling, and PostgreSQL integration for automod settings
+- July 18, 2025: **MAJOR ENHANCEMENT** - Advanced Moderation Role Management System
+- July 18, 2025: Created sophisticated modrole system with 3 dedicated commands for custom permission control
+- July 18, 2025: Added `/modrole` command for setting and viewing custom moderation roles with hierarchy validation
+- July 18, 2025: Implemented `/resetmodrole` command for reverting to default Discord permissions with safety checks
+- July 18, 2025: Built `/modpermissions` command for detailed permission analysis and user capability verification
+- July 18, 2025: Enhanced role hierarchy validation preventing privilege escalation and ensuring proper bot permissions
+- July 18, 2025: Added comprehensive permission source breakdown: Administrator, Moderate Members, Custom Roles
+- July 18, 2025: Integrated with PostgreSQL for persistent role settings with automatic conflict resolution
+- July 18, 2025: Enhanced all moderation commands to respect custom mod role settings while maintaining flexibility
 
 ## User Preferences
 
