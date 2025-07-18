@@ -150,10 +150,10 @@ export class MemStorage implements IStorage {
 
     this.features.set(2, {
       id: 2,
-      title: "Ticket System",
-      description: "Professional support ticket system with categories, priorities, and staff assignment capabilities.",
+      title: "Multi-Category Ticket System",
+      description: "Advanced support ticket system with Discord category organization, custom categories, and comprehensive management tools.",
       icon: "ticket",
-      benefits: ["Organized support workflow", "Staff assignment", "Ticket categories", "Response time tracking"],
+      benefits: ["Discord category integration", "Custom ticket categories", "Advanced filtering & search", "Automated ticket placement", "Staff assignment & tracking"],
     });
 
     this.features.set(3, {
@@ -166,13 +166,29 @@ export class MemStorage implements IStorage {
 
     this.features.set(4, {
       id: 4,
-      title: "Welcome System",
-      description: "Automated welcome messages, role assignment, and member verification for new server members.",
+      title: "Enhanced Welcome System",
+      description: "Advanced welcome messages with rich embeds, custom colors, thumbnails, and comprehensive configuration options.",
       icon: "users",
-      benefits: ["Automated greetings", "Role assignment", "Member verification", "Customizable messages"],
+      benefits: ["Rich embed support", "Custom colors & thumbnails", "Placeholder system", "Channel-specific setup", "Advanced configuration"],
     });
 
-    this.currentFeatureId = 5;
+    this.features.set(5, {
+      id: 5,
+      title: "Comprehensive Admin Tools",
+      description: "Complete server administration suite with 27+ slash commands for every aspect of server management.",
+      icon: "cog",
+      benefits: ["27+ slash commands", "Admin & moderation tools", "Utility commands", "AI assistant", "Real-time monitoring"],
+    });
+
+    this.features.set(6, {
+      id: 6,
+      title: "Real-time Analytics",
+      description: "Live bot status monitoring, server statistics, and comprehensive performance tracking.",
+      icon: "chart-line",
+      benefits: ["Live bot status", "Server statistics", "Command usage tracking", "Performance monitoring", "Uptime analytics"],
+    });
+
+    this.currentFeatureId = 7;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {
@@ -371,6 +387,7 @@ export class MemStorage implements IStorage {
       priority: ticket.priority ?? 'medium',
       assignedTo: ticket.assignedTo ?? null,
       assignedBy: ticket.assignedBy ?? null,
+      discordCategoryId: ticket.discordCategoryId ?? null,
       tags: ticket.tags ?? [],
       slaDeadline: ticket.slaDeadline ?? null,
       firstResponseAt: ticket.firstResponseAt ?? null,

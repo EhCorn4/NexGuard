@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings, Shield, Ticket, Command, Zap } from "lucide-react";
+import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings, Shield, Ticket, Command, Zap, Cog } from "lucide-react";
 import type { Feature } from "@shared/schema";
 import { memo } from "react";
 
@@ -17,7 +17,7 @@ const iconMap = {
   users: Users,
   bell: Bell,
   gamepad: Gamepad2,
-  cog: Settings,
+  cog: Cog,
   shield: Shield,
   ticket: Ticket,
   command: Command,
@@ -50,14 +50,18 @@ const Features = memo(function Features() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
           title="Bot Features"
-          description="NexGuard offers comprehensive Discord bot functionality with advanced moderation, ticket system, and utility commands to enhance your server management experience."
+          description="NexGuard offers comprehensive Discord bot functionality with 27+ slash commands, advanced multi-category ticket system, and real-time monitoring to enhance your server management experience."
         />
         
         {/* Bot Status Section */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-4 py-2">
+          <div className="inline-flex items-center gap-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-6 py-3">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-sm text-gray-300">Bot Online & Ready</span>
+            <div className="w-px h-4 bg-slate-600"></div>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">27 Commands</span>
+            <div className="w-px h-4 bg-slate-600"></div>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">9 Servers</span>
           </div>
         </div>
         

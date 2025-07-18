@@ -104,11 +104,22 @@ export const commands = pgTable("commands", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const ticketCategories = pgTable("ticket_categories", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  categoryName: text("category_name").notNull(),
+  categoryId: text("category_id").notNull(), // Discord category ID
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const tickets = pgTable("tickets", {
   id: serial("id").primaryKey(),
   ticketId: text("ticket_id").notNull().unique(), // Custom ticket ID like "TICKET-001"
   guildId: text("guild_id").notNull(),
   channelId: text("channel_id").notNull(),
+  discordCategoryId: text("discord_category_id"), // Discord category ID where ticket was created
   userId: text("user_id").notNull(),
   username: text("username").notNull(),
   subject: text("subject").notNull(),
