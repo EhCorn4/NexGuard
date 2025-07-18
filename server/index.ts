@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-// import { startBot } from "../bot/index.js";
+import { NexGuardBot } from "./bot/index";
 
 const app = express();
 app.use(express.json());
@@ -71,7 +71,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // No bot startup - clean website only
+  // Start the Discord bot
+  const bot = new NexGuardBot();
+  await bot.start();
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
@@ -83,5 +85,18 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+  });
+
+  // Graceful shutdown
+  process.on('SIGINT', async () => {
+    console.log('\n🛑 Shutting down gracefully...');
+    await bot.stop();
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', async () => {
+    console.log('\n🛑 Shutting down gracefully...');
+    await bot.stop();
+    process.exit(0);
   });
 })();

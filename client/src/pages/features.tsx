@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings } from "lucide-react";
+import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings, Shield, Ticket, Command, Zap } from "lucide-react";
 import type { Feature } from "@shared/schema";
 import { memo } from "react";
 
@@ -18,6 +18,10 @@ const iconMap = {
   bell: Bell,
   gamepad: Gamepad2,
   cog: Settings,
+  shield: Shield,
+  ticket: Ticket,
+  command: Command,
+  zap: Zap,
 };
 
 const Features = memo(function Features() {
@@ -45,9 +49,17 @@ const Features = memo(function Features() {
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
-          title="Powerful Features"
-          description="NexGuard combines cutting-edge moderation tools with quality-of-life features to create the perfect Discord server experience."
+          title="Bot Features"
+          description="NexGuard offers comprehensive Discord bot functionality with advanced moderation, ticket system, and utility commands to enhance your server management experience."
         />
+        
+        {/* Bot Status Section */}
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-4 py-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-300">Bot Online & Ready</span>
+          </div>
+        </div>
         
         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (

@@ -1,4 +1,4 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, guilds, commands, tickets, moderationLogs, changelogs, botStatus, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type Guild, type Command, type InsertCommand, type Ticket, type InsertTicket, type ModerationLog, type InsertModerationLog, type Changelog, type InsertChangelog, type BotStatus, type InsertBotStatus } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -13,6 +13,18 @@ export interface IStorage {
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   getFeedback(): Promise<Feedback[]>;
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
+  
+  // Bot-related methods
+  getBotStatus(): Promise<BotStatus | null>;
+  updateBotStatus(status: Partial<BotStatus>): Promise<void>;
+  getCommands(): Promise<Command[]>;
+  createCommand(command: InsertCommand): Promise<Command>;
+  getChangelogs(): Promise<Changelog[]>;
+  createChangelog(changelog: InsertChangelog): Promise<Changelog>;
+  getTickets(): Promise<Ticket[]>;
+  createTicket(ticket: InsertTicket): Promise<Ticket>;
+  getModerationLogs(): Promise<ModerationLog[]>;
+  createModerationLog(log: InsertModerationLog): Promise<ModerationLog>;
 }
 
 export class MemStorage implements IStorage {
@@ -22,12 +34,21 @@ export class MemStorage implements IStorage {
   private features: Map<number, Feature>;
   private testimonialsData: Map<number, Testimonial>;
   private feedbackData: Map<number, Feedback>;
+  private botStatusData: Map<number, BotStatus>;
+  private commandsData: Map<number, Command>;
+  private changelogsData: Map<number, Changelog>;
+  private ticketsData: Map<number, Ticket>;
+  private moderationLogsData: Map<number, ModerationLog>;
   private currentUserId: number;
   private currentNewsId: number;
   private currentDevId: number;
   private currentFeatureId: number;
   private currentTestimonialId: number;
   private currentFeedbackId: number;
+  private currentCommandId: number;
+  private currentChangelogId: number;
+  private currentTicketId: number;
+  private currentModerationLogId: number;
 
   constructor() {
     this.users = new Map();
@@ -36,12 +57,21 @@ export class MemStorage implements IStorage {
     this.features = new Map();
     this.testimonialsData = new Map();
     this.feedbackData = new Map();
+    this.botStatusData = new Map();
+    this.commandsData = new Map();
+    this.changelogsData = new Map();
+    this.ticketsData = new Map();
+    this.moderationLogsData = new Map();
     this.currentUserId = 1;
     this.currentNewsId = 1;
     this.currentDevId = 1;
     this.currentFeatureId = 1;
     this.currentTestimonialId = 1;
     this.currentFeedbackId = 1;
+    this.currentCommandId = 1;
+    this.currentChangelogId = 1;
+    this.currentTicketId = 1;
+    this.currentModerationLogId = 1;
     
     try {
       this.initializeData();
@@ -176,6 +206,42 @@ export class MemStorage implements IStorage {
     });
 
     this.currentTestimonialId = 4;
+
+    // Initialize bot status
+    this.botStatusData.set(1, {
+      id: 1,
+      isOnline: false,
+      guildsCount: 0,
+      usersCount: 0,
+      commandsExecuted: 0,
+      uptime: "0s",
+      lastRestart: new Date(),
+      version: "2.3.2",
+      updatedAt: new Date()
+    });
+
+    // Initialize changelog
+    this.changelogsData.set(1, {
+      id: 1,
+      version: "2.3.2",
+      title: "Major Update - Enhanced Bot Features",
+      description: "This update brings comprehensive Discord bot integration with advanced moderation, ticket system, and utility commands.",
+      changes: [
+        "Added 20+ slash commands for server management",
+        "Implemented advanced moderation tools (warn, mute, kick, ban)",
+        "Introduced ticket system with categories and priorities",
+        "Added utility commands for server information and user management",
+        "Enhanced security with permission-based command access",
+        "Improved bot status monitoring and uptime tracking",
+        "Added real-time command execution logging",
+        "Implemented changelog system for update tracking"
+      ],
+      type: "major",
+      releaseDate: new Date(),
+      isPublished: true
+    });
+
+    this.currentChangelogId = 2;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -240,9 +306,84 @@ export class MemStorage implements IStorage {
       id: this.currentFeedbackId++,
       ...feedback,
       createdAt: new Date(),
+      status: feedback.status || "pending"
     };
     this.feedbackData.set(newFeedback.id, newFeedback);
     return newFeedback;
+  }
+
+  // Bot-related methods
+  async getBotStatus(): Promise<BotStatus | null> {
+    return this.botStatusData.get(1) || null;
+  }
+
+  async updateBotStatus(status: Partial<BotStatus>): Promise<void> {
+    const currentStatus = this.botStatusData.get(1);
+    if (currentStatus) {
+      this.botStatusData.set(1, { ...currentStatus, ...status, updatedAt: new Date() });
+    }
+  }
+
+  async getCommands(): Promise<Command[]> {
+    return Array.from(this.commandsData.values());
+  }
+
+  async createCommand(command: InsertCommand): Promise<Command> {
+    const newCommand: Command = {
+      id: this.currentCommandId++,
+      ...command,
+      createdAt: new Date(),
+      enabled: command.enabled !== false
+    };
+    this.commandsData.set(newCommand.id, newCommand);
+    return newCommand;
+  }
+
+  async getChangelogs(): Promise<Changelog[]> {
+    return Array.from(this.changelogsData.values())
+      .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+  }
+
+  async createChangelog(changelog: InsertChangelog): Promise<Changelog> {
+    const newChangelog: Changelog = {
+      id: this.currentChangelogId++,
+      ...changelog,
+      releaseDate: changelog.releaseDate || new Date(),
+      isPublished: changelog.isPublished !== false
+    };
+    this.changelogsData.set(newChangelog.id, newChangelog);
+    return newChangelog;
+  }
+
+  async getTickets(): Promise<Ticket[]> {
+    return Array.from(this.ticketsData.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createTicket(ticket: InsertTicket): Promise<Ticket> {
+    const newTicket: Ticket = {
+      id: this.currentTicketId++,
+      ...ticket,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.ticketsData.set(newTicket.id, newTicket);
+    return newTicket;
+  }
+
+  async getModerationLogs(): Promise<ModerationLog[]> {
+    return Array.from(this.moderationLogsData.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createModerationLog(log: InsertModerationLog): Promise<ModerationLog> {
+    const newLog: ModerationLog = {
+      id: this.currentModerationLogId++,
+      ...log,
+      createdAt: new Date()
+    };
+    this.moderationLogsData.set(newLog.id, newLog);
+    return newLog;
   }
 }
 
@@ -292,6 +433,64 @@ export class DatabaseStorage implements IStorage {
 
   async createFeedback(feedbackData: InsertFeedback): Promise<Feedback> {
     const result = await db.insert(feedback).values(feedbackData).returning();
+    return result[0];
+  }
+
+  // Bot-related methods
+  async getBotStatus(): Promise<BotStatus | null> {
+    const result = await db.select().from(botStatus).limit(1);
+    return result[0] || null;
+  }
+
+  async updateBotStatus(status: Partial<BotStatus>): Promise<void> {
+    await db.insert(botStatus).values({
+      id: 1,
+      ...status,
+      updatedAt: new Date()
+    }).onConflictDoUpdate({
+      target: botStatus.id,
+      set: {
+        ...status,
+        updatedAt: new Date()
+      }
+    });
+  }
+
+  async getCommands(): Promise<Command[]> {
+    return await db.select().from(commands).orderBy(commands.category, commands.name);
+  }
+
+  async createCommand(command: InsertCommand): Promise<Command> {
+    const result = await db.insert(commands).values(command).returning();
+    return result[0];
+  }
+
+  async getChangelogs(): Promise<Changelog[]> {
+    return await db.select().from(changelogs)
+      .where(eq(changelogs.isPublished, true))
+      .orderBy(desc(changelogs.releaseDate));
+  }
+
+  async createChangelog(changelog: InsertChangelog): Promise<Changelog> {
+    const result = await db.insert(changelogs).values(changelog).returning();
+    return result[0];
+  }
+
+  async getTickets(): Promise<Ticket[]> {
+    return await db.select().from(tickets).orderBy(desc(tickets.createdAt));
+  }
+
+  async createTicket(ticket: InsertTicket): Promise<Ticket> {
+    const result = await db.insert(tickets).values(ticket).returning();
+    return result[0];
+  }
+
+  async getModerationLogs(): Promise<ModerationLog[]> {
+    return await db.select().from(moderationLogs).orderBy(desc(moderationLogs.createdAt));
+  }
+
+  async createModerationLog(log: InsertModerationLog): Promise<ModerationLog> {
+    const result = await db.insert(moderationLogs).values(log).returning();
     return result[0];
   }
 }

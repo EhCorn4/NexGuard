@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a clean, professional website for NexGuard, showcasing the bot's features and providing information to potential users. The project has been streamlined to focus on the core website functionality without any bot integration or dashboard features.
+This is a comprehensive NexGuard Discord bot with a professional website showcasing its features. The project includes a fully functional Discord bot with advanced moderation, ticket system, and utility commands, along with a website that displays live bot status and provides complete documentation.
 
 ## System Architecture
 
@@ -16,9 +16,11 @@ This is a clean, professional website for NexGuard, showcasing the bot's feature
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
-- **Database**: In-memory storage for development
+- **Database**: PostgreSQL with Drizzle ORM
+- **Bot Framework**: Discord.js v14 with slash commands
 - **Development**: Hot reload with Vite middleware integration
-- **API Structure**: RESTful endpoints for content management
+- **API Structure**: RESTful endpoints for content management and bot data
+- **Bot Features**: Admin, moderation, ticket, and utility commands
 
 ## Key Components
 
@@ -29,6 +31,12 @@ This is a clean, professional website for NexGuard, showcasing the bot's feature
 - **Features**: Bot feature descriptions and benefits
 - **Testimonials**: User reviews and ratings with approval system
 - **Feedback**: User feedback submissions
+- **Bot Status**: Live bot status and statistics
+- **Commands**: Bot command definitions and metadata
+- **Guilds**: Discord server configurations
+- **Tickets**: Support ticket system
+- **Moderation Logs**: User moderation actions
+- **Changelogs**: Bot version history and updates
 
 ### API Endpoints
 - `GET /api/news` - Retrieve community updates and announcements
@@ -38,6 +46,11 @@ This is a clean, professional website for NexGuard, showcasing the bot's feature
 - `POST /api/testimonials` - Submit new testimonial for approval
 - `POST /api/feedback` - Submit feedback, bug reports, or feature requests
 - `GET /api/config` - Get basic configuration information
+- `GET /api/bot/status` - Get live bot status and statistics
+- `GET /api/bot/commands` - Get all bot commands and documentation
+- `GET /api/bot/changelog` - Get bot version history
+- `GET /api/bot/tickets` - Get ticket system data
+- `GET /api/bot/moderation` - Get moderation logs
 - `GET /health` - Health check endpoint
 
 ### Frontend Pages
@@ -98,36 +111,42 @@ This is a clean, professional website for NexGuard, showcasing the bot's feature
 2. Backend server bundled with ESBuild
 3. Environment-specific configuration management
 
-## Removed Features
+## Bot Features
 
-All bot integration and dashboard functionality has been removed:
-- Discord bot integration
-- Discord OAuth authentication
-- Server configuration dashboards
-- Bot status monitoring
-- Real-time bot statistics
-- Custom command management
-- Auto-reply systems
-- Moderation tools dashboard
+NexGuard includes comprehensive Discord bot functionality:
+- **Admin Commands**: Server configuration, prefix setting, announcements, statistics
+- **Moderation Commands**: Warn, mute, kick, ban, unban, message clearing
+- **Ticket System**: Support tickets with categories, priorities, and staff assignment
+- **Utility Commands**: Server info, user info, ping, help, changelog, uptime
+- **Real-time Status**: Live bot status monitoring and statistics
+- **Database Integration**: Persistent storage for all bot data
+- **Slash Commands**: Modern Discord slash command support
+- **Permission System**: Role-based command access control
 
 ## Current Status
 
-The website is now a clean, static presentation site that:
-- Showcases NexGuard's features and capabilities
-- Provides information about the development team
-- Allows users to submit testimonials and feedback
-- Includes comprehensive documentation
-- Maintains professional branding and design
-- Offers excellent user experience with smooth animations
+The system is a complete Discord bot with integrated website that:
+- Fully functional Discord bot with 20+ commands
+- Live bot status monitoring and statistics
+- Professional website showcasing bot features
+- Interactive documentation with command reference
+- Support ticket system integration
+- Moderation logging and analytics
+- Real-time bot status updates
+- Comprehensive setup guides and help system
 
 ## Changelog
 
-- July 18, 2025: Complete cleanup and removal of all bot and dashboard functionality
-- July 18, 2025: Streamlined to focus on core website presentation
-- July 18, 2025: Removed Discord OAuth, bot status monitoring, and dashboard components
-- July 18, 2025: Cleaned up database schema and API endpoints
-- July 18, 2025: Updated navigation and removed dashboard links
-- July 18, 2025: Simplified architecture for better maintainability
+- July 18, 2025: Complete NexGuard Discord bot implementation with full functionality
+- July 18, 2025: Added comprehensive command system (admin, moderation, ticket, utility)
+- July 18, 2025: Implemented live bot status monitoring and statistics
+- July 18, 2025: Added PostgreSQL database integration with Drizzle ORM
+- July 18, 2025: Created interactive documentation with command reference
+- July 18, 2025: Added ticket system with categories and priority management
+- July 18, 2025: Implemented moderation logging and user management
+- July 18, 2025: Added real-time bot status updates on website
+- July 18, 2025: Created comprehensive setup guides and help system
+- July 18, 2025: Updated features page to showcase bot capabilities
 
 ## User Preferences
 

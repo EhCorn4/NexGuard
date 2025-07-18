@@ -107,6 +107,57 @@ export function registerRoutes(app: Express): Server {
     });
   });
 
+  // Bot status endpoints
+  app.get("/api/bot/status", async (req, res) => {
+    try {
+      const status = await storage.getBotStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error fetching bot status:", error);
+      res.status(500).json({ error: "Failed to fetch bot status" });
+    }
+  });
+
+  app.get("/api/bot/commands", async (req, res) => {
+    try {
+      const commands = await storage.getCommands();
+      res.json(commands);
+    } catch (error) {
+      console.error("Error fetching commands:", error);
+      res.status(500).json({ error: "Failed to fetch commands" });
+    }
+  });
+
+  app.get("/api/bot/changelog", async (req, res) => {
+    try {
+      const changelog = await storage.getChangelogs();
+      res.json(changelog);
+    } catch (error) {
+      console.error("Error fetching changelog:", error);
+      res.status(500).json({ error: "Failed to fetch changelog" });
+    }
+  });
+
+  app.get("/api/bot/tickets", async (req, res) => {
+    try {
+      const tickets = await storage.getTickets();
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      res.status(500).json({ error: "Failed to fetch tickets" });
+    }
+  });
+
+  app.get("/api/bot/moderation", async (req, res) => {
+    try {
+      const logs = await storage.getModerationLogs();
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching moderation logs:", error);
+      res.status(500).json({ error: "Failed to fetch moderation logs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
