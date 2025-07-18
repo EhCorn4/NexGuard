@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { db } from '../../db';
-import { moderationLogs } from '@shared/schema';
+import { moderationLogs, guilds } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export const moderationCommands = [
   {
@@ -433,6 +434,178 @@ export const moderationCommands = [
         console.error('Error clearing messages:', error);
         await interaction.editReply({
           content: '❌ Failed to clear messages. Messages might be too old or I lack permissions.'
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('modrole')
+      .setDescription('Manage moderator roles for the server')
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('add')
+          .setDescription('Add a role as a moderator role')
+          .addRoleOption(option =>
+            option.setName('role')
+              .setDescription('The role to add as moderator')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('remove')
+          .setDescription('Remove a role from moderator roles')
+          .addRoleOption(option =>
+            option.setName('role')
+              .setDescription('The role to remove from moderators')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('list')
+          .setDescription('List all current moderator roles')
+      )
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
+    category: 'moderation',
+    permissions: ['MANAGE_ROLES'],
+    usage: '/modrole <add/remove/list> [role]',
+    async execute(interaction: any) {
+      const subcommand = interaction.options.getSubcommand();
+      
+      try {
+        // Get or create server configuration
+        let guildConfig = await db.select()
+          .from(guilds)
+          .where(eq(guilds.id, interaction.guild.id))
+          .limit(1);
+        
+        if (guildConfig.length === 0) {
+          await db.insert(guilds).values({
+            id: interaction.guild.id,
+            name: interaction.guild.name,
+            memberCount: interaction.guild.memberCount,
+            settings: JSON.stringify({ moderatorRoles: [] }),
+            updatedAt: new Date(),
+          });
+          guildConfig = [{ 
+            id: interaction.guild.id, 
+            name: interaction.guild.name, 
+            memberCount: interaction.guild.memberCount,
+            settings: JSON.stringify({ moderatorRoles: [] }),
+            updatedAt: new Date()
+          }];
+        }
+
+        const settings = JSON.parse(guildConfig[0].settings || '{}');
+        const moderatorRoles = settings.moderatorRoles || [];
+
+        if (subcommand === 'add') {
+          const role = interaction.options.getRole('role');
+          
+          if (moderatorRoles.includes(role.id)) {
+            await interaction.reply({
+              content: `❌ <@&${role.id}> is already a moderator role.`,
+              ephemeral: true
+            });
+            return;
+          }
+
+          moderatorRoles.push(role.id);
+          settings.moderatorRoles = moderatorRoles;
+
+          await db.update(guilds)
+            .set({ 
+              settings: JSON.stringify(settings),
+              updatedAt: new Date()
+            })
+            .where(eq(guilds.id, interaction.guild.id));
+
+          const embed = {
+            title: '🛡️ Moderator Role Added',
+            description: `<@&${role.id}> has been added as a moderator role.`,
+            color: 0x00FF00,
+            fields: [
+              { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
+              { name: 'Added by', value: interaction.user.tag, inline: true },
+              { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
+            ],
+            timestamp: new Date().toISOString(),
+          };
+
+          await interaction.reply({ embeds: [embed] });
+
+        } else if (subcommand === 'remove') {
+          const role = interaction.options.getRole('role');
+          
+          if (!moderatorRoles.includes(role.id)) {
+            await interaction.reply({
+              content: `❌ <@&${role.id}> is not a moderator role.`,
+              ephemeral: true
+            });
+            return;
+          }
+
+          const index = moderatorRoles.indexOf(role.id);
+          moderatorRoles.splice(index, 1);
+          settings.moderatorRoles = moderatorRoles;
+
+          await db.update(guilds)
+            .set({ 
+              settings: JSON.stringify(settings),
+              updatedAt: new Date()
+            })
+            .where(eq(guilds.id, interaction.guild.id));
+
+          const embed = {
+            title: '🛡️ Moderator Role Removed',
+            description: `<@&${role.id}> has been removed from moderator roles.`,
+            color: 0xFF0000,
+            fields: [
+              { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
+              { name: 'Removed by', value: interaction.user.tag, inline: true },
+              { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
+            ],
+            timestamp: new Date().toISOString(),
+          };
+
+          await interaction.reply({ embeds: [embed] });
+
+        } else if (subcommand === 'list') {
+          if (moderatorRoles.length === 0) {
+            await interaction.reply({
+              content: '📋 No moderator roles have been set up for this server.',
+              ephemeral: true
+            });
+            return;
+          }
+
+          const roleList = moderatorRoles.map((roleId: string) => {
+            const role = interaction.guild.roles.cache.get(roleId);
+            return role ? `<@&${roleId}> (${role.name})` : `<@&${roleId}> (Role not found)`;
+          }).join('\n');
+
+          const embed = {
+            title: '🛡️ Moderator Roles',
+            description: roleList,
+            color: 0x0099FF,
+            fields: [
+              { name: 'Total Roles', value: `${moderatorRoles.length}`, inline: true },
+              { name: 'Server', value: interaction.guild.name, inline: true },
+            ],
+            timestamp: new Date().toISOString(),
+          };
+
+          await interaction.reply({ embeds: [embed] });
+        }
+
+      } catch (error) {
+        console.error('Error managing moderator roles:', error);
+        await interaction.reply({
+          content: '❌ Failed to manage moderator roles. Please try again.',
+          ephemeral: true
         });
       }
     }
