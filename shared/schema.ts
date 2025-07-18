@@ -68,6 +68,61 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Analytics tables
+export const serverAnalytics = pgTable("server_analytics", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  memberCount: integer("member_count").default(0),
+  onlineMembers: integer("online_members").default(0),
+  messagesPerHour: integer("messages_per_hour").default(0),
+  commandsExecuted: integer("commands_executed").default(0),
+  newJoins: integer("new_joins").default(0),
+  newLeaves: integer("new_leaves").default(0),
+  voiceMembers: integer("voice_members").default(0),
+});
+
+export const messageAnalytics = pgTable("message_analytics", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  channelId: text("channel_id").notNull(),
+  userId: text("user_id").notNull(),
+  messageCount: integer("message_count").default(1),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  hour: integer("hour").notNull(), // 0-23 for hourly grouping
+});
+
+export const commandAnalytics = pgTable("command_analytics", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  commandName: text("command_name").notNull(),
+  userId: text("user_id").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  success: boolean("success").default(true),
+});
+
+export const userActivity = pgTable("user_activity", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  userId: text("user_id").notNull(),
+  username: text("username").notNull(),
+  lastActive: timestamp("last_active").defaultNow().notNull(),
+  messageCount: integer("message_count").default(0),
+  commandCount: integer("command_count").default(0),
+  voiceMinutes: integer("voice_minutes").default(0),
+});
+
+export const channelAnalytics = pgTable("channel_analytics", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  channelId: text("channel_id").notNull(),
+  channelName: text("channel_name").notNull(),
+  channelType: text("channel_type").notNull(), // text, voice, category
+  messageCount: integer("message_count").default(0),
+  activeUsers: integer("active_users").default(0),
+  lastActivity: timestamp("last_activity").defaultNow().notNull(),
+});
+
 // Bot-related tables
 export const guilds = pgTable("guilds", {
   id: text("id").primaryKey(), // Discord guild ID
@@ -269,6 +324,11 @@ export const insertBanListSchema = createInsertSchema(banList);
 export const insertWarnHistorySchema = createInsertSchema(warnHistory);
 export const insertChangelogSchema = createInsertSchema(changelogs);
 export const insertBotStatusSchema = createInsertSchema(botStatus);
+export const insertServerAnalyticsSchema = createInsertSchema(serverAnalytics);
+export const insertMessageAnalyticsSchema = createInsertSchema(messageAnalytics);
+export const insertCommandAnalyticsSchema = createInsertSchema(commandAnalytics);
+export const insertUserActivitySchema = createInsertSchema(userActivity);
+export const insertChannelAnalyticsSchema = createInsertSchema(channelAnalytics);
 
 // Select types
 export type User = typeof users.$inferSelect;
@@ -287,6 +347,11 @@ export type BanList = typeof banList.$inferSelect;
 export type WarnHistory = typeof warnHistory.$inferSelect;
 export type Changelog = typeof changelogs.$inferSelect;
 export type BotStatus = typeof botStatus.$inferSelect;
+export type ServerAnalytics = typeof serverAnalytics.$inferSelect;
+export type MessageAnalytics = typeof messageAnalytics.$inferSelect;
+export type CommandAnalytics = typeof commandAnalytics.$inferSelect;
+export type UserActivity = typeof userActivity.$inferSelect;
+export type ChannelAnalytics = typeof channelAnalytics.$inferSelect;
 
 // Insert types
 export type InsertUser = z.infer<typeof insertUserSchema>;

@@ -22,6 +22,7 @@ const Community = lazy(() => import("@/pages/community"));
 const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
 const Docs = lazy(() => import("@/pages/docs"));
+const Analytics = lazy(() => import("@/pages/analytics"));
 // Dashboard functionality removed
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
@@ -94,6 +95,13 @@ function Router() {
                 <PageTransition key="docs">
                   <PerformanceWrapper skeletonType="list" skeletonCount={5}>
                     <Docs />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/analytics" component={() => (
+                <PageTransition key="analytics">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={8}>
+                    <Analytics />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />

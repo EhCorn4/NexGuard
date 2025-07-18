@@ -218,6 +218,80 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Analytics endpoints
+  app.get("/api/analytics/overview", async (req, res) => {
+    try {
+      const analytics = await storage.getAnalyticsOverview();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics overview:", error);
+      res.status(500).json({ error: "Failed to fetch analytics overview" });
+    }
+  });
+
+  app.get("/api/analytics/server/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { timeRange = "24h" } = req.query;
+      const analytics = await storage.getServerAnalytics(guildId, timeRange as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching server analytics:", error);
+      res.status(500).json({ error: "Failed to fetch server analytics" });
+    }
+  });
+
+  app.get("/api/analytics/messages/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { timeRange = "24h" } = req.query;
+      const analytics = await storage.getMessageAnalytics(guildId, timeRange as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching message analytics:", error);
+      res.status(500).json({ error: "Failed to fetch message analytics" });
+    }
+  });
+
+  app.get("/api/analytics/commands/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { timeRange = "24h" } = req.query;
+      const analytics = await storage.getCommandAnalytics(guildId, timeRange as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching command analytics:", error);
+      res.status(500).json({ error: "Failed to fetch command analytics" });
+    }
+  });
+
+  app.get("/api/analytics/users/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const analytics = await storage.getUserActivity(guildId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching user activity:", error);
+      res.status(500).json({ error: "Failed to fetch user activity" });
+    }
+  });
+
+  app.get("/api/analytics/channels/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const analytics = await storage.getChannelAnalytics(guildId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching channel analytics:", error);
+      res.status(500).json({ error: "Failed to fetch channel analytics" });
+    }
+  });
+
+  // Health check
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
