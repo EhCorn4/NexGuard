@@ -235,6 +235,159 @@ class AdminCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Error viewing settings: {e}")
             await interaction.response.send_message("❌ Failed to load settings. Please try again.", ephemeral=True)
+    
+    @app_commands.command(name="autoreply", description="Manage automatic replies")
+    @app_commands.describe(
+        action="Action to perform with auto-replies",
+        trigger="The trigger word/phrase that will activate the auto-reply",
+        response="The response message to send when triggered",
+        trigger_type="How the trigger should match messages"
+    )
+    @app_commands.choices(
+        action=[
+            app_commands.Choice(name="add", value="add"),
+            app_commands.Choice(name="remove", value="remove"),
+            app_commands.Choice(name="list", value="list"),
+            app_commands.Choice(name="toggle", value="toggle")
+        ],
+        trigger_type=[
+            app_commands.Choice(name="Contains", value="contains"),
+            app_commands.Choice(name="Exact Match", value="exact"),
+            app_commands.Choice(name="Starts With", value="starts_with"),
+            app_commands.Choice(name="Ends With", value="ends_with")
+        ]
+    )
+    async def autoreply(self, interaction: discord.Interaction, action: str, trigger: str = None, 
+                       response: str = None, trigger_type: str = "contains"):
+        """Manage automatic replies for the server"""
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
+            return
+        
+        if not self.bot.db_pool:
+            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            return
+        
+        try:
+            guild_id = str(interaction.guild.id)
+            
+            if action == "add":
+                if not trigger or not response:
+                    await interaction.response.send_message("❌ Please provide both trigger and response.", ephemeral=True)
+                    return
+                
+                if len(trigger) > 100:
+                    await interaction.response.send_message("❌ Trigger must be 100 characters or less.", ephemeral=True)
+                    return
+                
+                if len(response) > 1000:
+                    await interaction.response.send_message("❌ Response must be 1000 characters or less.", ephemeral=True)
+                    return
+                
+                async with self.bot.db_pool.acquire() as conn:
+                    # Check if trigger already exists
+                    existing = await conn.fetchrow(
+                        "SELECT id FROM auto_replies WHERE guild_id = $1 AND LOWER(trigger) = LOWER($2) AND is_active = TRUE",
+                        guild_id, trigger
+                    )
+                    
+                    if existing:
+                        await interaction.response.send_message(f"❌ Auto-reply with trigger '{trigger}' already exists.", ephemeral=True)
+                        return
+                    
+                    # Add new auto-reply
+                    await conn.execute("""
+                        INSERT INTO auto_replies (guild_id, trigger, response, created_by, created_by_name, trigger_type)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                    """, guild_id, trigger, response, str(interaction.user.id), interaction.user.name, trigger_type)
+                    
+                    embed = discord.Embed(
+                        title="✅ Auto-Reply Added",
+                        color=0x00FF00,
+                        timestamp=datetime.utcnow()
+                    )
+                    embed.add_field(name="Trigger", value=f"`{trigger}`", inline=True)
+                    embed.add_field(name="Type", value=trigger_type.replace('_', ' ').title(), inline=True)
+                    embed.add_field(name="Response", value=f"```{response}```", inline=False)
+                    
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            elif action == "remove":
+                if not trigger:
+                    await interaction.response.send_message("❌ Please provide the trigger to remove.", ephemeral=True)
+                    return
+                
+                async with self.bot.db_pool.acquire() as conn:
+                    result = await conn.execute(
+                        "DELETE FROM auto_replies WHERE guild_id = $1 AND LOWER(trigger) = LOWER($2)",
+                        guild_id, trigger
+                    )
+                    
+                    if result == "DELETE 0":
+                        await interaction.response.send_message(f"❌ No auto-reply found with trigger '{trigger}'.", ephemeral=True)
+                    else:
+                        await interaction.response.send_message(f"✅ Auto-reply '{trigger}' removed successfully.", ephemeral=True)
+            
+            elif action == "list":
+                async with self.bot.db_pool.acquire() as conn:
+                    auto_replies = await conn.fetch(
+                        "SELECT trigger, response, trigger_type, is_active, created_by_name FROM auto_replies WHERE guild_id = $1 ORDER BY created_at DESC",
+                        guild_id
+                    )
+                    
+                    if not auto_replies:
+                        await interaction.response.send_message("📝 No auto-replies configured for this server.", ephemeral=True)
+                        return
+                    
+                    embed = discord.Embed(
+                        title=f"🤖 Auto-Replies - {interaction.guild.name}",
+                        color=0x00FFFF,
+                        timestamp=datetime.utcnow()
+                    )
+                    
+                    for i, reply in enumerate(auto_replies[:10], 1):  # Limit to 10 to avoid embed limits
+                        status = "✅" if reply['is_active'] else "❌"
+                        trigger_type = reply['trigger_type'].replace('_', ' ').title()
+                        
+                        embed.add_field(
+                            name=f"{i}. {status} {reply['trigger']} ({trigger_type})",
+                            value=f"**Response:** {reply['response'][:100]}{'...' if len(reply['response']) > 100 else ''}\n*Created by: {reply['created_by_name']}*",
+                            inline=False
+                        )
+                    
+                    if len(auto_replies) > 10:
+                        embed.set_footer(text=f"Showing 10 of {len(auto_replies)} auto-replies")
+                    
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            elif action == "toggle":
+                if not trigger:
+                    await interaction.response.send_message("❌ Please provide the trigger to toggle.", ephemeral=True)
+                    return
+                
+                async with self.bot.db_pool.acquire() as conn:
+                    # Get current status
+                    current = await conn.fetchrow(
+                        "SELECT is_active FROM auto_replies WHERE guild_id = $1 AND LOWER(trigger) = LOWER($2)",
+                        guild_id, trigger
+                    )
+                    
+                    if not current:
+                        await interaction.response.send_message(f"❌ No auto-reply found with trigger '{trigger}'.", ephemeral=True)
+                        return
+                    
+                    new_status = not current['is_active']
+                    await conn.execute(
+                        "UPDATE auto_replies SET is_active = $1, updated_at = NOW() WHERE guild_id = $2 AND LOWER(trigger) = LOWER($3)",
+                        new_status, guild_id, trigger
+                    )
+                    
+                    status_text = "enabled" if new_status else "disabled"
+                    await interaction.response.send_message(f"✅ Auto-reply '{trigger}' {status_text}.", ephemeral=True)
+                    
+        except Exception as e:
+            logger.error(f"Error managing auto-reply: {e}")
+            await interaction.response.send_message("❌ Failed to manage auto-reply. Please try again.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))

@@ -227,6 +227,20 @@ export const changelogs = pgTable("changelogs", {
   isPublished: boolean("is_published").default(false).notNull(),
 });
 
+export const autoReplies = pgTable("auto_replies", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  trigger: text("trigger").notNull(),
+  response: text("response").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdBy: text("created_by").notNull(), // User ID who created the auto-reply
+  createdByName: text("created_by_name").notNull(),
+  triggerType: text("trigger_type").default("contains").notNull(), // "contains", "exact", "starts_with", "ends_with"
+  caseSensitive: boolean("case_sensitive").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const botStatus = pgTable("bot_status", {
   id: serial("id").primaryKey(),
   isOnline: boolean("is_online").default(false).notNull(),

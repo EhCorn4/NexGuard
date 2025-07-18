@@ -137,14 +137,81 @@ class NexGuardBot(commands.Bot):
             ]
             
             # Pick a random response
-            import random
             response = random.choice(responses)
             
             await message.reply(response)
             return
         
+        # Check for auto-replies
+        await self.check_auto_replies(message)
+        
         # Process other commands
         await self.process_commands(message)
+    
+    async def check_auto_replies(self, message):
+        """Check for and process auto-replies"""
+        if not self.db_pool or not message.guild:
+            return
+        
+        try:
+            guild_id = str(message.guild.id)
+            
+            async with self.db_pool.acquire() as conn:
+                # Get all active auto-replies for this guild
+                auto_replies = await conn.fetch(
+                    "SELECT trigger, response, trigger_type, case_sensitive FROM auto_replies WHERE guild_id = $1 AND is_active = TRUE",
+                    guild_id
+                )
+                
+                if not auto_replies:
+                    return
+                
+                message_content = message.content
+                
+                for reply in auto_replies:
+                    trigger = reply['trigger']
+                    response = reply['response']
+                    trigger_type = reply['trigger_type']
+                    case_sensitive = reply['case_sensitive']
+                    
+                    # Prepare text for comparison
+                    if case_sensitive:
+                        msg_text = message_content
+                        trigger_text = trigger
+                    else:
+                        msg_text = message_content.lower()
+                        trigger_text = trigger.lower()
+                    
+                    # Check if trigger matches based on type
+                    matched = False
+                    
+                    if trigger_type == "contains":
+                        matched = trigger_text in msg_text
+                    elif trigger_type == "exact":
+                        matched = msg_text.strip() == trigger_text
+                    elif trigger_type == "starts_with":
+                        matched = msg_text.startswith(trigger_text)
+                    elif trigger_type == "ends_with":
+                        matched = msg_text.endswith(trigger_text)
+                    
+                    if matched:
+                        # Replace placeholders in response
+                        response = response.replace('{user}', message.author.mention)
+                        response = response.replace('{user.name}', message.author.name)
+                        response = response.replace('{user.display_name}', message.author.display_name)
+                        response = response.replace('{user.mention}', message.author.mention)
+                        response = response.replace('{server}', message.guild.name)
+                        response = response.replace('{guild.name}', message.guild.name)
+                        response = response.replace('{channel}', message.channel.mention)
+                        response = response.replace('{channel.name}', message.channel.name)
+                        
+                        # Send the auto-reply
+                        await message.reply(response)
+                        logger.info(f"Auto-reply triggered in {message.guild.name}: '{trigger}' -> '{response}'")
+                        return  # Only respond to first match
+                        
+        except Exception as e:
+            logger.error(f"Error checking auto-replies: {e}")
     
     async def handle_guild_join(self, guild):
         """Handle bot joining a guild"""
