@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { db } from '../../db';
-import { moderationLogs, guilds } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { moderationLogs, guilds, banList, warnHistory } from '@shared/schema';
+import { eq, desc, and, count, sum } from 'drizzle-orm';
 
 export const moderationCommands = [
   {
@@ -35,6 +35,27 @@ export const moderationCommands = [
           action: 'warn',
           reason,
           createdAt: new Date(),
+        });
+
+        // Add to warn history with severity based on reason
+        const severity = reason.toLowerCase().includes('severe') ? 'severe' : 
+                        reason.toLowerCase().includes('high') ? 'high' : 
+                        reason.toLowerCase().includes('low') ? 'low' : 'medium';
+        
+        const points = severity === 'severe' ? 3 : severity === 'high' ? 2 : 1;
+        
+        await db.insert(warnHistory).values({
+          guildId: interaction.guild.id,
+          userId: user.id,
+          username: user.tag,
+          moderatorId: interaction.user.id,
+          moderatorName: interaction.user.tag,
+          reason,
+          severity,
+          points,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         });
 
         const embed = {
@@ -308,6 +329,21 @@ export const moderationCommands = [
           action: 'ban',
           reason,
           createdAt: new Date(),
+        });
+
+        // Add to ban list
+        await db.insert(banList).values({
+          guildId: interaction.guild.id,
+          userId: user.id,
+          username: user.tag,
+          moderatorId: interaction.user.id,
+          moderatorName: interaction.user.tag,
+          reason,
+          banType: 'permanent',
+          isActive: true,
+          appealable: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         });
 
         const embed = {
@@ -1224,6 +1260,594 @@ export const moderationCommands = [
         console.error('Error purging messages:', error);
         await interaction.editReply({
           content: '❌ Failed to purge messages. Messages might be too old or I lack permissions.'
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('banlist')
+      .setDescription('Manage server ban list')
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('view')
+          .setDescription('View the server ban list')
+          .addIntegerOption(option =>
+            option.setName('page')
+              .setDescription('Page number (default: 1)')
+              .setRequired(false)
+              .setMinValue(1)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('search')
+          .setDescription('Search for a banned user')
+          .addStringOption(option =>
+            option.setName('query')
+              .setDescription('Username or User ID to search for')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('appeal')
+          .setDescription('Handle ban appeal')
+          .addStringOption(option =>
+            option.setName('user_id')
+              .setDescription('User ID to handle appeal for')
+              .setRequired(true)
+          )
+          .addStringOption(option =>
+            option.setName('action')
+              .setDescription('Appeal action')
+              .setRequired(true)
+              .addChoices(
+                { name: 'Approve', value: 'approve' },
+                { name: 'Deny', value: 'deny' }
+              )
+          )
+          .addStringOption(option =>
+            option.setName('reason')
+              .setDescription('Reason for appeal decision')
+              .setRequired(false)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('remove')
+          .setDescription('Remove a ban from the list')
+          .addStringOption(option =>
+            option.setName('user_id')
+              .setDescription('User ID to remove from ban list')
+              .setRequired(true)
+          )
+          .addStringOption(option =>
+            option.setName('reason')
+              .setDescription('Reason for removing the ban')
+              .setRequired(false)
+          )
+      )
+      .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+    category: 'moderation',
+    permissions: ['BAN_MEMBERS'],
+    usage: '/banlist <subcommand> [options]',
+    async execute(interaction: any) {
+      const subcommand = interaction.options.getSubcommand();
+      
+      try {
+        switch (subcommand) {
+          case 'view':
+            const page = interaction.options.getInteger('page') || 1;
+            const limit = 10;
+            const offset = (page - 1) * limit;
+            
+            const [bans, totalCount] = await Promise.all([
+              db.select()
+                .from(banList)
+                .where(and(eq(banList.guildId, interaction.guild.id), eq(banList.isActive, true)))
+                .orderBy(desc(banList.createdAt))
+                .limit(limit)
+                .offset(offset),
+              db.select({ count: count() })
+                .from(banList)
+                .where(and(eq(banList.guildId, interaction.guild.id), eq(banList.isActive, true)))
+            ]);
+            
+            const totalPages = Math.ceil(totalCount[0].count / limit);
+            
+            if (bans.length === 0) {
+              await interaction.reply({
+                embeds: [{
+                  title: '📋 Server Ban List',
+                  description: 'No active bans found.',
+                  color: 0x00FF00,
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+              return;
+            }
+            
+            const banFields = bans.map(ban => ({
+              name: `${ban.username} (${ban.userId})`,
+              value: `**Reason:** ${ban.reason || 'No reason provided'}\n**Moderator:** ${ban.moderatorName}\n**Date:** <t:${Math.floor(ban.createdAt.getTime() / 1000)}:R>\n**Type:** ${ban.banType}${ban.expiresAt ? `\n**Expires:** <t:${Math.floor(ban.expiresAt.getTime() / 1000)}:R>` : ''}`,
+              inline: false
+            }));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '📋 Server Ban List',
+                color: 0xFF0000,
+                fields: banFields,
+                footer: {
+                  text: `Page ${page} of ${totalPages} | Total bans: ${totalCount[0].count}`
+                },
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'search':
+            const query = interaction.options.getString('query');
+            
+            const searchResults = await db.select()
+              .from(banList)
+              .where(and(
+                eq(banList.guildId, interaction.guild.id),
+                eq(banList.isActive, true),
+                // Search by username or user ID
+                query.includes('#') ? eq(banList.username, query) : eq(banList.userId, query)
+              ));
+            
+            if (searchResults.length === 0) {
+              await interaction.reply({
+                embeds: [{
+                  title: '🔍 Ban Search Results',
+                  description: `No active bans found for "${query}".`,
+                  color: 0x00FF00,
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+              return;
+            }
+            
+            const results = searchResults.map(ban => ({
+              name: `${ban.username} (${ban.userId})`,
+              value: `**Reason:** ${ban.reason || 'No reason provided'}\n**Moderator:** ${ban.moderatorName}\n**Date:** <t:${Math.floor(ban.createdAt.getTime() / 1000)}:F>\n**Type:** ${ban.banType}${ban.expiresAt ? `\n**Expires:** <t:${Math.floor(ban.expiresAt.getTime() / 1000)}:R>` : ''}`,
+              inline: false
+            }));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '🔍 Ban Search Results',
+                color: 0xFF0000,
+                fields: results,
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'appeal':
+            const appealUserId = interaction.options.getString('user_id');
+            const appealAction = interaction.options.getString('action');
+            const appealReason = interaction.options.getString('reason') || 'No reason provided';
+            
+            const [banToAppeal] = await db.select()
+              .from(banList)
+              .where(and(
+                eq(banList.guildId, interaction.guild.id),
+                eq(banList.userId, appealUserId),
+                eq(banList.isActive, true)
+              ))
+              .limit(1);
+            
+            if (!banToAppeal) {
+              await interaction.reply({
+                content: '❌ No active ban found for this user.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            if (appealAction === 'approve') {
+              await db.update(banList)
+                .set({
+                  isActive: false,
+                  appealReason: appealReason,
+                  appealedAt: new Date(),
+                  updatedAt: new Date()
+                })
+                .where(eq(banList.id, banToAppeal.id));
+              
+              // Attempt to unban the user
+              try {
+                await interaction.guild.members.unban(appealUserId, `Ban appeal approved by ${interaction.user.tag}: ${appealReason}`);
+              } catch (error) {
+                console.error('Failed to unban user:', error);
+              }
+              
+              await interaction.reply({
+                embeds: [{
+                  title: '✅ Ban Appeal Approved',
+                  description: `Ban appeal for ${banToAppeal.username} has been approved.`,
+                  color: 0x00FF00,
+                  fields: [
+                    { name: 'User', value: `${banToAppeal.username} (${banToAppeal.userId})`, inline: true },
+                    { name: 'Approved by', value: interaction.user.tag, inline: true },
+                    { name: 'Reason', value: appealReason, inline: false }
+                  ],
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+            } else {
+              await db.update(banList)
+                .set({
+                  appealReason: appealReason,
+                  appealedAt: new Date(),
+                  updatedAt: new Date()
+                })
+                .where(eq(banList.id, banToAppeal.id));
+              
+              await interaction.reply({
+                embeds: [{
+                  title: '❌ Ban Appeal Denied',
+                  description: `Ban appeal for ${banToAppeal.username} has been denied.`,
+                  color: 0xFF0000,
+                  fields: [
+                    { name: 'User', value: `${banToAppeal.username} (${banToAppeal.userId})`, inline: true },
+                    { name: 'Denied by', value: interaction.user.tag, inline: true },
+                    { name: 'Reason', value: appealReason, inline: false }
+                  ],
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+            }
+            break;
+            
+          case 'remove':
+            const removeUserId = interaction.options.getString('user_id');
+            const removeReason = interaction.options.getString('reason') || 'No reason provided';
+            
+            const [banToRemove] = await db.select()
+              .from(banList)
+              .where(and(
+                eq(banList.guildId, interaction.guild.id),
+                eq(banList.userId, removeUserId),
+                eq(banList.isActive, true)
+              ))
+              .limit(1);
+            
+            if (!banToRemove) {
+              await interaction.reply({
+                content: '❌ No active ban found for this user.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            await db.update(banList)
+              .set({
+                isActive: false,
+                updatedAt: new Date()
+              })
+              .where(eq(banList.id, banToRemove.id));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '✅ Ban Removed',
+                description: `Ban for ${banToRemove.username} has been removed from the ban list.`,
+                color: 0x00FF00,
+                fields: [
+                  { name: 'User', value: `${banToRemove.username} (${banToRemove.userId})`, inline: true },
+                  { name: 'Removed by', value: interaction.user.tag, inline: true },
+                  { name: 'Reason', value: removeReason, inline: false }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+        }
+      } catch (error) {
+        console.error('Error managing ban list:', error);
+        await interaction.reply({
+          content: '❌ Failed to manage ban list. Please try again.',
+          ephemeral: true
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('warnhistory')
+      .setDescription('Manage warning history')
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('view')
+          .setDescription('View warning history for a user')
+          .addUserOption(option =>
+            option.setName('user')
+              .setDescription('User to view warning history for')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('clear')
+          .setDescription('Clear warning history for a user')
+          .addUserOption(option =>
+            option.setName('user')
+              .setDescription('User to clear warning history for')
+              .setRequired(true)
+          )
+          .addStringOption(option =>
+            option.setName('reason')
+              .setDescription('Reason for clearing warnings')
+              .setRequired(false)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('remove')
+          .setDescription('Remove a specific warning')
+          .addIntegerOption(option =>
+            option.setName('warning_id')
+              .setDescription('Warning ID to remove')
+              .setRequired(true)
+          )
+          .addStringOption(option =>
+            option.setName('reason')
+              .setDescription('Reason for removing the warning')
+              .setRequired(false)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('stats')
+          .setDescription('View server warning statistics')
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('top')
+          .setDescription('View users with most warnings')
+          .addIntegerOption(option =>
+            option.setName('limit')
+              .setDescription('Number of users to show (default: 10)')
+              .setRequired(false)
+              .setMinValue(1)
+              .setMaxValue(25)
+          )
+      )
+      .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+    category: 'moderation',
+    permissions: ['MODERATE_MEMBERS'],
+    usage: '/warnhistory <subcommand> [options]',
+    async execute(interaction: any) {
+      const subcommand = interaction.options.getSubcommand();
+      
+      try {
+        switch (subcommand) {
+          case 'view':
+            const user = interaction.options.getUser('user');
+            
+            const [warnings, totalPoints] = await Promise.all([
+              db.select()
+                .from(warnHistory)
+                .where(and(
+                  eq(warnHistory.guildId, interaction.guild.id),
+                  eq(warnHistory.userId, user.id),
+                  eq(warnHistory.isActive, true)
+                ))
+                .orderBy(desc(warnHistory.createdAt)),
+              db.select({ total: sum(warnHistory.points) })
+                .from(warnHistory)
+                .where(and(
+                  eq(warnHistory.guildId, interaction.guild.id),
+                  eq(warnHistory.userId, user.id),
+                  eq(warnHistory.isActive, true)
+                ))
+            ]);
+            
+            if (warnings.length === 0) {
+              await interaction.reply({
+                embeds: [{
+                  title: '📋 Warning History',
+                  description: `${user.tag} has no warnings.`,
+                  color: 0x00FF00,
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+              return;
+            }
+            
+            const warningFields = warnings.slice(0, 10).map(warning => ({
+              name: `Warning #${warning.id} - ${warning.severity.toUpperCase()}`,
+              value: `**Reason:** ${warning.reason}\n**Moderator:** ${warning.moderatorName}\n**Points:** ${warning.points}\n**Date:** <t:${Math.floor(warning.createdAt.getTime() / 1000)}:R>${warning.expiresAt ? `\n**Expires:** <t:${Math.floor(warning.expiresAt.getTime() / 1000)}:R>` : ''}`,
+              inline: false
+            }));
+            
+            await interaction.reply({
+              embeds: [{
+                title: `📋 Warning History - ${user.tag}`,
+                color: 0xFF0000,
+                fields: warningFields,
+                footer: {
+                  text: `Total warnings: ${warnings.length} | Total points: ${totalPoints[0].total || 0}`
+                },
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'clear':
+            const clearUser = interaction.options.getUser('user');
+            const clearReason = interaction.options.getString('reason') || 'No reason provided';
+            
+            const activeWarnings = await db.select()
+              .from(warnHistory)
+              .where(and(
+                eq(warnHistory.guildId, interaction.guild.id),
+                eq(warnHistory.userId, clearUser.id),
+                eq(warnHistory.isActive, true)
+              ));
+            
+            if (activeWarnings.length === 0) {
+              await interaction.reply({
+                content: '❌ No active warnings found for this user.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            await db.update(warnHistory)
+              .set({
+                isActive: false,
+                updatedAt: new Date()
+              })
+              .where(and(
+                eq(warnHistory.guildId, interaction.guild.id),
+                eq(warnHistory.userId, clearUser.id),
+                eq(warnHistory.isActive, true)
+              ));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '✅ Warning History Cleared',
+                description: `All warnings for ${clearUser.tag} have been cleared.`,
+                color: 0x00FF00,
+                fields: [
+                  { name: 'User', value: `${clearUser.tag} (${clearUser.id})`, inline: true },
+                  { name: 'Cleared by', value: interaction.user.tag, inline: true },
+                  { name: 'Warnings Cleared', value: activeWarnings.length.toString(), inline: true },
+                  { name: 'Reason', value: clearReason, inline: false }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'remove':
+            const warningId = interaction.options.getInteger('warning_id');
+            const removeReason = interaction.options.getString('reason') || 'No reason provided';
+            
+            const [warningToRemove] = await db.select()
+              .from(warnHistory)
+              .where(and(
+                eq(warnHistory.guildId, interaction.guild.id),
+                eq(warnHistory.id, warningId),
+                eq(warnHistory.isActive, true)
+              ))
+              .limit(1);
+            
+            if (!warningToRemove) {
+              await interaction.reply({
+                content: '❌ Warning not found or already removed.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            await db.update(warnHistory)
+              .set({
+                isActive: false,
+                updatedAt: new Date()
+              })
+              .where(eq(warnHistory.id, warningId));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '✅ Warning Removed',
+                description: `Warning #${warningId} has been removed.`,
+                color: 0x00FF00,
+                fields: [
+                  { name: 'User', value: `${warningToRemove.username} (${warningToRemove.userId})`, inline: true },
+                  { name: 'Removed by', value: interaction.user.tag, inline: true },
+                  { name: 'Original Reason', value: warningToRemove.reason, inline: false },
+                  { name: 'Removal Reason', value: removeReason, inline: false }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'stats':
+            const [totalWarningsCount, activeWarningsCount, totalPointsSum] = await Promise.all([
+              db.select({ count: count() })
+                .from(warnHistory)
+                .where(eq(warnHistory.guildId, interaction.guild.id)),
+              db.select({ count: count() })
+                .from(warnHistory)
+                .where(and(eq(warnHistory.guildId, interaction.guild.id), eq(warnHistory.isActive, true))),
+              db.select({ total: sum(warnHistory.points) })
+                .from(warnHistory)
+                .where(and(eq(warnHistory.guildId, interaction.guild.id), eq(warnHistory.isActive, true)))
+            ]);
+            
+            await interaction.reply({
+              embeds: [{
+                title: '📊 Server Warning Statistics',
+                color: 0x00FFFF,
+                fields: [
+                  { name: 'Total Warnings', value: totalWarningsCount[0].count.toString(), inline: true },
+                  { name: 'Active Warnings', value: activeWarningsCount[0].count.toString(), inline: true },
+                  { name: 'Total Points', value: (totalPointsSum[0].total || 0).toString(), inline: true },
+                  { name: 'Expired/Removed', value: (totalWarningsCount[0].count - activeWarningsCount[0].count).toString(), inline: true }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'top':
+            const limit = interaction.options.getInteger('limit') || 10;
+            
+            const topWarnings = await db.select({
+              userId: warnHistory.userId,
+              username: warnHistory.username,
+              count: count(),
+              totalPoints: sum(warnHistory.points)
+            })
+            .from(warnHistory)
+            .where(and(eq(warnHistory.guildId, interaction.guild.id), eq(warnHistory.isActive, true)))
+            .groupBy(warnHistory.userId, warnHistory.username)
+            .orderBy(desc(count()))
+            .limit(limit);
+            
+            if (topWarnings.length === 0) {
+              await interaction.reply({
+                embeds: [{
+                  title: '📋 Top Warning List',
+                  description: 'No warnings found in this server.',
+                  color: 0x00FF00,
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+              return;
+            }
+            
+            const topList = topWarnings.map((entry, index) => 
+              `**${index + 1}.** ${entry.username} (${entry.userId})\n${entry.count} warnings • ${entry.totalPoints} points`
+            ).join('\n\n');
+            
+            await interaction.reply({
+              embeds: [{
+                title: '📋 Top Warning List',
+                description: topList,
+                color: 0xFF0000,
+                footer: {
+                  text: `Showing top ${topWarnings.length} users with most warnings`
+                },
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+        }
+      } catch (error) {
+        console.error('Error managing warning history:', error);
+        await interaction.reply({
+          content: '❌ Failed to manage warning history. Please try again.',
+          ephemeral: true
         });
       }
     }

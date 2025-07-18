@@ -49,6 +49,10 @@ class NexGuardBot {
       await this.handleGuildLeave(guild);
     });
 
+    this.client.on('guildMemberAdd', async (member) => {
+      await this.handleWelcomeMessage(member);
+    });
+
     this.client.on('interactionCreate', async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
 
@@ -152,6 +156,73 @@ class NexGuardBot {
       console.log(`❌ Left guild: ${guild.name} (${guild.id})`);
     } catch (error) {
       console.error('Error handling guild leave:', error);
+    }
+  }
+
+  private async handleWelcomeMessage(member: any) {
+    try {
+      // Get welcome settings from database
+      const settings = await storage.getGuildSettings(member.guild.id);
+      const welcomeSettings = settings.welcome || {};
+      
+      if (!welcomeSettings.enabled || !welcomeSettings.channelId) {
+        return;
+      }
+
+      const channel = member.guild.channels.cache.get(welcomeSettings.channelId);
+      if (!channel) {
+        return;
+      }
+
+      // Replace placeholders in welcome message
+      let welcomeMessage = welcomeSettings.message || 'Welcome to {server}, {user}!';
+      welcomeMessage = welcomeMessage
+        .replace(/{user}/g, `<@${member.id}>`)
+        .replace(/{server}/g, member.guild.name)
+        .replace(/{member_count}/g, member.guild.memberCount.toString())
+        .replace(/{username}/g, member.user.username)
+        .replace(/{user_tag}/g, member.user.tag)
+        .replace(/{user_id}/g, member.id)
+        .replace(/{server_id}/g, member.guild.id)
+        .replace(/{created_at}/g, member.user.createdAt.toDateString())
+        .replace(/{joined_at}/g, member.joinedAt.toDateString());
+
+      // Send welcome message
+      const embed = {
+        title: `Welcome to ${member.guild.name}!`,
+        description: welcomeMessage,
+        color: 0x00FF00,
+        thumbnail: {
+          url: member.user.displayAvatarURL({ dynamic: true })
+        },
+        fields: [
+          {
+            name: 'Account Created',
+            value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`,
+            inline: true
+          },
+          {
+            name: 'Member Count',
+            value: member.guild.memberCount.toString(),
+            inline: true
+          }
+        ],
+        timestamp: new Date().toISOString(),
+        footer: {
+          text: `User ID: ${member.id}`
+        }
+      };
+
+      // Send welcome message based on type
+      if (welcomeSettings.type === 'embed') {
+        await channel.send({ embeds: [embed] });
+      } else {
+        await channel.send(welcomeMessage);
+      }
+
+      console.log(`👋 Welcome message sent for ${member.user.tag} in ${member.guild.name}`);
+    } catch (error) {
+      console.error('Error sending welcome message:', error);
     }
   }
 

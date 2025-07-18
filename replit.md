@@ -36,6 +36,8 @@ This is a comprehensive NexGuard Discord bot with a professional website showcas
 - **Guilds**: Discord server configurations
 - **Tickets**: Support ticket system
 - **Moderation Logs**: User moderation actions
+- **Ban List**: Comprehensive ban tracking with appeal system
+- **Warning History**: Warning tracking with severity levels and points system
 - **Changelogs**: Bot version history and updates
 
 ### API Endpoints
@@ -114,10 +116,13 @@ This is a comprehensive NexGuard Discord bot with a professional website showcas
 ## Bot Features
 
 NexGuard includes comprehensive Discord bot functionality:
-- **Admin Commands**: Server configuration, prefix setting, announcements, statistics
-- **Moderation Commands**: Warn, mute, kick, ban, unban, message clearing
+- **Admin Commands**: Server configuration, prefix setting, announcements, statistics, welcome messages
+- **Moderation Commands**: Warn, mute, kick, ban, unban, message clearing, banlist management, warning history
 - **Ticket System**: Support tickets with categories, priorities, and staff assignment
-- **Utility Commands**: Server info, user info, ping, help, changelog, uptime
+- **Utility Commands**: Server info, user info, ping, help, changelog, uptime, AI assistant
+- **Ban Management**: Comprehensive ban tracking with appeal system, search, and history
+- **Warning System**: Warning history with severity levels, points system, and statistics
+- **Welcome Messages**: Customizable welcome messages with placeholder support
 - **Real-time Status**: Live bot status monitoring and statistics
 - **Database Integration**: Persistent storage for all bot data
 - **Slash Commands**: Modern Discord slash command support
@@ -156,6 +161,12 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Added complete utility command suite with 10+ commands
 - July 18, 2025: Implemented AI assistant, commands list, embed builder, help, ping, server info, user info, uptime, bot stats, avatar commands
 - July 18, 2025: All utility commands include comprehensive information display and error handling
+- July 18, 2025: Added comprehensive ban management system with banlist command and appeals
+- July 18, 2025: Implemented warning history system with severity levels and points tracking
+- July 18, 2025: Added welcome message system with placeholder support and customizable messages
+- July 18, 2025: Enhanced moderation commands to automatically populate banlist and warning history
+- July 18, 2025: Created complete ban tracking with appeal system, search functionality, and history management
+- July 18, 2025: Implemented warning points system with automatic severity detection
 
 ## User Preferences
 

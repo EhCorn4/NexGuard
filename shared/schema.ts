@@ -81,6 +81,14 @@ export const guilds = pgTable("guilds", {
   muteRoleId: text("mute_role_id"),
   logChannelId: text("log_channel_id"),
   welcomeChannelId: text("welcome_channel_id"),
+  welcomeEnabled: boolean("welcome_enabled").default(false).notNull(),
+  welcomeMessage: text("welcome_message").default("Welcome to {server}, {user}! You are our #{member_count} member."),
+  welcomeEmbed: boolean("welcome_embed").default(false).notNull(),
+  welcomeEmbedTitle: text("welcome_embed_title").default("Welcome to {server}!"),
+  welcomeEmbedDescription: text("welcome_embed_description").default("Hello {user}, welcome to **{server}**! We're glad you're here."),
+  welcomeEmbedColor: text("welcome_embed_color").default("#00FFFF"),
+  welcomeEmbedThumbnail: boolean("welcome_embed_thumbnail").default(true).notNull(),
+  welcomeEmbedFooter: text("welcome_embed_footer").default("Member #{member_count}"),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -104,12 +112,49 @@ export const tickets = pgTable("tickets", {
   userId: text("user_id").notNull(),
   username: text("username").notNull(),
   subject: text("subject").notNull(),
-  category: text("category").notNull(), // "general", "bug", "feature", "billing"
-  status: text("status").default("open").notNull(), // "open", "closed", "pending"
-  priority: text("priority").default("medium").notNull(), // "low", "medium", "high", "urgent"
+  description: text("description"), // Detailed description of the issue
+  category: text("category").notNull(), // "general", "bug", "feature", "billing", "technical"
+  status: text("status").default("open").notNull(), // "open", "in-progress", "pending", "resolved", "closed"
+  priority: text("priority").default("medium").notNull(), // "low", "medium", "high", "urgent", "critical"
   assignedTo: text("assigned_to"),
+  assignedBy: text("assigned_by"),
+  tags: text("tags").array().default([]), // Custom tags for organization
+  slaDeadline: timestamp("sla_deadline"), // SLA deadline for response/resolution
+  firstResponseAt: timestamp("first_response_at"), // When staff first responded
+  resolvedAt: timestamp("resolved_at"), // When marked as resolved
+  satisfaction: integer("satisfaction"), // 1-5 rating from user
+  satisfactionComment: text("satisfaction_comment"), // User feedback
+  escalationLevel: integer("escalation_level").default(0), // 0=normal, 1=escalated, 2=manager, 3=director
+  isArchived: boolean("is_archived").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   closedAt: timestamp("closed_at"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const ticketNotes = pgTable("ticket_notes", {
+  id: serial("id").primaryKey(),
+  ticketId: text("ticket_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  authorId: text("author_id").notNull(),
+  authorName: text("author_name").notNull(),
+  content: text("content").notNull(),
+  isInternal: boolean("is_internal").default(false).notNull(), // Internal staff notes vs public messages
+  noteType: text("note_type").default("message").notNull(), // "message", "status_change", "assignment", "escalation"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const ticketTemplates = pgTable("ticket_templates", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  priority: text("priority").default("medium").notNull(),
+  autoAssignTo: text("auto_assign_to"), // Auto-assign to specific staff member
+  tags: text("tags").array().default([]),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -122,6 +167,42 @@ export const moderationLogs = pgTable("moderation_logs", {
   reason: text("reason"),
   duration: text("duration"), // For temporary actions
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const banList = pgTable("ban_list", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  userId: text("user_id").notNull(),
+  username: text("username").notNull(),
+  moderatorId: text("moderator_id").notNull(),
+  moderatorName: text("moderator_name").notNull(),
+  reason: text("reason"),
+  banType: text("ban_type").default("permanent").notNull(), // "permanent", "temporary"
+  duration: text("duration"), // For temporary bans
+  expiresAt: timestamp("expires_at"), // When temporary ban expires
+  isActive: boolean("is_active").default(true).notNull(),
+  appealable: boolean("appealable").default(true).notNull(),
+  appealReason: text("appeal_reason"),
+  appealedAt: timestamp("appealed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const warnHistory = pgTable("warn_history", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  userId: text("user_id").notNull(),
+  username: text("username").notNull(),
+  moderatorId: text("moderator_id").notNull(),
+  moderatorName: text("moderator_name").notNull(),
+  reason: text("reason").notNull(),
+  severity: text("severity").default("medium").notNull(), // "low", "medium", "high", "severe"
+  points: integer("points").default(1).notNull(), // Warning points system
+  isActive: boolean("is_active").default(true).notNull(),
+  expiresAt: timestamp("expires_at"), // When warning expires
+  acknowledgedAt: timestamp("acknowledged_at"), // When user acknowledged
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const changelogs = pgTable("changelogs", {
@@ -157,7 +238,11 @@ export const insertFeedbackSchema = createInsertSchema(feedback);
 export const insertGuildSchema = createInsertSchema(guilds);
 export const insertCommandSchema = createInsertSchema(commands);
 export const insertTicketSchema = createInsertSchema(tickets);
+export const insertTicketNoteSchema = createInsertSchema(ticketNotes);
+export const insertTicketTemplateSchema = createInsertSchema(ticketTemplates);
 export const insertModerationLogSchema = createInsertSchema(moderationLogs);
+export const insertBanListSchema = createInsertSchema(banList);
+export const insertWarnHistorySchema = createInsertSchema(warnHistory);
 export const insertChangelogSchema = createInsertSchema(changelogs);
 export const insertBotStatusSchema = createInsertSchema(botStatus);
 
@@ -171,7 +256,11 @@ export type Feedback = typeof feedback.$inferSelect;
 export type Guild = typeof guilds.$inferSelect;
 export type Command = typeof commands.$inferSelect;
 export type Ticket = typeof tickets.$inferSelect;
+export type TicketNote = typeof ticketNotes.$inferSelect;
+export type TicketTemplate = typeof ticketTemplates.$inferSelect;
 export type ModerationLog = typeof moderationLogs.$inferSelect;
+export type BanList = typeof banList.$inferSelect;
+export type WarnHistory = typeof warnHistory.$inferSelect;
 export type Changelog = typeof changelogs.$inferSelect;
 export type BotStatus = typeof botStatus.$inferSelect;
 

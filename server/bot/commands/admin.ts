@@ -1103,4 +1103,354 @@ export const adminCommands = [
       }
     }
   },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('welcome')
+      .setDescription('Configure welcome message settings')
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('enable')
+          .setDescription('Enable welcome messages')
+          .addChannelOption(option =>
+            option.setName('channel')
+              .setDescription('Channel to send welcome messages')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('disable')
+          .setDescription('Disable welcome messages')
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('setmessage')
+          .setDescription('Set custom welcome message')
+          .addStringOption(option =>
+            option.setName('message')
+              .setDescription('Welcome message text (use {user}, {server}, {member_count})')
+              .setRequired(true)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('embed')
+          .setDescription('Configure embed welcome message')
+          .addBooleanOption(option =>
+            option.setName('enabled')
+              .setDescription('Enable embed welcome messages')
+              .setRequired(true)
+          )
+          .addStringOption(option =>
+            option.setName('title')
+              .setDescription('Embed title (use {user}, {server}, {member_count})')
+              .setRequired(false)
+          )
+          .addStringOption(option =>
+            option.setName('description')
+              .setDescription('Embed description (use {user}, {server}, {member_count})')
+              .setRequired(false)
+          )
+          .addStringOption(option =>
+            option.setName('color')
+              .setDescription('Embed color (hex code, e.g., #00FFFF)')
+              .setRequired(false)
+          )
+          .addStringOption(option =>
+            option.setName('footer')
+              .setDescription('Embed footer text (use {user}, {server}, {member_count})')
+              .setRequired(false)
+          )
+          .addBooleanOption(option =>
+            option.setName('thumbnail')
+              .setDescription('Show user avatar as thumbnail')
+              .setRequired(false)
+          )
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('test')
+          .setDescription('Test the welcome message')
+      )
+      .addSubcommand(subcommand =>
+        subcommand
+          .setName('status')
+          .setDescription('View current welcome message settings')
+      )
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    category: 'admin',
+    permissions: ['ADMINISTRATOR'],
+    usage: '/welcome <subcommand> [options]',
+    async execute(interaction: any) {
+      const subcommand = interaction.options.getSubcommand();
+      
+      try {
+        switch (subcommand) {
+          case 'enable':
+            const channel = interaction.options.getChannel('channel');
+            
+            await db.update(guilds)
+              .set({
+                welcomeEnabled: true,
+                welcomeChannelId: channel.id,
+                updatedAt: new Date()
+              })
+              .where(eq(guilds.id, interaction.guild.id));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '✅ Welcome Messages Enabled',
+                description: `Welcome messages are now enabled in ${channel}`,
+                color: 0x00FF00,
+                fields: [
+                  {
+                    name: 'Available Placeholders',
+                    value: '`{user}` - User mention\n`{server}` - Server name\n`{member_count}` - Member count\n`{user_tag}` - User tag\n`{user_id}` - User ID',
+                    inline: false
+                  }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'disable':
+            await db.update(guilds)
+              .set({
+                welcomeEnabled: false,
+                updatedAt: new Date()
+              })
+              .where(eq(guilds.id, interaction.guild.id));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '❌ Welcome Messages Disabled',
+                description: 'Welcome messages have been disabled for this server.',
+                color: 0xFF0000,
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'setmessage':
+            const message = interaction.options.getString('message');
+            
+            await db.update(guilds)
+              .set({
+                welcomeMessage: message,
+                updatedAt: new Date()
+              })
+              .where(eq(guilds.id, interaction.guild.id));
+            
+            await interaction.reply({
+              embeds: [{
+                title: '✅ Welcome Message Updated',
+                description: `New welcome message set to:\n\`\`\`${message}\`\`\``,
+                color: 0x00FF00,
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'embed':
+            const embedEnabled = interaction.options.getBoolean('enabled');
+            const embedTitle = interaction.options.getString('title');
+            const embedDescription = interaction.options.getString('description');
+            const embedColor = interaction.options.getString('color');
+            const embedFooter = interaction.options.getString('footer');
+            const embedThumbnail = interaction.options.getBoolean('thumbnail');
+            
+            const updateData: any = {
+              welcomeEmbed: embedEnabled,
+              updatedAt: new Date()
+            };
+            
+            if (embedTitle) updateData.welcomeEmbedTitle = embedTitle;
+            if (embedDescription) updateData.welcomeEmbedDescription = embedDescription;
+            if (embedColor) updateData.welcomeEmbedColor = embedColor;
+            if (embedFooter) updateData.welcomeEmbedFooter = embedFooter;
+            if (embedThumbnail !== null) updateData.welcomeEmbedThumbnail = embedThumbnail;
+            
+            await db.update(guilds)
+              .set(updateData)
+              .where(eq(guilds.id, interaction.guild.id));
+            
+            await interaction.reply({
+              embeds: [{
+                title: embedEnabled ? '✅ Embed Welcome Messages Enabled' : '❌ Embed Welcome Messages Disabled',
+                description: embedEnabled ? 'Welcome messages will now be sent as embeds.' : 'Welcome messages will be sent as plain text.',
+                color: embedEnabled ? 0x00FF00 : 0xFF0000,
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            break;
+            
+          case 'test':
+            const [guildSettings] = await db.select()
+              .from(guilds)
+              .where(eq(guilds.id, interaction.guild.id))
+              .limit(1);
+            
+            if (!guildSettings || !guildSettings.welcomeEnabled) {
+              await interaction.reply({
+                content: '❌ Welcome messages are not enabled. Use `/welcome enable` first.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            const testMessage = await formatWelcomeMessage(
+              guildSettings,
+              interaction.user,
+              interaction.guild
+            );
+            
+            await interaction.reply({
+              content: '🧪 **Welcome Message Test:**',
+              ...testMessage
+            });
+            break;
+            
+          case 'status':
+            const [currentSettings] = await db.select()
+              .from(guilds)
+              .where(eq(guilds.id, interaction.guild.id))
+              .limit(1);
+            
+            if (!currentSettings) {
+              await interaction.reply({
+                content: '❌ No settings found for this server.',
+                ephemeral: true
+              });
+              return;
+            }
+            
+            const welcomeChannel = currentSettings.welcomeChannelId 
+              ? interaction.guild.channels.cache.get(currentSettings.welcomeChannelId)
+              : null;
+            
+            await interaction.reply({
+              embeds: [{
+                title: '⚙️ Welcome Message Settings',
+                color: 0x00FFFF,
+                fields: [
+                  {
+                    name: 'Status',
+                    value: currentSettings.welcomeEnabled ? '🟢 Enabled' : '🔴 Disabled',
+                    inline: true
+                  },
+                  {
+                    name: 'Channel',
+                    value: welcomeChannel ? `${welcomeChannel}` : 'Not set',
+                    inline: true
+                  },
+                  {
+                    name: 'Format',
+                    value: currentSettings.welcomeEmbed ? 'Embed' : 'Plain Text',
+                    inline: true
+                  },
+                  {
+                    name: 'Welcome Message',
+                    value: `\`\`\`${currentSettings.welcomeMessage}\`\`\``,
+                    inline: false
+                  }
+                ],
+                timestamp: new Date().toISOString(),
+              }]
+            });
+            
+            if (currentSettings.welcomeEmbed) {
+              await interaction.followUp({
+                embeds: [{
+                  title: '🎨 Embed Settings',
+                  color: 0x00FFFF,
+                  fields: [
+                    {
+                      name: 'Title',
+                      value: `\`\`\`${currentSettings.welcomeEmbedTitle}\`\`\``,
+                      inline: false
+                    },
+                    {
+                      name: 'Description',
+                      value: `\`\`\`${currentSettings.welcomeEmbedDescription}\`\`\``,
+                      inline: false
+                    },
+                    {
+                      name: 'Color',
+                      value: currentSettings.welcomeEmbedColor,
+                      inline: true
+                    },
+                    {
+                      name: 'Thumbnail',
+                      value: currentSettings.welcomeEmbedThumbnail ? 'Enabled' : 'Disabled',
+                      inline: true
+                    },
+                    {
+                      name: 'Footer',
+                      value: `\`\`\`${currentSettings.welcomeEmbedFooter}\`\`\``,
+                      inline: false
+                    }
+                  ],
+                  timestamp: new Date().toISOString(),
+                }]
+              });
+            }
+            break;
+        }
+      } catch (error) {
+        console.error('Error configuring welcome messages:', error);
+        await interaction.reply({
+          content: '❌ Failed to configure welcome messages. Please try again.',
+          ephemeral: true
+        });
+      }
+    }
+  },
 ];
+
+// Helper function to format welcome messages
+async function formatWelcomeMessage(guildSettings: any, user: any, guild: any) {
+  const placeholders = {
+    '{user}': `<@${user.id}>`,
+    '{user_tag}': user.tag,
+    '{user_id}': user.id,
+    '{server}': guild.name,
+    '{member_count}': guild.memberCount.toString()
+  };
+  
+  function replacePlaceholders(text: string) {
+    let result = text;
+    for (const [placeholder, value] of Object.entries(placeholders)) {
+      result = result.replace(new RegExp(placeholder, 'g'), value);
+    }
+    return result;
+  }
+  
+  if (guildSettings.welcomeEmbed) {
+    const embedColor = guildSettings.welcomeEmbedColor.replace('#', '');
+    const colorValue = parseInt(embedColor, 16) || 0x00FFFF;
+    
+    const embed: any = {
+      title: replacePlaceholders(guildSettings.welcomeEmbedTitle),
+      description: replacePlaceholders(guildSettings.welcomeEmbedDescription),
+      color: colorValue,
+      footer: {
+        text: replacePlaceholders(guildSettings.welcomeEmbedFooter),
+      },
+      timestamp: new Date().toISOString(),
+    };
+    
+    if (guildSettings.welcomeEmbedThumbnail) {
+      embed.thumbnail = {
+        url: user.displayAvatarURL({ size: 256 }),
+      };
+    }
+    
+    return { embeds: [embed] };
+  } else {
+    return {
+      content: replacePlaceholders(guildSettings.welcomeMessage)
+    };
+  }
+}
