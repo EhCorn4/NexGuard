@@ -41,10 +41,13 @@ export default function Feedback() {
       if (!response.ok) throw new Error('Failed to submit feedback');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const isForwarded = data.externalSubmissionStatus === "submitted";
       toast({
         title: "Success!",
-        description: "Your feedback has been submitted. We'll get back to you soon!",
+        description: isForwarded 
+          ? "Your feedback has been submitted to NexGuard. We'll get back to you soon!" 
+          : "Your feedback has been received and will be forwarded to NexGuard shortly.",
       });
       form.reset();
       setIsSubmitting(false);
@@ -232,7 +235,7 @@ export default function Feedback() {
                       className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white border-0"
                     >
                       {isSubmitting ? (
-                        'Submitting...'
+                        'Submitting to NexGuard...'
                       ) : (
                         <>
                           <Send className="w-4 h-4 mr-2" />
@@ -240,6 +243,13 @@ export default function Feedback() {
                         </>
                       )}
                     </Button>
+                    
+                    <div className="text-center text-sm text-gray-400 mt-4">
+                      <p>
+                        Your feedback will be submitted directly to the NexGuard development team 
+                        and forwarded to our central support system for review.
+                      </p>
+                    </div>
                   </form>
                 </Form>
               </CardContent>

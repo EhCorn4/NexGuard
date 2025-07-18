@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
+import fetch from "node-fetch";
 
 export function registerRoutes(app: Express): Server {
   // News endpoints
@@ -81,8 +82,67 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "Invalid feedback data" });
       }
       
+      // Store feedback locally
       const feedback = await storage.createFeedback(result.data);
-      res.json(feedback);
+      
+      // Send feedback to NexGuard website
+      const feedbackData = {
+        id: feedback.id,
+        username: feedback.username,
+        email: feedback.email,
+        subject: feedback.subject,
+        message: feedback.message,
+        type: feedback.type,
+        status: feedback.status,
+        submittedAt: feedback.createdAt,
+        source: "website",
+        userAgent: req.headers['user-agent'] || 'Unknown',
+        timestamp: new Date().toISOString()
+      };
+
+      // Send to NexGuard central website (with error handling)
+      let externalSubmissionStatus = "pending";
+      try {
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+        const nexguardResponse = await fetch('https://nexguard.org/api/feedback/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.NEXGUARD_API_KEY || 'dev-key'}`,
+            'User-Agent': 'NexGuard-Bot-Website/2.3.2',
+            'X-Source': 'discord-bot-website',
+            'X-Bot-Version': '2.3.2'
+          },
+          body: JSON.stringify(feedbackData),
+          signal: controller.signal
+        } as any);
+
+        clearTimeout(timeoutId);
+
+        if (nexguardResponse.ok) {
+          const nexguardResult = await nexguardResponse.json() as any;
+          externalSubmissionStatus = "submitted";
+          console.log(`✅ Feedback #${feedback.id} forwarded to NexGuard website:`, nexguardResult.id || 'success');
+        } else {
+          console.warn(`⚠️  Failed to forward feedback #${feedback.id} to NexGuard website:`, nexguardResponse.status);
+          externalSubmissionStatus = "failed";
+        }
+      } catch (externalError: any) {
+        console.warn(`⚠️  Network error forwarding feedback #${feedback.id} to NexGuard website:`, externalError.message);
+        externalSubmissionStatus = "failed";
+      }
+
+      // Return success with submission status
+      res.json({
+        ...feedback,
+        externalSubmissionStatus,
+        message: externalSubmissionStatus === "submitted" 
+          ? "Feedback submitted successfully to NexGuard website" 
+          : "Feedback saved locally. External submission pending."
+      });
     } catch (error) {
       console.error("Error creating feedback:", error);
       res.status(500).json({ error: "Failed to create feedback" });
