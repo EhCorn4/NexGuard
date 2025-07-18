@@ -187,7 +187,7 @@ const Invite = memo(function Invite() {
                       </div>
                       <div>
                         <strong className="text-white">Custom Welcome Message:</strong><br />
-                        <code className="text-[hsl(var(--nexguard-purple))]">/welcome set Welcome {user.mention}!</code>
+                        <code className="text-[hsl(var(--nexguard-purple))]">/welcome set Welcome {'{user.mention}'}!</code>
                       </div>
                     </div>
                     <div className="flex items-start">
