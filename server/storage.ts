@@ -200,10 +200,10 @@ export class MemStorage implements IStorage {
     // Initialize features
     this.features.set(1, {
       id: 1,
-      title: "Advanced Moderation",
-      description: "Comprehensive moderation tools including auto-moderation, warning systems, and customizable punishment workflows.",
+      title: "Advanced Moderation Suite",
+      description: "Enterprise-grade moderation tools with 15+ commands including temporary bans, intelligent spam detection, and comprehensive logging to maintain server security and order.",
       icon: "shield",
-      benefits: ["Automated rule enforcement", "Customizable warning system", "Detailed moderation logs", "Role-based permissions"],
+      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Smart automod with spam, link, and bad word filtering", "Comprehensive warning system with severity tracking", "Real-time moderation logs and detailed analytics", "Custom moderator role management and permissions"],
     });
 
     this.features.set(2, {
@@ -216,10 +216,10 @@ export class MemStorage implements IStorage {
 
     this.features.set(3, {
       id: 3,
-      title: "Custom Commands",
-      description: "Create and manage custom commands with variables, permissions, and advanced response options.",
+      title: "Smart Auto-Reply System",
+      description: "Advanced auto-reply system with intelligent keyword matching, rich embed responses, and comprehensive analytics tracking for automated server interactions.",
       icon: "command",
-      benefits: ["Unlimited custom commands", "Variable support", "Permission controls", "Rich embed responses"],
+      benefits: ["Multiple trigger types (contains, exact, starts with, ends with)", "Rich embed responses with custom colors", "Comprehensive statistics and usage analytics", "Cooldown system to prevent spam", "Rule-based management with unique IDs"],
     });
 
     this.features.set(4, {
@@ -232,18 +232,18 @@ export class MemStorage implements IStorage {
 
     this.features.set(5, {
       id: 5,
-      title: "Comprehensive Admin Tools",
-      description: "Complete server administration suite with 27+ slash commands for every aspect of server management.",
+      title: "Comprehensive Command Suite",
+      description: "Complete server administration suite with 41+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
       icon: "cog",
-      benefits: ["27+ slash commands", "Admin & moderation tools", "Utility commands", "AI assistant", "Real-time monitoring"],
+      benefits: ["41+ slash commands across all categories", "Admin & advanced moderation tools", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
       id: 6,
-      title: "Real-time Analytics",
-      description: "Live bot status monitoring, server statistics, and comprehensive performance tracking.",
+      title: "Real-time Analytics Dashboard",
+      description: "Professional analytics dashboard with live bot status monitoring, server statistics, command usage tracking, and comprehensive performance insights.",
       icon: "chart-line",
-      benefits: ["Live bot status", "Server statistics", "Command usage tracking", "Performance monitoring", "Uptime analytics"],
+      benefits: ["Live bot status with real-time updates", "Interactive server statistics and charts", "Command usage tracking and analytics", "Performance monitoring and uptime tracking", "Professional dashboard with data visualization"],
     });
 
     this.currentFeatureId = 7;
