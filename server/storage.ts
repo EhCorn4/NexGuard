@@ -249,7 +249,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
+    for (const user of Array.from(this.users.values())) {
       if (user.username === username) {
         return user;
       }
@@ -290,6 +290,7 @@ export class MemStorage implements IStorage {
     const newTestimonial: Testimonial = {
       id: this.currentTestimonialId++,
       ...testimonial,
+      isApproved: testimonial.isApproved ?? false,
       createdAt: new Date(),
     };
     this.testimonialsData.set(newTestimonial.id, newTestimonial);
@@ -332,6 +333,7 @@ export class MemStorage implements IStorage {
     const newCommand: Command = {
       id: this.currentCommandId++,
       ...command,
+      permissions: command.permissions ?? [],
       createdAt: new Date(),
       enabled: command.enabled !== false
     };
@@ -364,6 +366,20 @@ export class MemStorage implements IStorage {
     const newTicket: Ticket = {
       id: this.currentTicketId++,
       ...ticket,
+      status: ticket.status ?? 'open',
+      description: ticket.description ?? null,
+      priority: ticket.priority ?? 'medium',
+      assignedTo: ticket.assignedTo ?? null,
+      assignedToName: ticket.assignedToName ?? null,
+      tags: ticket.tags ?? [],
+      slaDeadline: ticket.slaDeadline ?? null,
+      firstResponseAt: ticket.firstResponseAt ?? null,
+      resolvedAt: ticket.resolvedAt ?? null,
+      satisfaction: ticket.satisfaction ?? null,
+      satisfactionComment: ticket.satisfactionComment ?? null,
+      escalationLevel: ticket.escalationLevel ?? 0,
+      isArchived: ticket.isArchived ?? false,
+      closedAt: ticket.closedAt ?? null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -380,6 +396,8 @@ export class MemStorage implements IStorage {
     const newLog: ModerationLog = {
       id: this.currentModerationLogId++,
       ...log,
+      reason: log.reason ?? null,
+      duration: log.duration ?? null,
       createdAt: new Date()
     };
     this.moderationLogsData.set(newLog.id, newLog);
