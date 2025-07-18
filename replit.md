@@ -233,6 +233,17 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Added comprehensive permission source breakdown: Administrator, Moderate Members, Custom Roles
 - July 18, 2025: Integrated with PostgreSQL for persistent role settings with automatic conflict resolution
 - July 18, 2025: Enhanced all moderation commands to respect custom mod role settings while maintaining flexibility
+- July 18, 2025: **MAJOR ENHANCEMENT** - Advanced Temporary Ban System Implementation
+- July 18, 2025: Added duration parameter to ban command supporting formats: 7d, 2h, 30m, 1w
+- July 18, 2025: Implemented intelligent duration parsing with comprehensive validation
+- July 18, 2025: Created automatic temporary ban expiration system with 5-minute check intervals
+- July 18, 2025: Enhanced ban notifications with temporary vs permanent ban differentiation
+- July 18, 2025: Added visual Discord timestamps for ban expiration times in DM notifications
+- July 18, 2025: Integrated temporary ban tracking in database with expires_at timestamps
+- July 18, 2025: Built background task system for automatic unban processing when duration expires
+- July 18, 2025: Enhanced ban command to show duration and expiration time in response embeds
+- July 18, 2025: Added comprehensive logging for both manual and automatic unban actions
+- July 18, 2025: Successfully tested and confirmed temporary ban system functionality
 
 ## User Preferences
 
