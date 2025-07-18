@@ -13,11 +13,38 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+# Constants
+COLORS = {
+    'SUCCESS': 0x00FF00,
+    'ERROR': 0xFF0000,
+    'INFO': 0x00FFFF,
+    'WARNING': 0xFFFF00
+}
+
+EMOJIS = {
+    'SUCCESS': '✅',
+    'ERROR': '❌',
+    'INFO': 'ℹ️',
+    'WARNING': '⚠️'
+}
+
 class AutoReply(commands.Cog):
     """Auto-reply system for keyword detection and automated responses"""
     
     def __init__(self, bot):
         self.bot = bot
+        self.setup_database()
+    
+    def setup_database(self):
+        """Initialize auto-reply database tables"""
+        # Tables are defined in schema.ts and created via migrations
+        logger.info("Auto-reply system initialized")
+    
+    async def is_admin_or_moderator(self, interaction: discord.Interaction) -> bool:
+        """Check if user has admin or moderator permissions"""
+        return (interaction.user.guild_permissions.administrator or 
+                interaction.user.guild_permissions.manage_messages or
+                interaction.user.guild_permissions.manage_guild)
     
     @app_commands.command(name="autoreply-create", description="Create a new auto-reply rule")
     @app_commands.describe(
@@ -49,15 +76,15 @@ class AutoReply(commands.Cog):
         cooldown: int = 10
     ):
         """Create a new auto-reply rule"""
-        if not interaction.user.guild_permissions.administrator:
+        if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
-                "❌ You don't have permission to use this command.", 
+                f"{EMOJIS['ERROR']} You don't have permission to use this command.", 
                 ephemeral=True
             )
             return
         
         if not self.bot.db_pool:
-            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            await interaction.response.send_message(f"{EMOJIS['ERROR']} Database connection not available.", ephemeral=True)
             return
         
         try:
@@ -73,6 +100,15 @@ class AutoReply(commands.Cog):
                 }
                 embed_color = color_map.get(color.lower(), 0x00FFFF)
             
+            # Validate match type
+            valid_match_types = ['contains', 'exact', 'starts_with', 'ends_with']
+            if match_type not in valid_match_types:
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Invalid match type. Use: {', '.join(valid_match_types)}", 
+                    ephemeral=True
+                )
+                return
+            
             # Create response data
             response_data = {
                 'title': title,
@@ -87,33 +123,25 @@ class AutoReply(commands.Cog):
             
             # Save to database
             async with self.bot.db_pool.acquire() as conn:
-                # Check if name already exists
-                existing = await conn.fetchrow(
-                    "SELECT id FROM autoreply_rules WHERE guild_id = $1 AND LOWER(name) = LOWER($2)",
-                    str(interaction.guild.id), name
-                )
-                
-                if existing:
-                    await interaction.response.send_message(f"❌ Auto-reply rule with name '{name}' already exists.", ephemeral=True)
-                    return
-                
-                await conn.execute("""
-                    INSERT INTO autoreply_rules 
-                    (guild_id, name, keywords, response_data, match_type, cooldown)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                """, 
-                str(interaction.guild.id),
-                name,
-                keywords.lower(),
-                json.dumps(response_data),
-                match_type,
-                cooldown
-                )
+                await conn.execute('''
+                    INSERT INTO auto_replies 
+                    (guild_id, trigger, response, trigger_type, case_sensitive, is_active, created_by, created_by_name)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                ''', (
+                    str(interaction.guild.id),
+                    keywords.lower(),
+                    json.dumps(response_data),
+                    match_type,
+                    False,  # case_sensitive
+                    True,   # is_active
+                    str(interaction.user.id),
+                    interaction.user.display_name
+                ))
             
             embed = discord.Embed(
-                title="✅ Auto-Reply Rule Created",
+                title=f"{EMOJIS['SUCCESS']} Auto-Reply Rule Created",
                 description=f"**Rule:** {name}\n**Keywords:** {keywords}\n**Match Type:** {match_type}\n**Cooldown:** {cooldown}s",
-                color=0x00FF00
+                color=COLORS['SUCCESS']
             )
             embed.add_field(
                 name="Preview",
@@ -127,65 +155,63 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error creating auto-reply rule: {e}")
             await interaction.response.send_message(
-                f"❌ Failed to create auto-reply rule: {str(e)}", 
+                f"{EMOJIS['ERROR']} Failed to create auto-reply rule: {str(e)}", 
                 ephemeral=True
             )
     
     @app_commands.command(name="autoreply-list", description="List all auto-reply rules")
     async def autoreply_list(self, interaction: discord.Interaction):
         """List all auto-reply rules for the guild"""
-        if not interaction.user.guild_permissions.administrator:
+        if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
-                "❌ You don't have permission to use this command.", 
+                f"{EMOJIS['ERROR']} You don't have permission to use this command.", 
                 ephemeral=True
             )
             return
         
         if not self.bot.db_pool:
-            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            await interaction.response.send_message(f"{EMOJIS['ERROR']} Database connection not available.", ephemeral=True)
             return
         
         try:
             async with self.bot.db_pool.acquire() as conn:
-                rules = await conn.fetch("""
-                    SELECT id, name, keywords, enabled, match_type, cooldown, created_at
-                    FROM autoreply_rules 
+                rules = await conn.fetch('''
+                    SELECT id, trigger, is_active, trigger_type, created_at, created_by_name
+                    FROM auto_replies 
                     WHERE guild_id = $1
                     ORDER BY created_at DESC
-                """, str(interaction.guild.id))
+                    LIMIT 10
+                ''', str(interaction.guild.id))
             
             if not rules:
                 embed = discord.Embed(
-                    title="📝 Auto-Reply Rules",
+                    title=f"{EMOJIS['INFO']} Auto-Reply Rules",
                     description="No auto-reply rules found. Use `/autoreply-create` to create one.",
-                    color=0x00FFFF
+                    color=COLORS['INFO']
                 )
                 await interaction.response.send_message(embed=embed)
                 return
             
             embed = discord.Embed(
-                title="📝 Auto-Reply Rules",
+                title=f"{EMOJIS['INFO']} Auto-Reply Rules",
                 description=f"Found {len(rules)} auto-reply rules:",
-                color=0x00FFFF
+                color=COLORS['INFO']
             )
             
-            for rule in rules[:10]:  # Show first 10 rules
-                status = "✅ Enabled" if rule['enabled'] else "❌ Disabled"
+            for rule in rules:
+                status = f"{EMOJIS['SUCCESS']} Enabled" if rule['is_active'] else f"{EMOJIS['ERROR']} Disabled"
                 embed.add_field(
-                    name=f"#{rule['id']} - {rule['name']}",
-                    value=f"**Keywords:** {rule['keywords'][:50]}{'...' if len(rule['keywords']) > 50 else ''}\n**Status:** {status}\n**Match:** {rule['match_type']} | **Cooldown:** {rule['cooldown']}s",
+                    name=f"#{rule['id']} - {rule['trigger'][:20]}{'...' if len(rule['trigger']) > 20 else ''}",
+                    value=f"**Keywords:** {rule['trigger'][:50]}{'...' if len(rule['trigger']) > 50 else ''}\n**Status:** {status}\n**Match:** {rule['trigger_type']}\n**Created by:** {rule['created_by_name']}",
                     inline=False
                 )
-            
-            if len(rules) > 10:
-                embed.set_footer(text=f"Showing 10 of {len(rules)} rules. Use commands to manage specific rules.")
             
             await interaction.response.send_message(embed=embed)
             
         except Exception as e:
             logger.error(f"Error listing auto-reply rules: {e}")
             await interaction.response.send_message(
-                f"❌ Failed to list auto-reply rules: {str(e)}", 
+                f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
                 ephemeral=True
             )
     
@@ -193,47 +219,47 @@ class AutoReply(commands.Cog):
     @app_commands.describe(rule_id="ID of the auto-reply rule to toggle")
     async def autoreply_toggle(self, interaction: discord.Interaction, rule_id: int):
         """Toggle an auto-reply rule on/off"""
-        if not interaction.user.guild_permissions.administrator:
+        if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
-                "❌ You don't have permission to use this command.", 
+                f"{EMOJIS['ERROR']} You don't have permission to use this command.", 
                 ephemeral=True
             )
             return
         
         if not self.bot.db_pool:
-            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            await interaction.response.send_message(f"{EMOJIS['ERROR']} Database connection not available.", ephemeral=True)
             return
         
         try:
             async with self.bot.db_pool.acquire() as conn:
                 # Check if rule exists
-                rule = await conn.fetchrow("""
-                    SELECT id, name, enabled FROM autoreply_rules 
+                rule = await conn.fetchrow('''
+                    SELECT id, trigger, is_active FROM auto_replies 
                     WHERE id = $1 AND guild_id = $2
-                """, rule_id, str(interaction.guild.id))
+                ''', rule_id, str(interaction.guild.id))
                 
                 if not rule:
                     await interaction.response.send_message(
-                        f"❌ Auto-reply rule #{rule_id} not found.", 
+                        f"{EMOJIS['ERROR']} Auto-reply rule #{rule_id} not found.", 
                         ephemeral=True
                     )
                     return
                 
                 # Toggle the rule
-                new_status = not rule['enabled']
-                await conn.execute("""
-                    UPDATE autoreply_rules 
-                    SET enabled = $1, updated_at = NOW()
+                new_status = not rule['is_active']
+                await conn.execute('''
+                    UPDATE auto_replies 
+                    SET is_active = $1, updated_at = NOW()
                     WHERE id = $2 AND guild_id = $3
-                """, new_status, rule_id, str(interaction.guild.id))
+                ''', new_status, rule_id, str(interaction.guild.id))
             
             status_text = "enabled" if new_status else "disabled"
-            status_emoji = "✅" if new_status else "❌"
+            status_emoji = EMOJIS['SUCCESS'] if new_status else EMOJIS['ERROR']
             
             embed = discord.Embed(
                 title=f"{status_emoji} Auto-Reply Rule {status_text.title()}",
-                description=f"Rule **{rule['name']}** (#{rule_id}) has been {status_text}.",
-                color=0x00FF00 if new_status else 0xFF0000
+                description=f"Rule **{rule['trigger'][:30]}{'...' if len(rule['trigger']) > 30 else ''}** (#{rule_id}) has been {status_text}.",
+                color=COLORS['SUCCESS'] if new_status else COLORS['ERROR']
             )
             
             await interaction.response.send_message(embed=embed)
@@ -242,7 +268,7 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error toggling auto-reply rule: {e}")
             await interaction.response.send_message(
-                f"❌ Failed to toggle auto-reply rule: {str(e)}", 
+                f"{EMOJIS['ERROR']} Failed to toggle auto-reply rule: {str(e)}", 
                 ephemeral=True
             )
     
@@ -250,42 +276,42 @@ class AutoReply(commands.Cog):
     @app_commands.describe(rule_id="ID of the auto-reply rule to delete")
     async def autoreply_delete(self, interaction: discord.Interaction, rule_id: int):
         """Delete an auto-reply rule"""
-        if not interaction.user.guild_permissions.administrator:
+        if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
-                "❌ You don't have permission to use this command.", 
+                f"{EMOJIS['ERROR']} You don't have permission to use this command.", 
                 ephemeral=True
             )
             return
         
         if not self.bot.db_pool:
-            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            await interaction.response.send_message(f"{EMOJIS['ERROR']} Database connection not available.", ephemeral=True)
             return
         
         try:
             async with self.bot.db_pool.acquire() as conn:
                 # Check if rule exists
-                rule = await conn.fetchrow("""
-                    SELECT id, name FROM autoreply_rules 
+                rule = await conn.fetchrow('''
+                    SELECT id, trigger FROM auto_replies 
                     WHERE id = $1 AND guild_id = $2
-                """, rule_id, str(interaction.guild.id))
+                ''', rule_id, str(interaction.guild.id))
                 
                 if not rule:
                     await interaction.response.send_message(
-                        f"❌ Auto-reply rule #{rule_id} not found.", 
+                        f"{EMOJIS['ERROR']} Auto-reply rule #{rule_id} not found.", 
                         ephemeral=True
                     )
                     return
                 
-                # Delete the rule and related data
-                await conn.execute('DELETE FROM autoreply_cooldowns WHERE rule_id = $1', rule_id)
-                await conn.execute('DELETE FROM autoreply_stats WHERE rule_id = $1', rule_id)
-                await conn.execute('DELETE FROM autoreply_rules WHERE id = $1 AND guild_id = $2', 
-                                 rule_id, str(interaction.guild.id))
+                # Delete the rule
+                await conn.execute('''
+                    DELETE FROM auto_replies 
+                    WHERE id = $1 AND guild_id = $2
+                ''', rule_id, str(interaction.guild.id))
             
             embed = discord.Embed(
-                title="✅ Auto-Reply Rule Deleted",
-                description=f"Rule **{rule['name']}** (#{rule_id}) has been permanently deleted.",
-                color=0xFF0000
+                title=f"{EMOJIS['SUCCESS']} Auto-Reply Rule Deleted",
+                description=f"Rule **{rule['trigger'][:30]}{'...' if len(rule['trigger']) > 30 else ''}** (#{rule_id}) has been permanently deleted.",
+                color=COLORS['ERROR']
             )
             
             await interaction.response.send_message(embed=embed)
@@ -294,71 +320,57 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error deleting auto-reply rule: {e}")
             await interaction.response.send_message(
-                f"❌ Failed to delete auto-reply rule: {str(e)}", 
+                f"{EMOJIS['ERROR']} Failed to delete auto-reply rule: {str(e)}", 
                 ephemeral=True
             )
     
     @app_commands.command(name="autoreply-stats", description="View auto-reply statistics")
     async def autoreply_stats(self, interaction: discord.Interaction):
         """View auto-reply statistics for the guild"""
-        if not interaction.user.guild_permissions.administrator:
+        if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
-                "❌ You don't have permission to use this command.", 
+                f"{EMOJIS['ERROR']} You don't have permission to use this command.", 
                 ephemeral=True
             )
             return
         
         if not self.bot.db_pool:
-            await interaction.response.send_message("❌ Database connection not available.", ephemeral=True)
+            await interaction.response.send_message(f"{EMOJIS['ERROR']} Database connection not available.", ephemeral=True)
             return
         
         try:
             async with self.bot.db_pool.acquire() as conn:
                 # Get total rules
-                total_rules = await conn.fetchval(
-                    'SELECT COUNT(*) FROM autoreply_rules WHERE guild_id = $1', 
-                    str(interaction.guild.id)
-                )
+                total_rules = await conn.fetchval('''
+                    SELECT COUNT(*) FROM auto_replies WHERE guild_id = $1
+                ''', str(interaction.guild.id))
                 
                 # Get enabled rules
-                enabled_rules = await conn.fetchval(
-                    'SELECT COUNT(*) FROM autoreply_rules WHERE guild_id = $1 AND enabled = TRUE', 
-                    str(interaction.guild.id)
-                )
+                enabled_rules = await conn.fetchval('''
+                    SELECT COUNT(*) FROM auto_replies WHERE guild_id = $1 AND is_active = true
+                ''', str(interaction.guild.id))
                 
-                # Get total triggers today
-                triggers_today = await conn.fetchval("""
-                    SELECT COUNT(*) FROM autoreply_stats 
-                    WHERE guild_id = $1 AND triggered_at >= CURRENT_DATE
-                """, str(interaction.guild.id))
-                
-                # Get most triggered rules
-                top_rules = await conn.fetch("""
-                    SELECT r.name, COUNT(s.id) as trigger_count
-                    FROM autoreply_rules r
-                    LEFT JOIN autoreply_stats s ON r.id = s.rule_id
-                    WHERE r.guild_id = $1
-                    GROUP BY r.id, r.name
-                    ORDER BY trigger_count DESC
-                    LIMIT 5
-                """, str(interaction.guild.id))
+                # Get recent activity (rules created in last 7 days)
+                recent_activity = await conn.fetchval('''
+                    SELECT COUNT(*) FROM auto_replies 
+                    WHERE guild_id = $1 AND created_at > NOW() - INTERVAL '7 days'
+                ''', str(interaction.guild.id))
             
             embed = discord.Embed(
-                title="📊 Auto-Reply Statistics",
-                color=0x00FFFF
+                title=f"{EMOJIS['INFO']} Auto-Reply Statistics",
+                color=COLORS['INFO']
             )
             
             embed.add_field(
                 name="📊 Overview",
-                value=f"**Total Rules:** {total_rules}\n**Enabled Rules:** {enabled_rules}\n**Triggers Today:** {triggers_today}",
+                value=f"**Total Rules:** {total_rules}\n**Enabled Rules:** {enabled_rules}\n**Recent Activity:** {recent_activity} rules created this week",
                 inline=False
             )
             
-            if top_rules:
-                top_rules_text = "\n".join([f"**{rule['name']}:** {rule['trigger_count']} triggers" for rule in top_rules[:5]])
+            if total_rules > 0:
                 embed.add_field(
-                    name="🔥 Most Triggered Rules",
-                    value=top_rules_text,
+                    name="💡 Tips",
+                    value="• Use `/autoreply-list` to view all rules\n• Use `/autoreply-toggle` to enable/disable rules\n• Use `/autoreply-delete` to remove unwanted rules",
                     inline=False
                 )
             
@@ -367,64 +379,9 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error getting auto-reply stats: {e}")
             await interaction.response.send_message(
-                f"❌ Failed to get auto-reply stats: {str(e)}", 
+                f"{EMOJIS['ERROR']} Failed to get auto-reply stats: {str(e)}", 
                 ephemeral=True
             )
-    
-    async def check_cooldown(self, guild_id: str, rule_id: int, user_id: str, channel_id: str, cooldown_seconds: int) -> bool:
-        """Check if a rule is on cooldown for a user/channel"""
-        if not self.bot.db_pool:
-            return False
-            
-        try:
-            async with self.bot.db_pool.acquire() as conn:
-                result = await conn.fetchrow("""
-                    SELECT last_triggered FROM autoreply_cooldowns
-                    WHERE guild_id = $1 AND rule_id = $2 AND user_id = $3 AND channel_id = $4
-                """, guild_id, rule_id, user_id, channel_id)
-                
-                if not result:
-                    return False
-                
-                last_triggered = result['last_triggered']
-                cooldown_end = last_triggered + timedelta(seconds=cooldown_seconds)
-                
-                return datetime.now() < cooldown_end
-                
-        except Exception as e:
-            logger.error(f"Error checking cooldown: {e}")
-            return False
-    
-    async def update_cooldown(self, guild_id: str, rule_id: int, user_id: str, channel_id: str):
-        """Update the cooldown for a rule"""
-        if not self.bot.db_pool:
-            return
-            
-        try:
-            async with self.bot.db_pool.acquire() as conn:
-                await conn.execute("""
-                    INSERT INTO autoreply_cooldowns 
-                    (guild_id, rule_id, user_id, channel_id, last_triggered)
-                    VALUES ($1, $2, $3, $4, NOW())
-                    ON CONFLICT (guild_id, rule_id, user_id, channel_id) 
-                    DO UPDATE SET last_triggered = NOW()
-                """, guild_id, rule_id, user_id, channel_id)
-        except Exception as e:
-            logger.error(f"Error updating cooldown: {e}")
-    
-    async def log_trigger(self, guild_id: str, rule_id: int, user_id: str, channel_id: str):
-        """Log an auto-reply trigger"""
-        if not self.bot.db_pool:
-            return
-            
-        try:
-            async with self.bot.db_pool.acquire() as conn:
-                await conn.execute("""
-                    INSERT INTO autoreply_stats (guild_id, rule_id, user_id, channel_id)
-                    VALUES ($1, $2, $3, $4)
-                """, guild_id, rule_id, user_id, channel_id)
-        except Exception as e:
-            logger.error(f"Error logging trigger: {e}")
     
     def check_message_for_keywords(self, message_content: str, keywords: str, match_type: str) -> bool:
         """Check if a message matches the keywords based on match type"""
@@ -440,7 +397,7 @@ class AutoReply(commands.Cog):
                 if keyword in message_lower:
                     return True
             elif match_type == 'exact':
-                if keyword == message_lower.strip():
+                if keyword == message_lower:
                     return True
             elif match_type == 'starts_with':
                 if message_lower.startswith(keyword):
@@ -451,61 +408,68 @@ class AutoReply(commands.Cog):
         
         return False
     
-    async def process_auto_replies(self, message):
-        """Process message for auto-reply triggers"""
-        if not message.guild or not self.bot.db_pool:
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        """Handle incoming messages for auto-reply triggers"""
+        # Ignore messages from bots
+        if message.author.bot:
+            return
+        
+        # Ignore messages without guild
+        if not message.guild:
+            return
+        
+        # Ignore if no database connection
+        if not self.bot.db_pool:
             return
         
         try:
-            guild_id = str(message.guild.id)
-            user_id = str(message.author.id)
-            channel_id = str(message.channel.id)
-            
             async with self.bot.db_pool.acquire() as conn:
-                # Get all enabled auto-reply rules for this guild
-                rules = await conn.fetch("""
-                    SELECT id, name, keywords, response_data, match_type, cooldown
-                    FROM autoreply_rules 
-                    WHERE guild_id = $1 AND enabled = TRUE
-                    ORDER BY id
-                """, guild_id)
+                # Get all active auto-reply rules for this guild
+                rules = await conn.fetch('''
+                    SELECT id, trigger, response, trigger_type, case_sensitive
+                    FROM auto_replies 
+                    WHERE guild_id = $1 AND is_active = true
+                    ORDER BY created_at ASC
+                ''', str(message.guild.id))
                 
                 for rule in rules:
-                    # Check if message matches keywords
-                    if self.check_message_for_keywords(message.content, rule['keywords'], rule['match_type']):
-                        # Check cooldown
-                        if await self.check_cooldown(guild_id, rule['id'], user_id, channel_id, rule['cooldown']):
-                            continue  # Skip if on cooldown
-                        
-                        # Parse response data
-                        response_data = json.loads(rule['response_data'])
-                        
-                        # Create embed
-                        embed = discord.Embed(
-                            title=response_data['title'],
-                            description=response_data['description'],
-                            color=response_data['color']
-                        )
-                        
-                        if response_data.get('timestamp'):
-                            embed.timestamp = datetime.utcnow()
-                        
-                        if response_data.get('footer'):
-                            footer = response_data['footer']
-                            embed.set_footer(text=footer['text'], icon_url=footer.get('icon_url'))
-                        
-                        # Send the auto-reply
-                        await message.reply(embed=embed)
-                        
-                        # Update cooldown and log trigger
-                        await self.update_cooldown(guild_id, rule['id'], user_id, channel_id)
-                        await self.log_trigger(guild_id, rule['id'], user_id, channel_id)
-                        
-                        logger.info(f"Auto-reply triggered: '{rule['name']}' in {message.guild.name}")
-                        return  # Only respond to first match
-                        
+                    # Check if message matches this rule
+                    if self.check_message_for_keywords(message.content, rule['trigger'], rule['trigger_type']):
+                        try:
+                            # Parse response data
+                            response_data = json.loads(rule['response'])
+                            
+                            # Create embed
+                            embed = discord.Embed(
+                                title=response_data.get('title', 'Auto-Reply'),
+                                description=response_data.get('description', 'No description provided'),
+                                color=response_data.get('color', COLORS['INFO'])
+                            )
+                            
+                            if response_data.get('timestamp'):
+                                embed.timestamp = datetime.utcnow()
+                            
+                            if response_data.get('footer'):
+                                footer_data = response_data['footer']
+                                embed.set_footer(
+                                    text=footer_data.get('text', ''),
+                                    icon_url=footer_data.get('icon_url')
+                                )
+                            
+                            # Send the auto-reply
+                            await message.channel.send(embed=embed)
+                            
+                            logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
+                            
+                            # Only trigger the first matching rule
+                            break
+                            
+                        except Exception as e:
+                            logger.error(f"Error sending auto-reply: {e}")
+                            
         except Exception as e:
-            logger.error(f"Error processing auto-replies: {e}")
+            logger.error(f"Error processing auto-reply: {e}")
 
 async def setup(bot):
     await bot.add_cog(AutoReply(bot))
