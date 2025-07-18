@@ -244,11 +244,15 @@ class UtilityCommands(commands.Cog):
         thumbnail="URL for thumbnail image",
         image="URL for main image",
         footer="Footer text",
+        author="Author name",
+        author_icon="Author icon URL",
+        url="URL to make title clickable",
         channel="Channel to send the embed to"
     )
     async def embed(self, interaction: discord.Interaction, title: str, description: str, 
                    color: str = "#00FFFF", thumbnail: str = None, image: str = None, 
-                   footer: str = None, channel: discord.TextChannel = None):
+                   footer: str = None, author: str = None, author_icon: str = None,
+                   url: str = None, channel: discord.TextChannel = None):
         """Create a custom embed message"""
         if not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
@@ -267,7 +271,8 @@ class UtilityCommands(commands.Cog):
             title=title,
             description=description,
             color=color_int,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
+            url=url
         )
         
         if thumbnail:
@@ -276,8 +281,11 @@ class UtilityCommands(commands.Cog):
         if image:
             embed.set_image(url=image)
         
+        if author:
+            embed.set_author(name=author, icon_url=author_icon)
+        
         if footer:
-            embed.set_footer(text=footer)
+            embed.set_footer(text=footer, icon_url=interaction.user.display_avatar.url)
         else:
             embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
@@ -340,6 +348,7 @@ class UtilityCommands(commands.Cog):
             "`/help` - Get help with commands",
             "`/uptime` - Check bot uptime",
             "`/embed` - Create custom embeds",
+            "`/embedbuilder` - Create advanced embeds with fields and buttons",
             "`/commands` - List all commands"
         ]
         embed.add_field(name="🔍 Utility Commands", value="\n".join(util_commands), inline=False)
@@ -358,9 +367,151 @@ class UtilityCommands(commands.Cog):
             inline=False
         )
         
-        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 20", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 23", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="embedbuilder", description="Create advanced embeds with fields and buttons")
+    @app_commands.describe(
+        title="Title of the embed",
+        description="Description of the embed",
+        color="Color in hex format (e.g., #00FFFF)",
+        fields="Fields in format: name1|value1|inline1;name2|value2|inline2 (inline: true/false)",
+        buttons="Buttons in format: label1|url1|style1;label2|url2|style2 (style: primary/secondary/success/danger/link)",
+        thumbnail="URL for thumbnail image",
+        image="URL for main image",
+        footer="Footer text",
+        author="Author name",
+        channel="Channel to send the embed to"
+    )
+    async def embedbuilder(self, interaction: discord.Interaction, title: str, description: str = None,
+                          color: str = "#00FFFF", fields: str = None, buttons: str = None,
+                          thumbnail: str = None, image: str = None, footer: str = None,
+                          author: str = None, channel: discord.TextChannel = None):
+        """Create advanced embeds with fields and buttons"""
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
+            return
+        
+        try:
+            # Parse color
+            if color.startswith('#'):
+                color = color[1:]
+            color_int = int(color, 16)
+        except ValueError:
+            color_int = 0x00FFFF
+        
+        # Create embed
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=color_int,
+            timestamp=datetime.utcnow()
+        )
+        
+        # Add fields if provided
+        if fields:
+            try:
+                field_list = fields.split(';')
+                for field in field_list:
+                    parts = field.split('|')
+                    if len(parts) >= 2:
+                        name = parts[0].strip()
+                        value = parts[1].strip()
+                        inline = parts[2].strip().lower() == 'true' if len(parts) > 2 else False
+                        embed.add_field(name=name, value=value, inline=inline)
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Error parsing fields: {str(e)}", ephemeral=True)
+                return
+        
+        if thumbnail:
+            embed.set_thumbnail(url=thumbnail)
+        
+        if image:
+            embed.set_image(url=image)
+        
+        if author:
+            embed.set_author(name=author, icon_url=interaction.user.display_avatar.url)
+        
+        if footer:
+            embed.set_footer(text=footer, icon_url=interaction.user.display_avatar.url)
+        else:
+            embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        # Create view with buttons if provided
+        view = None
+        if buttons:
+            try:
+                view = EmbedButtonView()
+                button_list = buttons.split(';')
+                for button in button_list:
+                    parts = button.split('|')
+                    if len(parts) >= 2:
+                        label = parts[0].strip()
+                        url = parts[1].strip()
+                        style = parts[2].strip().lower() if len(parts) > 2 else 'primary'
+                        
+                        # Convert style string to Discord style
+                        style_map = {
+                            'primary': discord.ButtonStyle.primary,
+                            'secondary': discord.ButtonStyle.secondary,
+                            'success': discord.ButtonStyle.success,
+                            'danger': discord.ButtonStyle.danger,
+                            'link': discord.ButtonStyle.link
+                        }
+                        
+                        button_style = style_map.get(style, discord.ButtonStyle.primary)
+                        
+                        if button_style == discord.ButtonStyle.link:
+                            view.add_item(discord.ui.Button(label=label, url=url, style=button_style))
+                        else:
+                            view.add_item(EmbedButton(label=label, style=button_style, custom_id=f"embed_btn_{len(view.children)}"))
+                            
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Error parsing buttons: {str(e)}", ephemeral=True)
+                return
+        
+        # Send to specified channel or current channel
+        target_channel = channel or interaction.channel
+        
+        try:
+            await target_channel.send(embed=embed, view=view)
+            
+            # Confirm to user
+            confirm_embed = discord.Embed(
+                title="✅ Advanced Embed Created",
+                description=f"Your advanced embed has been sent to {target_channel.mention}",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            
+            if fields:
+                confirm_embed.add_field(name="Fields Added", value=str(len(fields.split(';'))), inline=True)
+            if buttons:
+                confirm_embed.add_field(name="Buttons Added", value=str(len(buttons.split(';'))), inline=True)
+            
+            await interaction.response.send_message(embed=confirm_embed, ephemeral=True)
+            
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
+
+class EmbedButtonView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)  # No timeout for persistent buttons
+
+class EmbedButton(discord.ui.Button):
+    def __init__(self, label: str, style: discord.ButtonStyle, custom_id: str):
+        super().__init__(label=label, style=style, custom_id=custom_id)
+    
+    async def callback(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title="Button Clicked!",
+            description=f"You clicked the **{self.label}** button.",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        embed.set_footer(text=f"Clicked by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot))

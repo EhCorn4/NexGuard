@@ -64,7 +64,8 @@ class NexGuardBot(commands.Bot):
             'server.bot_python.commands.admin',
             'server.bot_python.commands.moderation', 
             'server.bot_python.commands.utility',
-            'server.bot_python.commands.tickets'
+            'server.bot_python.commands.tickets',
+            'server.bot_python.commands.embedhelp'
         ]
         
         for extension in extensions:
