@@ -180,6 +180,9 @@ class NexGuardBot(commands.Bot):
 
     async def handle_guild_join(self, guild):
         """Handle bot joining a guild"""
+        # Send welcome message to the guild
+        await self.send_guild_welcome_message(guild)
+        
         if not self.db_pool:
             return
             
@@ -411,6 +414,87 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to update guild config: {e}")
     
+    async def send_guild_welcome_message(self, guild):
+        """Send welcome message when bot joins a new guild"""
+        try:
+            # Find a suitable channel to send the welcome message
+            target_channel = None
+            
+            # Try to find the system channel first
+            if guild.system_channel and guild.system_channel.permissions_for(guild.me).send_messages:
+                target_channel = guild.system_channel
+            else:
+                # Look for a general channel
+                for channel in guild.text_channels:
+                    if channel.permissions_for(guild.me).send_messages:
+                        if any(name in channel.name.lower() for name in ['general', 'main', 'chat', 'welcome', 'lobby']):
+                            target_channel = channel
+                            break
+                
+                # If no general channel found, use the first available text channel
+                if not target_channel:
+                    for channel in guild.text_channels:
+                        if channel.permissions_for(guild.me).send_messages:
+                            target_channel = channel
+                            break
+            
+            if not target_channel:
+                logger.warning(f"No suitable channel found to send welcome message in {guild.name}")
+                return
+            
+            # Create welcome embed
+            embed = discord.Embed(
+                title="🛡️ NexGuard Has Joined Your Server!",
+                description=f"Thank you for adding **NexGuard** to **{guild.name}**! I'm here to help you manage and protect your Discord server with advanced moderation tools.",
+                color=0x00FFFF,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="🚀 Quick Start",
+                value="• Use `/commands` to see all 41+ slash commands\n• Try `/help` for detailed command information\n• Use `/config` to customize server settings",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🔧 Key Features",
+                value="• **Advanced Moderation** - Warn, mute, kick, ban with temporary options\n• **Smart AutoMod** - Spam detection, link filtering, bad word blocking\n• **Ticket System** - Multi-category support ticket management\n• **Auto-Reply** - Custom triggered responses with rich embeds",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="📊 Additional Tools",
+                value="• **Analytics Dashboard** - Real-time server insights\n• **Welcome System** - Customizable member greetings\n• **Role Management** - Custom moderator permissions\n• **Comprehensive Logging** - Detailed action tracking",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="💡 Getting Help",
+                value="• Visit our website for full documentation\n• Use `/support` to get assistance\n• Join our support server for community help",
+                inline=False
+            )
+            
+            embed.set_footer(
+                text=f"NexGuard v2.3.2 | Now protecting {len(self.guilds)} servers | Enterprise-grade Discord protection", 
+                icon_url=self.user.display_avatar.url
+            )
+            embed.set_thumbnail(url=self.user.display_avatar.url)
+            
+            # Send the welcome message
+            message = await target_channel.send(embed=embed)
+            
+            # Add reaction to show bot is active
+            try:
+                await message.add_reaction("🛡️")
+                await message.add_reaction("✅")
+            except:
+                pass  # Ignore reaction errors
+            
+            logger.info(f"✅ Welcome message sent to {guild.name} in #{target_channel.name}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send guild welcome message to {guild.name}: {e}")
+
     async def close(self):
         """Cleanup when bot shuts down"""
         if self.db_pool:
