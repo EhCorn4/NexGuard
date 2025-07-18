@@ -6,6 +6,7 @@ import asyncio
 import asyncpg
 import os
 import json
+import random
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import logging
@@ -95,6 +96,55 @@ class NexGuardBot(commands.Bot):
     async def on_member_join(self, member):
         """Called when a member joins a guild"""
         await self.handle_welcome_message(member)
+    
+    async def on_message(self, message):
+        """Called when a message is sent"""
+        # Ignore messages from bots
+        if message.author.bot:
+            return
+        
+        # Check if bot is mentioned
+        if self.user in message.mentions:
+            latency = round(self.latency * 1000)
+            
+            embed = discord.Embed(
+                title="👋 Hello there!",
+                description=f"Hey {message.author.mention}! I'm NexGuard, your server management assistant.\n\nMy latency is **{latency}ms**",
+                color=0x00FFFF,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="💡 Quick Tip",
+                value="Use `/help` to see all my commands!",
+                inline=False
+            )
+            
+            embed.set_footer(text=f"NexGuard v2.3.2 | Pinged by {message.author.name}", icon_url=message.author.display_avatar.url)
+            
+            await message.reply(embed=embed)
+            return
+        
+        # Check if message contains "ping" (case insensitive)
+        if "ping" in message.content.lower():
+            latency = round(self.latency * 1000)
+            
+            responses = [
+                f"🏓 Pong! {latency}ms",
+                f"🏓 Pong! Latency: {latency}ms",
+                f"🏓 Pong! I'm here with {latency}ms latency!",
+                f"🏓 Pong! Ready to help with {latency}ms response time!"
+            ]
+            
+            # Pick a random response
+            import random
+            response = random.choice(responses)
+            
+            await message.reply(response)
+            return
+        
+        # Process other commands
+        await self.process_commands(message)
     
     async def handle_guild_join(self, guild):
         """Handle bot joining a guild"""
