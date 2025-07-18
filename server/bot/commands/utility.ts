@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { db } from '../../db';
-import { changelogs } from '@shared/schema';
-import { desc } from 'drizzle-orm';
+import { changelogs, commands } from '@shared/schema';
+import { desc, eq } from 'drizzle-orm';
 
 export const utilityCommands = [
   {
@@ -316,7 +316,7 @@ export const utilityCommands = [
             },
             {
               name: '🔧 Utility Commands',
-              value: '`/ping` - Check bot latency\n`/userinfo` - Get user information\n`/serverinfo` - Get server information\n`/avatar` - Get user avatar\n`/changelog` - View bot changelog\n`/uptime` - Check bot uptime',
+              value: '`/ping` - Check bot latency\n`/userinfo` - Get user information\n`/serverinfo` - Get server information\n`/avatar` - Get user avatar\n`/changelog` - View bot changelog\n`/uptime` - Check bot uptime\n`/ai` - Ask the AI assistant\n`/commands` - List all bot commands\n`/embed` - Create custom embeds\n`/botstats` - View detailed bot statistics',
               inline: false
             },
           ],
@@ -326,6 +326,302 @@ export const utilityCommands = [
         };
         
         await interaction.reply({ embeds: [embed] });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('ai')
+      .setDescription('Ask the AI assistant a question')
+      .addStringOption(option =>
+        option.setName('question')
+          .setDescription('Your question for the AI assistant')
+          .setRequired(true)
+      ),
+    category: 'utility',
+    permissions: [],
+    usage: '/ai <question>',
+    async execute(interaction: any) {
+      const question = interaction.options.getString('question');
+      
+      await interaction.deferReply();
+      
+      try {
+        // Simple AI responses for demonstration
+        const responses = [
+          "I'm here to help! While I can't provide real-time AI responses in this demo, I can help with bot commands and server management.",
+          "That's an interesting question! For now, I can assist with NexGuard bot features and Discord server management.",
+          "I'm designed to help with moderation and server management. For complex queries, consider using specialized AI services.",
+          "Thanks for asking! I'm focused on helping with Discord server administration and bot functionality.",
+          "I appreciate your question! My primary function is to assist with server moderation and bot management."
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        
+        const embed = {
+          title: '🤖 AI Assistant',
+          color: 0x00FFFF,
+          fields: [
+            { name: 'Your Question', value: question, inline: false },
+            { name: 'AI Response', value: randomResponse, inline: false },
+          ],
+          footer: {
+            text: `Asked by ${interaction.user.tag}`,
+          },
+          timestamp: new Date().toISOString(),
+        };
+        
+        await interaction.editReply({ embeds: [embed] });
+      } catch (error) {
+        console.error('Error with AI assistant:', error);
+        await interaction.editReply({
+          content: '❌ Failed to process AI request. Please try again.',
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('commands')
+      .setDescription('List all available bot commands')
+      .addStringOption(option =>
+        option.setName('category')
+          .setDescription('Filter by command category')
+          .setRequired(false)
+          .addChoices(
+            { name: 'Admin', value: 'admin' },
+            { name: 'Moderation', value: 'moderation' },
+            { name: 'Ticket', value: 'ticket' },
+            { name: 'Utility', value: 'utility' }
+          )
+      ),
+    category: 'utility',
+    permissions: [],
+    usage: '/commands [category]',
+    async execute(interaction: any) {
+      const category = interaction.options.getString('category');
+      
+      try {
+        let commandsData;
+        
+        if (category) {
+          commandsData = await db.select()
+            .from(commands)
+            .where(eq(commands.category, category));
+        } else {
+          commandsData = await db.select()
+            .from(commands);
+        }
+        
+        if (commandsData.length === 0) {
+          await interaction.reply({
+            content: '❌ No commands found for the specified category.',
+            ephemeral: true
+          });
+          return;
+        }
+        
+        // Group commands by category
+        const groupedCommands = commandsData.reduce((acc, cmd) => {
+          if (!acc[cmd.category]) {
+            acc[cmd.category] = [];
+          }
+          acc[cmd.category].push(cmd);
+          return acc;
+        }, {} as Record<string, typeof commandsData>);
+        
+        const embed = {
+          title: `📋 Bot Commands${category ? ` - ${category.toUpperCase()}` : ''}`,
+          color: 0x00FFFF,
+          fields: [],
+          footer: {
+            text: `Total Commands: ${commandsData.length}`,
+          },
+          timestamp: new Date().toISOString(),
+        };
+        
+        // Add fields for each category
+        for (const [cat, cmds] of Object.entries(groupedCommands)) {
+          const categoryEmoji = {
+            admin: '⚙️',
+            moderation: '🛡️',
+            ticket: '🎫',
+            utility: '🔧'
+          }[cat] || '📝';
+          
+          const commandList = cmds.map(cmd => 
+            `\`/${cmd.name}\` - ${cmd.description}`
+          ).join('\n');
+          
+          embed.fields.push({
+            name: `${categoryEmoji} ${cat.toUpperCase()} Commands`,
+            value: commandList.length > 1024 ? commandList.substring(0, 1021) + '...' : commandList,
+            inline: false
+          });
+        }
+        
+        await interaction.reply({ embeds: [embed] });
+      } catch (error) {
+        console.error('Error fetching commands:', error);
+        await interaction.reply({
+          content: '❌ Failed to fetch commands. Please try again.',
+          ephemeral: true
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('embed')
+      .setDescription('Create a custom embed message')
+      .addStringOption(option =>
+        option.setName('title')
+          .setDescription('Embed title')
+          .setRequired(true)
+      )
+      .addStringOption(option =>
+        option.setName('description')
+          .setDescription('Embed description')
+          .setRequired(true)
+      )
+      .addStringOption(option =>
+        option.setName('color')
+          .setDescription('Embed color (hex code, e.g., #FF0000)')
+          .setRequired(false)
+      )
+      .addStringOption(option =>
+        option.setName('footer')
+          .setDescription('Footer text')
+          .setRequired(false)
+      )
+      .addStringOption(option =>
+        option.setName('thumbnail')
+          .setDescription('Thumbnail URL')
+          .setRequired(false)
+      )
+      .addStringOption(option =>
+        option.setName('image')
+          .setDescription('Image URL')
+          .setRequired(false)
+      )
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+    category: 'utility',
+    permissions: ['MANAGE_MESSAGES'],
+    usage: '/embed <title> <description> [color] [footer] [thumbnail] [image]',
+    async execute(interaction: any) {
+      const title = interaction.options.getString('title');
+      const description = interaction.options.getString('description');
+      const color = interaction.options.getString('color');
+      const footer = interaction.options.getString('footer');
+      const thumbnail = interaction.options.getString('thumbnail');
+      const image = interaction.options.getString('image');
+      
+      try {
+        let embedColor = 0x00FFFF; // Default color
+        
+        if (color) {
+          // Parse hex color
+          const hexColor = color.replace('#', '');
+          if (/^[0-9A-F]{6}$/i.test(hexColor)) {
+            embedColor = parseInt(hexColor, 16);
+          }
+        }
+        
+        const embed = {
+          title: title,
+          description: description,
+          color: embedColor,
+          timestamp: new Date().toISOString(),
+        };
+        
+        if (footer) {
+          embed.footer = {
+            text: footer,
+          };
+        }
+        
+        if (thumbnail) {
+          embed.thumbnail = {
+            url: thumbnail,
+          };
+        }
+        
+        if (image) {
+          embed.image = {
+            url: image,
+          };
+        }
+        
+        await interaction.reply({ embeds: [embed] });
+      } catch (error) {
+        console.error('Error creating embed:', error);
+        await interaction.reply({
+          content: '❌ Failed to create embed. Please check your inputs and try again.',
+          ephemeral: true
+        });
+      }
+    }
+  },
+
+  {
+    data: new SlashCommandBuilder()
+      .setName('botstats')
+      .setDescription('View detailed bot statistics'),
+    category: 'utility',
+    permissions: [],
+    usage: '/botstats',
+    async execute(interaction: any) {
+      try {
+        const client = interaction.client;
+        const guildsCount = client.guilds.cache.size;
+        const usersCount = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+        const channelsCount = client.channels.cache.size;
+        
+        // Memory usage
+        const memoryUsage = process.memoryUsage();
+        const memoryUsed = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+        const memoryTotal = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+        
+        // Uptime
+        const uptime = process.uptime();
+        const days = Math.floor(uptime / 86400);
+        const hours = Math.floor((uptime % 86400) / 3600);
+        const minutes = Math.floor((uptime % 3600) / 60);
+        
+        // Bot information
+        const embed = {
+          title: '📊 Bot Statistics',
+          color: 0x00FFFF,
+          thumbnail: {
+            url: client.user.displayAvatarURL(),
+          },
+          fields: [
+            { name: '🏠 Servers', value: guildsCount.toString(), inline: true },
+            { name: '👥 Users', value: usersCount.toString(), inline: true },
+            { name: '📺 Channels', value: channelsCount.toString(), inline: true },
+            { name: '⏰ Uptime', value: `${days}d ${hours}h ${minutes}m`, inline: true },
+            { name: '💾 Memory Usage', value: `${memoryUsed}MB / ${memoryTotal}MB`, inline: true },
+            { name: '🏓 Ping', value: `${Math.round(client.ws.ping)}ms`, inline: true },
+            { name: '🔧 Node.js Version', value: process.version, inline: true },
+            { name: '📚 Discord.js Version', value: require('discord.js').version, inline: true },
+            { name: '🤖 Bot Version', value: '2.3.2', inline: true },
+          ],
+          footer: {
+            text: `Requested by ${interaction.user.tag}`,
+          },
+          timestamp: new Date().toISOString(),
+        };
+        
+        await interaction.reply({ embeds: [embed] });
+      } catch (error) {
+        console.error('Error fetching bot stats:', error);
+        await interaction.reply({
+          content: '❌ Failed to fetch bot statistics. Please try again.',
+          ephemeral: true
+        });
       }
     }
   },

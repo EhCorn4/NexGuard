@@ -1,5 +1,7 @@
 import { Client, GatewayIntentBits, Collection, REST, Routes } from 'discord.js';
 import { storage } from '../storage';
+import { db } from '../db';
+import { commands, guilds } from '@shared/schema';
 
 // Import command handlers
 import { adminCommands } from './commands/admin';
