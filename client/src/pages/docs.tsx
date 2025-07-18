@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Search, Book, Terminal, Settings, Shield, Ticket, Zap, HelpCircle } from "lucide-react";
+import { Search, Book, Terminal, Settings, Shield, Ticket, Zap, HelpCircle, AlertCircle } from "lucide-react";
 import type { Command } from "@shared/schema";
 import { memo } from "react";
 

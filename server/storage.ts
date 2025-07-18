@@ -308,6 +308,465 @@ export class MemStorage implements IStorage {
     });
 
     this.currentChangelogId = 2;
+
+    // Initialize comprehensive commands data - All 41+ commands
+    
+    // Admin Commands (11 commands)
+    this.commandsData.set(1, {
+      id: 1,
+      name: "automod-config",
+      description: "Configure automod settings and view status overview",
+      category: "admin",
+      usage: "/automod-config",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(2, {
+      id: 2,
+      name: "automod-spam",
+      description: "Configure anti-spam protection with message limits and time windows",
+      category: "admin",
+      usage: "/automod-spam <enabled> [max_messages] [time_window] [action]",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(3, {
+      id: 3,
+      name: "automod-links",
+      description: "Configure link filtering and Discord invite blocking",
+      category: "admin",
+      usage: "/automod-links <enabled> [action]",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(4, {
+      id: 4,
+      name: "automod-badwords",
+      description: "Configure bad words filtering with strict mode options",
+      category: "admin",
+      usage: "/automod-badwords <enabled> [strict_mode] [action]",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(5, {
+      id: 5,
+      name: "automod-words",
+      description: "Manage custom word lists for automod filtering",
+      category: "admin",
+      usage: "/automod-words <action> [word]",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(6, {
+      id: 6,
+      name: "automod-reset",
+      description: "Reset all automod settings to defaults with safety confirmation",
+      category: "admin",
+      usage: "/automod-reset",
+      permissions: ["MANAGE_SERVER"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(7, {
+      id: 7,
+      name: "autoreply-create",
+      description: "Create advanced auto-reply rules with embed responses",
+      category: "admin",
+      usage: "/autoreply-create <name> <trigger> <response> [trigger_type] [embed_color]",
+      permissions: ["ADMINISTRATOR"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(8, {
+      id: 8,
+      name: "autoreply-list",
+      description: "List all auto-reply rules with status and statistics",
+      category: "admin",
+      usage: "/autoreply-list",
+      permissions: ["ADMINISTRATOR"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(9, {
+      id: 9,
+      name: "autoreply-toggle",
+      description: "Enable or disable specific auto-reply rules",
+      category: "admin",
+      usage: "/autoreply-toggle <rule_name>",
+      permissions: ["ADMINISTRATOR"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(10, {
+      id: 10,
+      name: "autoreply-delete",
+      description: "Delete auto-reply rules with confirmation",
+      category: "admin",
+      usage: "/autoreply-delete <rule_name>",
+      permissions: ["ADMINISTRATOR"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(11, {
+      id: 11,
+      name: "modrole",
+      description: "Set custom moderation roles with hierarchy validation",
+      category: "admin",
+      usage: "/modrole [role]",
+      permissions: ["MANAGE_GUILD"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    // Moderation Commands (15 commands)
+    this.commandsData.set(12, {
+      id: 12,
+      name: "ban",
+      description: "Ban a user from the server with comprehensive logging",
+      category: "moderation",
+      usage: "/ban <user> [reason]",
+      permissions: ["BAN_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(13, {
+      id: 13,
+      name: "unban",
+      description: "Unban a user from the server",
+      category: "moderation",
+      usage: "/unban <user_id> [reason]",
+      permissions: ["BAN_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(14, {
+      id: 14,
+      name: "kick",
+      description: "Kick a user from the server",
+      category: "moderation",
+      usage: "/kick <user> [reason]",
+      permissions: ["KICK_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(15, {
+      id: 15,
+      name: "warn",
+      description: "Issue a warning to a user with severity tracking",
+      category: "moderation",
+      usage: "/warn <user> <reason> [severity]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(16, {
+      id: 16,
+      name: "mute",
+      description: "Mute a user in the server with timeout support",
+      category: "moderation",
+      usage: "/mute <user> [duration] [reason]",
+      permissions: ["MANAGE_ROLES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(17, {
+      id: 17,
+      name: "unmute",
+      description: "Remove mute from a user",
+      category: "moderation",
+      usage: "/unmute <user> [reason]",
+      permissions: ["MANAGE_ROLES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(18, {
+      id: 18,
+      name: "timeout",
+      description: "Timeout a user for a specified duration",
+      category: "moderation",
+      usage: "/timeout <user> <duration> [reason]",
+      permissions: ["MODERATE_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(19, {
+      id: 19,
+      name: "tempban",
+      description: "Temporarily ban a user with automatic unban",
+      category: "moderation",
+      usage: "/tempban <user> <duration> [reason]",
+      permissions: ["BAN_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(20, {
+      id: 20,
+      name: "lock",
+      description: "Lock a channel to prevent message sending",
+      category: "moderation",
+      usage: "/lock [channel] [reason]",
+      permissions: ["MANAGE_CHANNELS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(21, {
+      id: 21,
+      name: "unlock",
+      description: "Unlock a previously locked channel",
+      category: "moderation",
+      usage: "/unlock [channel] [reason]",
+      permissions: ["MANAGE_CHANNELS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(22, {
+      id: 22,
+      name: "slowmode",
+      description: "Set slowmode delay for a channel",
+      category: "moderation",
+      usage: "/slowmode <seconds> [channel]",
+      permissions: ["MANAGE_CHANNELS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(23, {
+      id: 23,
+      name: "purge",
+      description: "Delete multiple messages from a channel",
+      category: "moderation",
+      usage: "/purge <amount> [user]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(24, {
+      id: 24,
+      name: "banlist",
+      description: "View and manage server ban list with search functionality",
+      category: "moderation",
+      usage: "/banlist [search]",
+      permissions: ["BAN_MEMBERS"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(25, {
+      id: 25,
+      name: "warnings",
+      description: "View warning history for users with statistics",
+      category: "moderation",
+      usage: "/warnings [user]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(26, {
+      id: 26,
+      name: "modpermissions",
+      description: "Check moderation permissions for users with detailed analysis",
+      category: "moderation",
+      usage: "/modpermissions [user]",
+      permissions: ["MANAGE_GUILD"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    // Ticket Commands (4 commands)
+    this.commandsData.set(27, {
+      id: 27,
+      name: "ticket",
+      description: "Create a support ticket with category selection",
+      category: "ticket",
+      usage: "/ticket [subject] [category]",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(28, {
+      id: 28,
+      name: "tickets",
+      description: "View and manage tickets with filtering options",
+      category: "ticket",
+      usage: "/tickets [status] [category] [assigned_to]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(29, {
+      id: 29,
+      name: "ticketcategory",
+      description: "Manage ticket categories for organized support",
+      category: "ticket",
+      usage: "/ticketcategory <action> <name> [discord_category]",
+      permissions: ["ADMINISTRATOR"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(30, {
+      id: 30,
+      name: "close-ticket",
+      description: "Close and archive support tickets",
+      category: "ticket",
+      usage: "/close-ticket [reason]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    // Utility Commands (11 commands)
+    this.commandsData.set(31, {
+      id: 31,
+      name: "ping",
+      description: "Check bot latency and response time with detailed metrics",
+      category: "utility",
+      usage: "/ping",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(32, {
+      id: 32,
+      name: "help",
+      description: "Get comprehensive help information about commands",
+      category: "utility",
+      usage: "/help [command]",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(33, {
+      id: 33,
+      name: "commands",
+      description: "List all available commands with categories",
+      category: "utility",
+      usage: "/commands [category]",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(34, {
+      id: 34,
+      name: "serverinfo",
+      description: "Display detailed server information and statistics",
+      category: "utility",
+      usage: "/serverinfo",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(35, {
+      id: 35,
+      name: "userinfo",
+      description: "Display detailed user information and permissions",
+      category: "utility",
+      usage: "/userinfo [user]",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(36, {
+      id: 36,
+      name: "avatar",
+      description: "Display user avatar in high quality",
+      category: "utility",
+      usage: "/avatar [user]",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(37, {
+      id: 37,
+      name: "uptime",
+      description: "Display bot uptime and system statistics",
+      category: "utility",
+      usage: "/uptime",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(38, {
+      id: 38,
+      name: "botstats",
+      description: "Display comprehensive bot statistics and performance metrics",
+      category: "utility",
+      usage: "/botstats",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(39, {
+      id: 39,
+      name: "embed",
+      description: "Create custom embeds with advanced formatting",
+      category: "utility",
+      usage: "/embed <title> <description> [color] [footer]",
+      permissions: ["MANAGE_MESSAGES"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(40, {
+      id: 40,
+      name: "ai",
+      description: "AI assistant for questions and server management help",
+      category: "utility",
+      usage: "/ai <question>",
+      permissions: [],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.commandsData.set(41, {
+      id: 41,
+      name: "welcome",
+      description: "Configure advanced welcome messages with rich embeds",
+      category: "admin",
+      usage: "/welcome <action> [channel] [message]",
+      permissions: ["MANAGE_GUILD"],
+      enabled: true,
+      createdAt: new Date(),
+    });
+
+    this.currentCommandId = 42;
   }
 
   async getUser(id: number): Promise<User | undefined> {
