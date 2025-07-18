@@ -86,6 +86,14 @@ class NexGuardBot(commands.Bot):
         logger.info(f'Bot ID: {self.user.id}')
         logger.info(f'Connected to {len(self.guilds)} guilds')
         
+        # Set custom activity status
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=f"{len(self.guilds)} servers | /help for commands"
+        )
+        await self.change_presence(activity=activity, status=discord.Status.online)
+        logger.info(f'🎯 Activity set: Watching {len(self.guilds)} servers')
+        
         # Update bot status in database
         await self.update_status_in_db()
     
@@ -298,6 +306,13 @@ class NexGuardBot(commands.Bot):
     async def update_bot_status(self):
         """Update bot status every 30 seconds"""
         await self.update_status_in_db()
+        
+        # Update Discord activity status
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=f"{len(self.guilds)} servers | /help for commands"
+        )
+        await self.change_presence(activity=activity, status=discord.Status.online)
     
     async def update_status_in_db(self):
         """Update bot status in database"""
