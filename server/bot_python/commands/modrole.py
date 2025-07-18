@@ -43,7 +43,7 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 result = await conn.fetchrow('''
-                    SELECT mod_role_id FROM guilds WHERE guild_id = $1
+                    SELECT mod_role_id FROM guilds WHERE id = $1
                 ''', guild_id)
                 
                 return int(result['mod_role_id']) if result and result['mod_role_id'] else None
@@ -59,9 +59,9 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute('''
-                    INSERT INTO guilds (guild_id, mod_role_id, created_at, updated_at)
-                    VALUES ($1, $2, NOW(), NOW())
-                    ON CONFLICT (guild_id) 
+                    INSERT INTO guilds (id, name, mod_role_id, joined_at, updated_at)
+                    VALUES ($1, 'Unknown', $2, NOW(), NOW())
+                    ON CONFLICT (id) 
                     DO UPDATE SET mod_role_id = $2, updated_at = NOW()
                 ''', guild_id, str(role_id) if role_id else None)
         except Exception as e:

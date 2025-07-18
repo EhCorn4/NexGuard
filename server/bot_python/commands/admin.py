@@ -199,7 +199,13 @@ class AdminCommands(commands.Cog):
                 
         except Exception as e:
             logger.error(f"Error with welcome command: {e}")
-            await interaction.response.send_message("❌ Failed to process welcome command. Please try again.", ephemeral=True)
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to process welcome command. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to process welcome command. Please try again.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="settings", description="View server settings")
     async def settings(self, interaction: discord.Interaction):

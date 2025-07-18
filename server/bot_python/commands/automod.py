@@ -58,7 +58,7 @@ class AutoModCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 config = await conn.fetchrow('''
-                    SELECT automod_config FROM guilds WHERE guild_id = $1
+                    SELECT automod_config FROM guilds WHERE id = $1
                 ''', guild_id)
                 
                 if config and config['automod_config']:
@@ -77,9 +77,9 @@ class AutoModCog(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 # Ensure guild exists
                 await conn.execute('''
-                    INSERT INTO guilds (guild_id, automod_config, created_at, updated_at)
-                    VALUES ($1, $2, NOW(), NOW())
-                    ON CONFLICT (guild_id) 
+                    INSERT INTO guilds (id, name, automod_config, joined_at, updated_at)
+                    VALUES ($1, 'Unknown', $2, NOW(), NOW())
+                    ON CONFLICT (id) 
                     DO UPDATE SET automod_config = $2, updated_at = NOW()
                 ''', guild_id, json.dumps(settings))
         except Exception as e:
