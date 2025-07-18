@@ -199,6 +199,11 @@ The system is a complete Discord bot with integrated website that:
 - July 18, 2025: Enhanced with multiple trigger types: contains, exact match, starts with, ends with
 - July 18, 2025: Built rich embed response system with customizable titles, descriptions, and colors
 - July 18, 2025: Added rule-based naming system with unique IDs for easy management
+- July 18, 2025: **CRITICAL FIXES** - Fixed invite page JavaScript crash and home page statistics
+- July 18, 2025: Resolved undefined `user` variable causing invite page crashes by properly escaping JSX placeholders
+- July 18, 2025: Fixed home page statistics showing 0s by updating storage to read live data from database
+- July 18, 2025: Corrected database schema mismatch by removing non-existent `commandsExecuted` column
+- July 18, 2025: Home page now displays live bot statistics: 9+ servers, 167+ users, real uptime tracking
 
 ## User Preferences
 
