@@ -34,8 +34,12 @@ const Home = memo(function Home() {
   return (
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
-        className="absolute inset-0 bg-cover bg-center opacity-20" 
-        style={{ backgroundImage: `url(${nexguardIcon})` }}
+        className="absolute inset-0 bg-center opacity-20" 
+        style={{ 
+          backgroundImage: `url(${nexguardIcon})`,
+          backgroundSize: '400px 400px',
+          backgroundRepeat: 'no-repeat'
+        }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       
