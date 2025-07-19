@@ -241,6 +241,12 @@ class ModerationCommands(commands.Cog):
             
             await interaction.response.send_message(embed=embed)
             
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason}
+            if duration:
+                parameters["duration"] = duration
+            await self.bot.log_command_usage(interaction, "ban", parameters)
+            
         except Exception as e:
             logger.error(f"Error banning user: {e}")
             await interaction.response.send_message("❌ Failed to ban user. Please try again.", ephemeral=True)
@@ -294,6 +300,10 @@ class ModerationCommands(commands.Cog):
             embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
             
             await interaction.response.send_message(embed=embed)
+            
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "kick", parameters)
             
         except Exception as e:
             logger.error(f"Error kicking user: {e}")
@@ -357,6 +367,10 @@ class ModerationCommands(commands.Cog):
             
             await interaction.response.send_message(embed=embed)
             
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason, "severity": severity}
+            await self.bot.log_command_usage(interaction, "warn", parameters)
+            
         except Exception as e:
             logger.error(f"Error warning user: {e}")
             await interaction.response.send_message("❌ Failed to warn user. Please try again.", ephemeral=True)
@@ -419,6 +433,10 @@ class ModerationCommands(commands.Cog):
             
             await interaction.response.send_message(embed=embed)
             
+            # Log command usage
+            parameters = {"user": user.mention, "duration": f"{duration} minutes", "reason": reason}
+            await self.bot.log_command_usage(interaction, "timeout", parameters)
+            
         except Exception as e:
             logger.error(f"Error timing out user: {e}")
             await interaction.response.send_message("❌ Failed to timeout user. Please try again.", ephemeral=True)
@@ -478,6 +496,10 @@ class ModerationCommands(commands.Cog):
             
             await interaction.response.send_message(embed=embed)
             
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "untimeout", parameters)
+            
         except Exception as e:
             logger.error(f"Error removing timeout from user: {e}")
             await interaction.response.send_message("❌ Failed to remove timeout from user. Please try again.", ephemeral=True)
@@ -524,6 +546,10 @@ class ModerationCommands(commands.Cog):
             embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
             
             await interaction.response.send_message(embed=embed)
+            
+            # Log command usage
+            parameters = {"user_id": user_id, "reason": reason}
+            await self.bot.log_command_usage(interaction, "unban", parameters)
             
         except discord.NotFound:
             await interaction.response.send_message("❌ User not found or not banned.", ephemeral=True)
@@ -574,9 +600,143 @@ class ModerationCommands(commands.Cog):
             
             await interaction.followup.send(embed=embed, ephemeral=True)
             
+            # Log command usage
+            parameters = {"amount": amount}
+            if user:
+                parameters["user"] = user.mention
+            await self.bot.log_command_usage(interaction, "purge", parameters)
+            
         except Exception as e:
             logger.error(f"Error purging messages: {e}")
             await interaction.followup.send("❌ Failed to purge messages. Please try again.", ephemeral=True)
+    
+    @app_commands.command(name="lock", description="Lock a channel to prevent members from sending messages")
+    @app_commands.describe(
+        channel="The channel to lock (defaults to current channel)",
+        reason="Reason for locking the channel"
+    )
+    async def lock(self, interaction: discord.Interaction, channel: discord.TextChannel = None, reason: str = "No reason provided"):
+        """Lock a channel"""
+        if not interaction.user.guild_permissions.manage_channels:
+            await interaction.response.send_message("❌ You don't have permission to manage channels.", ephemeral=True)
+            return
+        
+        if channel is None:
+            channel = interaction.channel
+        
+        try:
+            # Get @everyone role
+            everyone_role = interaction.guild.default_role
+            
+            # Check if channel is already locked
+            current_perms = channel.overwrites_for(everyone_role)
+            if current_perms.send_messages is False:
+                await interaction.response.send_message(f"❌ {channel.mention} is already locked.", ephemeral=True)
+                return
+            
+            # Lock the channel by denying send_messages
+            await channel.set_permissions(everyone_role, send_messages=False, reason=f"Channel locked by {interaction.user}: {reason}")
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(channel.id), str(interaction.user.id), 
+                "lock", f"Locked #{channel.name}: {reason}"
+            )
+            
+            # Create response embed
+            embed = discord.Embed(
+                title="🔒 Channel Locked",
+                description=f"**{channel.mention}** has been locked.",
+                color=0xFF6600,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+            # Send lock notification to the channel
+            lock_embed = discord.Embed(
+                title="🔒 Channel Locked",
+                description=f"This channel has been locked by {interaction.user.mention}",
+                color=0xFF6600,
+                timestamp=datetime.utcnow()
+            )
+            lock_embed.add_field(name="Reason", value=reason, inline=False)
+            
+            await channel.send(embed=lock_embed)
+            
+            # Log command usage
+            parameters = {"channel": channel.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "lock", parameters)
+            
+        except Exception as e:
+            logger.error(f"Error locking channel: {e}")
+            await interaction.response.send_message("❌ Failed to lock channel. Please try again.", ephemeral=True)
+    
+    @app_commands.command(name="unlock", description="Unlock a channel to allow members to send messages")
+    @app_commands.describe(
+        channel="The channel to unlock (defaults to current channel)",
+        reason="Reason for unlocking the channel"
+    )
+    async def unlock(self, interaction: discord.Interaction, channel: discord.TextChannel = None, reason: str = "No reason provided"):
+        """Unlock a channel"""
+        if not interaction.user.guild_permissions.manage_channels:
+            await interaction.response.send_message("❌ You don't have permission to manage channels.", ephemeral=True)
+            return
+        
+        if channel is None:
+            channel = interaction.channel
+        
+        try:
+            # Get @everyone role
+            everyone_role = interaction.guild.default_role
+            
+            # Check if channel is already unlocked
+            current_perms = channel.overwrites_for(everyone_role)
+            if current_perms.send_messages is not False:
+                await interaction.response.send_message(f"❌ {channel.mention} is not locked.", ephemeral=True)
+                return
+            
+            # Unlock the channel by removing the send_messages override
+            await channel.set_permissions(everyone_role, send_messages=None, reason=f"Channel unlocked by {interaction.user}: {reason}")
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(channel.id), str(interaction.user.id), 
+                "unlock", f"Unlocked #{channel.name}: {reason}"
+            )
+            
+            # Create response embed
+            embed = discord.Embed(
+                title="🔓 Channel Unlocked",
+                description=f"**{channel.mention}** has been unlocked.",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+            # Send unlock notification to the channel
+            unlock_embed = discord.Embed(
+                title="🔓 Channel Unlocked",
+                description=f"This channel has been unlocked by {interaction.user.mention}",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            unlock_embed.add_field(name="Reason", value=reason, inline=False)
+            
+            await channel.send(embed=unlock_embed)
+            
+            # Log command usage
+            parameters = {"channel": channel.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "unlock", parameters)
+            
+        except Exception as e:
+            logger.error(f"Error unlocking channel: {e}")
+            await interaction.response.send_message("❌ Failed to unlock channel. Please try again.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(ModerationCommands(bot))

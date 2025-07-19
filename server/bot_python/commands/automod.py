@@ -136,12 +136,18 @@ class AutoModCog(commands.Cog):
             
             await interaction.response.send_message(embed=embed)
             
+            # Log command usage
+            await self.bot.log_command_usage(interaction, "automod-config")
+            
         except Exception as e:
             logger.error(f"Error showing automod config: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to load AutoMod configuration.", 
-                ephemeral=True
-            )
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(f"{EMOJIS['ERROR']} Failed to load AutoMod configuration.", ephemeral=True)
+                else:
+                    await interaction.followup.send(f"{EMOJIS['ERROR']} Failed to load AutoMod configuration.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="automod-spam", description="Configure spam protection")
     @app_commands.describe(
@@ -216,12 +222,24 @@ class AutoModCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
             logger.info(f"Spam protection configured in guild {interaction.guild.id}")
             
+            # Log command usage
+            parameters = {
+                "enabled": enabled,
+                "max_messages": max_messages,
+                "time_window": time_window,
+                "action": action
+            }
+            await self.bot.log_command_usage(interaction, "automod-spam", parameters)
+            
         except Exception as e:
             logger.error(f"Error configuring spam protection: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to configure spam protection.", 
-                ephemeral=True
-            )
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(f"{EMOJIS['ERROR']} Failed to configure spam protection.", ephemeral=True)
+                else:
+                    await interaction.followup.send(f"{EMOJIS['ERROR']} Failed to configure spam protection.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="automod-links", description="Configure link filtering")
     @app_commands.describe(
@@ -281,12 +299,24 @@ class AutoModCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
             logger.info(f"Link filtering configured in guild {interaction.guild.id}")
             
+            # Log command usage
+            parameters = {
+                "enabled": enabled,
+                "block_invites": block_invites,
+                "block_urls": block_urls,
+                "action": action
+            }
+            await self.bot.log_command_usage(interaction, "automod-links", parameters)
+            
         except Exception as e:
             logger.error(f"Error configuring link filtering: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to configure link filtering.", 
-                ephemeral=True
-            )
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(f"{EMOJIS['ERROR']} Failed to configure link filtering.", ephemeral=True)
+                else:
+                    await interaction.followup.send(f"{EMOJIS['ERROR']} Failed to configure link filtering.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="automod-badwords", description="Configure bad words filter")
     @app_commands.describe(
@@ -353,12 +383,23 @@ class AutoModCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
             logger.info(f"Bad words filter configured in guild {interaction.guild.id}")
             
+            # Log command usage
+            parameters = {
+                "enabled": enabled,
+                "strict": strict,
+                "action": action
+            }
+            await self.bot.log_command_usage(interaction, "automod-badwords", parameters)
+            
         except Exception as e:
             logger.error(f"Error configuring bad words filter: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to configure bad words filter.", 
-                ephemeral=True
-            )
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(f"{EMOJIS['ERROR']} Failed to configure bad words filter.", ephemeral=True)
+                else:
+                    await interaction.followup.send(f"{EMOJIS['ERROR']} Failed to configure bad words filter.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="automod-words", description="Manage custom bad words list")
     @app_commands.describe(
@@ -593,14 +634,14 @@ class AutoModCog(commands.Cog):
             invite_patterns = [r'discord\.gg/', r'discord\.com/invite/', r'discordapp\.com/invite/']
             for pattern in invite_patterns:
                 if re.search(pattern, content):
-                    await self.take_action(message, settings.get('action', 'delete'), "Discord invite")
+                    await self.take_action(message, settings.get('action', 'delete'), "Discord invite detected")
                     return True
         
         # Check for URLs
         if settings.get('block_urls', False):
             url_pattern = r'https?://[^\s]+'
             if re.search(url_pattern, content):
-                await self.take_action(message, settings.get('action', 'delete'), "URL")
+                await self.take_action(message, settings.get('action', 'delete'), "URL detected")
                 return True
         
         return False
@@ -618,19 +659,94 @@ class AutoModCog(commands.Cog):
             if strict_mode:
                 # Exact word match
                 if word in content.split():
-                    await self.take_action(message, settings.get('action', 'delete'), f"bad word: {word}")
+                    await self.take_action(message, settings.get('action', 'delete'), f"Bad word detected: {word}")
                     return True
             else:
                 # Contains match
                 if word in content:
-                    await self.take_action(message, settings.get('action', 'delete'), f"bad word: {word}")
+                    await self.take_action(message, settings.get('action', 'delete'), f"Bad word detected: {word}")
                     return True
         
         return False
     
+    async def log_automod_action(self, message: discord.Message, filter_type: str, reason: str, action: str):
+        """Log automod action to the guild's configured logging channel"""
+        try:
+            guild_config = await self.bot.get_guild_config(str(message.guild.id))
+            log_channel_id = guild_config.get('log_channel_id')
+            
+            if not log_channel_id:
+                return  # No logging channel configured
+            
+            log_channel = self.bot.get_channel(int(log_channel_id))
+            if not log_channel:
+                return  # Channel doesn't exist or bot can't access it
+            
+            # Create professional automod log embed
+            embed = discord.Embed(
+                title="🛡️ AutoMod Action",
+                color=COLORS['WARNING'],
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="Filter Type",
+                value=filter_type,
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Action Taken",
+                value=action.title(),
+                inline=True
+            )
+            
+            embed.add_field(
+                name="User",
+                value=f"{message.author.mention}\n(`{message.author.id}`)",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Channel",
+                value=f"{message.channel.mention}\n(`{message.channel.id}`)",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Reason",
+                value=reason,
+                inline=True
+            )
+            
+            # Add message content (truncated if too long)
+            content = message.content
+            if len(content) > 200:
+                content = content[:197] + "..."
+            
+            embed.add_field(
+                name="Message Content",
+                value=f"```{content}```" if content else "*(No text content)*",
+                inline=False
+            )
+            
+            embed.set_footer(
+                text=f"Guild: {message.guild.name}",
+                icon_url=message.guild.icon.url if message.guild.icon else None
+            )
+            
+            embed.set_thumbnail(url=message.author.display_avatar.url)
+            
+            await log_channel.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Failed to log automod action: {e}")
+
     async def take_action(self, message, action, reason):
         """Take the specified action on a message"""
         try:
+            filter_type = "AutoMod Filter"
+            
             if action == "delete":
                 await message.delete()
                 logger.info(f"Deleted message from {message.author} for {reason}")
@@ -653,10 +769,14 @@ class AutoModCog(commands.Cog):
                 await message.delete()
                 # Timeout user for 5 minutes
                 try:
-                    await message.author.timeout(timedelta(minutes=5), reason=f"AutoMod: {reason}")
+                    timeout_until = discord.utils.utcnow() + timedelta(minutes=5)
+                    await message.author.timeout(timeout_until, reason=f"AutoMod: {reason}")
                     logger.info(f"Timed out {message.author} for {reason}")
                 except:
                     pass  # Insufficient permissions
+            
+            # Log the automod action
+            await self.log_automod_action(message, filter_type, reason, action)
         
         except Exception as e:
             logger.error(f"Error taking automod action: {e}")

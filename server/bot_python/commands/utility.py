@@ -26,6 +26,9 @@ class UtilityCommands(commands.Cog):
         )
         
         await interaction.response.send_message(embed=embed)
+        
+        # Log command usage
+        await self.bot.log_command_usage(interaction, "ping")
     
     @app_commands.command(name="userinfo", description="Get information about a user")
     @app_commands.describe(user="The user to get information about")
@@ -56,6 +59,10 @@ class UtilityCommands(commands.Cog):
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+        
+        # Log command usage
+        parameters = {"user": user.mention if user != interaction.user else "self"}
+        await self.bot.log_command_usage(interaction, "userinfo", parameters)
     
     @app_commands.command(name="serverinfo", description="Get information about the server")
     async def serverinfo(self, interaction: discord.Interaction):
@@ -90,6 +97,9 @@ class UtilityCommands(commands.Cog):
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+        
+        # Log command usage
+        await self.bot.log_command_usage(interaction, "serverinfo")
     
     @app_commands.command(name="avatar", description="Get a user's avatar")
     @app_commands.describe(user="The user to get the avatar of")
@@ -110,6 +120,10 @@ class UtilityCommands(commands.Cog):
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+        
+        # Log command usage
+        parameters = {"user": user.mention if user != interaction.user else "self"}
+        await self.bot.log_command_usage(interaction, "avatar", parameters)
     
     @app_commands.command(name="botstats", description="Get bot statistics")
     async def botstats(self, interaction: discord.Interaction):

@@ -151,23 +151,6 @@ class NexGuardBot(commands.Bot):
             await message.reply(embed=embed)
             return
         
-        # Check if message contains "ping" (case insensitive)
-        if "ping" in message.content.lower():
-            latency = round(self.latency * 1000)
-            
-            responses = [
-                f"🏓 Pong! {latency}ms",
-                f"🏓 Pong! Latency: {latency}ms",
-                f"🏓 Pong! I'm here with {latency}ms latency!",
-                f"🏓 Pong! Ready to help with {latency}ms response time!"
-            ]
-            
-            # Pick a random response
-            response = random.choice(responses)
-            
-            await message.reply(response)
-            return
-        
         # Only process auto-replies and other commands if bot wasn't mentioned
         # Check for auto-replies
         autoreply_cog = self.get_cog('AutoReply')
@@ -358,6 +341,76 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to update bot status: {e}")
     
+    async def log_command_usage(self, interaction: discord.Interaction, command_name: str, parameters: dict = None, result: str = "Success"):
+        """Log command usage to the guild's configured logging channel"""
+        try:
+            guild_config = await self.get_guild_config(str(interaction.guild.id))
+            log_channel_id = guild_config.get('log_channel_id')
+            
+            if not log_channel_id:
+                return  # No logging channel configured
+            
+            log_channel = self.get_channel(int(log_channel_id))
+            if not log_channel:
+                return  # Channel doesn't exist or bot can't access it
+            
+            # Create professional embed
+            embed = discord.Embed(
+                title="🔧 Command Executed",
+                color=0x00FFFF,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="Command",
+                value=f"`/{command_name}`",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="User",
+                value=f"{interaction.user.mention}\n(`{interaction.user.id}`)",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Channel",
+                value=f"{interaction.channel.mention}\n(`{interaction.channel.id}`)",
+                inline=True
+            )
+            
+            if parameters:
+                param_text = ""
+                for key, value in parameters.items():
+                    if len(str(value)) > 50:
+                        value = str(value)[:47] + "..."
+                    param_text += f"**{key}:** {value}\n"
+                
+                if param_text:
+                    embed.add_field(
+                        name="Parameters",
+                        value=param_text[:1024],  # Discord field limit
+                        inline=False
+                    )
+            
+            embed.add_field(
+                name="Result",
+                value=result,
+                inline=True
+            )
+            
+            embed.set_footer(
+                text=f"Guild: {interaction.guild.name}",
+                icon_url=interaction.guild.icon.url if interaction.guild.icon else None
+            )
+            
+            embed.set_thumbnail(url=interaction.user.display_avatar.url)
+            
+            await log_channel.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Failed to log command usage: {e}")
+
     async def get_guild_config(self, guild_id: str) -> Dict[str, Any]:
         """Get guild configuration from database"""
         if not self.db_pool:

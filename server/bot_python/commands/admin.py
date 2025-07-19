@@ -83,10 +83,21 @@ class AdminCommands(commands.Cog):
                         await interaction.response.send_message("❌ Invalid channel. Please mention a valid channel.", ephemeral=True)
                 except ValueError:
                     await interaction.response.send_message("❌ Invalid channel ID. Please mention a valid channel.", ephemeral=True)
+            
+            # Log command usage if successful
+            if not interaction.response.is_done():
+                parameters = {"setting": setting, "value": value}
+                await self.bot.log_command_usage(interaction, "configure", parameters)
                     
         except Exception as e:
             logger.error(f"Error configuring server: {e}")
-            await interaction.response.send_message("❌ Failed to update configuration. Please try again.", ephemeral=True)
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to update configuration. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to update configuration. Please try again.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="welcome", description="Configure welcome messages for new members")
     @app_commands.describe(
@@ -196,6 +207,16 @@ class AdminCommands(commands.Cog):
                 embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{user.display_name}`, `{user.id}`, `{guild.name}`, `{member.count}`", inline=False)
                 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            # Log command usage
+            parameters = {"action": action}
+            if message:
+                parameters["message"] = message[:50] + "..." if len(message) > 50 else message
+            if channel:
+                parameters["channel"] = channel.mention
+            if embed_mode is not None:
+                parameters["embed_mode"] = embed_mode
+            await self.bot.log_command_usage(interaction, "welcome", parameters)
                 
         except Exception as e:
             logger.error(f"Error with welcome command: {e}")
