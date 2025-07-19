@@ -10,6 +10,7 @@ import { AlertCircle, Heart, MessageCircle, Rocket, Users, Wrench, Star, Shield,
 import { SiDiscord } from "react-icons/si";
 import type { NewsUpdate } from "@shared/schema";
 import { memo, useState } from "react";
+import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 const categoryIcons = {
   "NEW FEATURE": { icon: Rocket, color: "from-[hsl(var(--nexguard-cyan))] to-[hsl(var(--nexguard-purple))]", textColor: "text-[hsl(var(--nexguard-cyan))]" },
@@ -67,6 +68,10 @@ const Community = memo(function Community() {
 
   return (
     <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-20" 
+        style={{ backgroundImage: `url(${nexguardIcon})` }}
+      ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
