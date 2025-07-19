@@ -24,6 +24,7 @@ const Feedback = lazy(() => import("@/pages/feedback"));
 const FAQ = lazy(() => import("@/pages/faq"));
 const Docs = lazy(() => import("@/pages/docs"));
 const Analytics = lazy(() => import("@/pages/analytics"));
+const Donate = lazy(() => import("@/pages/donate"));
 // Dashboard functionality removed
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
@@ -110,6 +111,13 @@ function Router() {
                 <PageTransition key="analytics">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={8}>
                     <Analytics />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/donate" component={() => (
+                <PageTransition key="donate">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                    <Donate />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />

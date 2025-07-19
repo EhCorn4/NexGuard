@@ -33,6 +33,7 @@ export function Navbar() {
     { href: "/feedback", label: "Feedback" },
     { href: "/docs", label: "Docs" },
     { href: "/analytics", label: "Analytics" },
+    { href: "/donate", label: "Donate" },
   ];
 
   return (
