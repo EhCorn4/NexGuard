@@ -186,8 +186,8 @@ export class MemStorage implements IStorage {
       achievements: ["Built and maintained NexGuard serving 100+ Discord servers", "Developed advanced moderation systems", "Created comprehensive ticket management solutions", "Implemented real-time monitoring and analytics"],
       projects: ["NexGuard Discord Bot", "Advanced Moderation Dashboard", "Custom Command System", "Real-time Analytics Platform"],
       education: "Computer Science",
-      email: "caleb@nexguard.com",
-      discord: "calebweston",
+      email: "crweston2004@gmail.com",
+      discord: "ehcorn",
       yearsOfExperience: 5,
     });
 

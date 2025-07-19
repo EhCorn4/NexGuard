@@ -308,6 +308,7 @@ The system is a complete Discord bot with integrated website that:
 - July 19, 2025: **HOMEPAGE CUSTOMIZATION** - Updated uptime stat to static "24/7 Support" message
 - July 19, 2025: **DEV PROFILE UPDATES** - Removed social links and changed location to Canada
 - July 19, 2025: Updated developer profile to focus on core information without external social media links
+- July 19, 2025: Updated developer contact information: email to crweston2004@gmail.com and Discord to ehcorn
 
 ## User Preferences
 
