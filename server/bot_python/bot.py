@@ -590,10 +590,10 @@ class NexGuardBot(commands.Bot):
             config = await self.get_guild_config(guild_id)
             
             # Check if auto-role is enabled and configured
-            if not config.get('autorole_enabled', False):
+            if not config.get('auto_role_enabled', False):
                 return
             
-            role_id = config.get('autorole_role_id')
+            role_id = config.get('auto_role_id')
             if not role_id:
                 return
             

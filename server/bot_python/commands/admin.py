@@ -257,8 +257,8 @@ class AdminCommands(commands.Cog):
             mod_role = f"<@&{config.get('mod_role_id')}>" if config.get('mod_role_id') else "Not set"
             embed.add_field(name="Mod Role", value=mod_role, inline=True)
             
-            autorole_role = f"<@&{config.get('autorole_role_id')}>" if config.get('autorole_role_id') else "Not set"
-            autorole_status = "✅ Enabled" if config.get('autorole_enabled', False) else "❌ Disabled"
+            autorole_role = f"<@&{config.get('auto_role_id')}>" if config.get('auto_role_id') else "Not set"
+            autorole_status = "✅ Enabled" if config.get('auto_role_enabled', False) else "❌ Disabled"
             embed.add_field(name="Auto-Role", value=f"{autorole_role}\n{autorole_status}", inline=True)
             
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -304,7 +304,7 @@ class AdminCommands(commands.Cog):
                     await interaction.response.send_message("❌ Cannot set @everyone as auto-role.", ephemeral=True)
                     return
                 
-                await self.bot.update_guild_config(guild_id, autorole_role_id=str(role.id), autorole_enabled=True)
+                await self.bot.update_guild_config(guild_id, auto_role_id=str(role.id), auto_role_enabled=True)
                 
                 embed = discord.Embed(
                     title="✅ Auto-Role Configured",
@@ -323,13 +323,13 @@ class AdminCommands(commands.Cog):
                 await self.bot.log_command_usage(interaction, "autorole", parameters)
                 
             elif action == "enable":
-                if not config.get('autorole_role_id'):
+                if not config.get('auto_role_id'):
                     await interaction.response.send_message("❌ No auto-role has been set. Use `/autorole set @role` first.", ephemeral=True)
                     return
                 
-                await self.bot.update_guild_config(guild_id, autorole_enabled=True)
+                await self.bot.update_guild_config(guild_id, auto_role_enabled=True)
                 
-                role_id = config.get('autorole_role_id')
+                role_id = config.get('auto_role_id')
                 role_obj = interaction.guild.get_role(int(role_id))
                 role_mention = role_obj.mention if role_obj else f"<@&{role_id}>"
                 
@@ -348,7 +348,7 @@ class AdminCommands(commands.Cog):
                 await self.bot.log_command_usage(interaction, "autorole", parameters)
                 
             elif action == "disable":
-                await self.bot.update_guild_config(guild_id, autorole_enabled=False)
+                await self.bot.update_guild_config(guild_id, auto_role_enabled=False)
                 
                 embed = discord.Embed(
                     title="❌ Auto-Role Disabled",
@@ -365,7 +365,7 @@ class AdminCommands(commands.Cog):
                 await self.bot.log_command_usage(interaction, "autorole", parameters)
                 
             elif action == "remove":
-                await self.bot.update_guild_config(guild_id, autorole_role_id=None, autorole_enabled=False)
+                await self.bot.update_guild_config(guild_id, auto_role_id=None, auto_role_enabled=False)
                 
                 embed = discord.Embed(
                     title="🗑️ Auto-Role Removed",
@@ -382,8 +382,8 @@ class AdminCommands(commands.Cog):
                 await self.bot.log_command_usage(interaction, "autorole", parameters)
                 
             elif action == "view":
-                role_id = config.get('autorole_role_id')
-                enabled = config.get('autorole_enabled', False)
+                role_id = config.get('auto_role_id')
+                enabled = config.get('auto_role_enabled', False)
                 
                 embed = discord.Embed(
                     title="📋 Auto-Role Configuration",

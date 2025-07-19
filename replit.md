@@ -294,6 +294,10 @@ The system is a complete Discord bot with integrated website that:
 - July 19, 2025: **ENHANCEMENT** - Comprehensive FAQ page implementation
 - July 19, 2025: Created detailed FAQ page with 6 categories and 25+ questions covering setup, moderation, features, troubleshooting, and advanced usage
 - July 19, 2025: Updated footer navigation to point FAQ link to dedicated `/faq` page instead of feedback
+- July 19, 2025: **AUTOROLE COMMAND FIXED** - Resolved database column name mismatch that was preventing autorole functionality
+- July 19, 2025: Fixed autorole command to use correct database columns (auto_role_enabled, auto_role_id) instead of mismatched names
+- July 19, 2025: Confirmed autorole command now fully functional with all 5 actions working correctly
+- July 19, 2025: Autorole system now properly assigns roles to new members when configured and enabled
 
 ## User Preferences
 
