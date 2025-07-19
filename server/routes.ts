@@ -163,7 +163,9 @@ export function registerRoutes(app: Express): Server {
     res.json({
       platform: "discord",
       status: "active",
-      version: "2.3.2"
+      version: "2.3.2",
+      discordInviteUrl: "https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands",
+      supportServerUrl: "https://discord.gg/wpjZMPXaRT"
     });
   });
 
