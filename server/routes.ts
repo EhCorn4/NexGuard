@@ -67,8 +67,8 @@ export function registerRoutes(app: Express): Server {
           serverName: testimonial.serverName,
           rating: testimonial.rating,
           message: testimonial.content,
-          approvalLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/testimonials/approve/${testimonial.id}`,
-          rejectLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/testimonials/reject/${testimonial.id}`
+          approvalLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER?.toLowerCase()}.repl.co` : 'http://localhost:5000'}/api/testimonials/approve/${testimonial.id}`,
+          rejectLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER?.toLowerCase()}.repl.co` : 'http://localhost:5000'}/api/testimonials/reject/${testimonial.id}`
         });
         console.log(`📧 Email notification sent for testimonial from ${testimonial.username} (ID: ${testimonial.id})`);
       } catch (emailError) {
