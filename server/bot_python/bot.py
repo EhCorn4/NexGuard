@@ -107,6 +107,21 @@ class NexGuardBot(commands.Bot):
     
     async def on_member_join(self, member):
         """Called when a member joins a guild"""
+        # Track member join analytics
+        try:
+            if self.db_pool:
+                async with self.db_pool.acquire() as conn:
+                    # Update server analytics with new join
+                    await conn.execute("""
+                        UPDATE server_analytics 
+                        SET new_joins = new_joins + 1
+                        WHERE guild_id = $1 
+                        AND timestamp >= $2
+                    """, str(member.guild.id), datetime.utcnow() - timedelta(hours=1))
+        except Exception as e:
+            logger.error(f"Error tracking member join: {e}")
+        
+        # Handle welcome and autorole
         await self.handle_welcome_message(member)
         await self.handle_auto_role(member)
     
@@ -236,15 +251,18 @@ class NexGuardBot(commands.Bot):
         if not self.db_pool:
             return
         
-        # Prevent duplicate welcome messages with a simple cooldown check
+        # Prevent duplicate welcome messages with a robust cooldown check
         cooldown_key = f"welcome_{member.guild.id}_{member.id}"
-        if hasattr(self, '_welcome_cooldowns'):
-            if cooldown_key in self._welcome_cooldowns:
-                return  # Already processed this member recently
-        else:
+        if not hasattr(self, '_welcome_cooldowns'):
             self._welcome_cooldowns = {}
         
-        self._welcome_cooldowns[cooldown_key] = True
+        # Check if already processed recently
+        if cooldown_key in self._welcome_cooldowns:
+            logger.info(f"Duplicate welcome prevented for {member.name} in {member.guild.name}")
+            return
+        
+        # Add to cooldown immediately
+        self._welcome_cooldowns[cooldown_key] = datetime.utcnow()
         
         try:
             async with self.db_pool.acquire() as conn:
@@ -377,14 +395,16 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to send welcome message: {e}")
         finally:
-            # Remove from cooldown after 30 seconds to allow for genuine re-joins
-            if hasattr(self, '_welcome_cooldowns') and cooldown_key in self._welcome_cooldowns:
-                async def remove_cooldown():
-                    await asyncio.sleep(30)
-                    if hasattr(self, '_welcome_cooldowns') and cooldown_key in self._welcome_cooldowns:
-                        del self._welcome_cooldowns[cooldown_key]
+            # Clean up old cooldowns (older than 5 minutes)
+            if hasattr(self, '_welcome_cooldowns'):
+                current_time = datetime.utcnow()
+                to_remove = []
+                for key, timestamp in self._welcome_cooldowns.items():
+                    if (current_time - timestamp).total_seconds() > 300:  # 5 minutes
+                        to_remove.append(key)
                 
-                asyncio.create_task(remove_cooldown())
+                for key in to_remove:
+                    del self._welcome_cooldowns[key]
     
     @tasks.loop(seconds=30)
     async def update_bot_status(self):

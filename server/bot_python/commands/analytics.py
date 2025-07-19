@@ -172,39 +172,7 @@ class AnalyticsTracker(commands.Cog):
         except Exception as e:
             logger.error(f"Error storing failed command analytics: {e}")
     
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        """Track member join analytics"""
-        try:
-            if self.bot.db_pool:
-                async with self.bot.db_pool.acquire() as conn:
-                    # Update server analytics with new join
-                    await conn.execute("""
-                        UPDATE server_analytics 
-                        SET new_joins = new_joins + 1
-                        WHERE guild_id = $1 
-                        AND timestamp >= $2
-                    """, str(member.guild.id), datetime.utcnow() - timedelta(hours=1))
-                    
-        except Exception as e:
-            logger.error(f"Error tracking member join: {e}")
-    
-    @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        """Track member leave analytics"""
-        try:
-            if self.bot.db_pool:
-                async with self.bot.db_pool.acquire() as conn:
-                    # Update server analytics with new leave
-                    await conn.execute("""
-                        UPDATE server_analytics 
-                        SET new_leaves = new_leaves + 1
-                        WHERE guild_id = $1 
-                        AND timestamp >= $2
-                    """, str(member.guild.id), datetime.utcnow() - timedelta(hours=1))
-                    
-        except Exception as e:
-            logger.error(f"Error tracking member leave: {e}")
+    # Removed duplicate member join/leave handlers to prevent conflicts with main bot handlers
 
 async def setup(bot):
     await bot.add_cog(AnalyticsTracker(bot))
