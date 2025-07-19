@@ -594,12 +594,15 @@ class AutoModCog(commands.Cog):
         if not self.bot.db_pool:
             return
         
-        # Skip moderators and admins
-        if (message.author.guild_permissions.administrator or 
-            message.author.guild_permissions.manage_messages):
-            return
-        
         try:
+            # Store message in analytics for spam detection (always store, even for admins)
+            await self.store_message_analytics(message)
+            
+            # Skip moderators and admins for automod checks
+            if (message.author.guild_permissions.administrator or 
+                message.author.guild_permissions.manage_messages):
+                return
+            
             settings = await self.get_automod_settings(str(message.guild.id))
             
             # Check each automod module
@@ -614,6 +617,21 @@ class AutoModCog(commands.Cog):
             logger.error(f"Error in automod message handler: {e}")
         
         return False
+    
+    async def store_message_analytics(self, message):
+        """Store message data for spam detection"""
+        if not self.bot.db_pool:
+            return
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                await conn.execute('''
+                    INSERT INTO message_analytics (guild_id, channel_id, user_id, timestamp, hour)
+                    VALUES ($1, $2, $3, $4, $5)
+                ''', str(message.guild.id), str(message.channel.id), str(message.author.id), 
+                    datetime.utcnow(), datetime.utcnow().hour)
+        except Exception as e:
+            logger.error(f"Error storing message analytics: {e}")
     
     async def check_spam_filter(self, message, settings) -> bool:
         """Check message against spam filter"""
@@ -767,6 +785,44 @@ class AutoModCog(commands.Cog):
             
         except Exception as e:
             logger.error(f"Failed to log automod action: {e}")
+
+    async def take_automod_action(self, message, filter_type, action, reason):
+        """Take automod action for specific filter types like spam"""
+        try:
+            if action == "delete":
+                await message.delete()
+                logger.info(f"AutoMod deleted message from {message.author} for {reason}")
+            
+            elif action == "warn":
+                await message.delete()
+                # Send warning to user
+                try:
+                    embed = discord.Embed(
+                        title=f"{EMOJIS['WARNING']} AutoMod Warning",
+                        description=f"Your message was deleted for: {reason}",
+                        color=COLORS['WARNING']
+                    )
+                    embed.add_field(name="Filter", value=filter_type.title(), inline=True)
+                    await message.author.send(embed=embed)
+                except:
+                    pass  # User has DMs disabled
+                logger.info(f"AutoMod warned {message.author} for {reason}")
+            
+            elif action == "timeout":
+                await message.delete()
+                # Timeout user for 5 minutes
+                try:
+                    timeout_until = discord.utils.utcnow() + timedelta(minutes=5)
+                    await message.author.timeout(timeout_until, reason=f"AutoMod {filter_type}: {reason}")
+                    logger.info(f"AutoMod timed out {message.author} for {reason}")
+                except:
+                    pass  # Insufficient permissions
+            
+            # Log the automod action
+            await self.log_automod_action(message, f"{filter_type.title()} Filter", reason, action)
+        
+        except Exception as e:
+            logger.error(f"Error taking automod action: {e}")
 
     async def take_action(self, message, action, reason):
         """Take the specified action on a message"""

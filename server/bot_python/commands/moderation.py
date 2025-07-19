@@ -610,6 +610,188 @@ class ModerationCommands(commands.Cog):
             logger.error(f"Error purging messages: {e}")
             await interaction.followup.send("❌ Failed to purge messages. Please try again.", ephemeral=True)
     
+    @app_commands.command(name="mute", description="Mute a user by adding the configured mute role")
+    @app_commands.describe(
+        user="The user to mute",
+        reason="Reason for the mute"
+    )
+    async def mute(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
+        """Mute a user by adding the configured mute role"""
+        if not interaction.user.guild_permissions.moderate_members:
+            await interaction.response.send_message("❌ You don't have permission to mute members.", ephemeral=True)
+            return
+        
+        if user.top_role >= interaction.user.top_role:
+            await interaction.response.send_message("❌ You cannot mute this user due to role hierarchy.", ephemeral=True)
+            return
+        
+        try:
+            # Get mute role from guild settings
+            mute_role = None
+            if self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    result = await conn.fetchrow("SELECT mute_role_id FROM guilds WHERE id = $1", str(interaction.guild.id))
+                    if result and result['mute_role_id']:
+                        mute_role = interaction.guild.get_role(int(result['mute_role_id']))
+            
+            # If no mute role configured, try to find one named "Muted"
+            if not mute_role:
+                mute_role = discord.utils.get(interaction.guild.roles, name="Muted")
+                
+            # If still no mute role, create one
+            if not mute_role:
+                try:
+                    mute_role = await interaction.guild.create_role(
+                        name="Muted",
+                        color=discord.Color.dark_grey(),
+                        reason="Auto-created mute role for moderation"
+                    )
+                    
+                    # Set up channel permissions for the mute role
+                    for channel in interaction.guild.channels:
+                        try:
+                            if isinstance(channel, discord.TextChannel):
+                                await channel.set_permissions(mute_role, send_messages=False, add_reactions=False)
+                            elif isinstance(channel, discord.VoiceChannel):
+                                await channel.set_permissions(mute_role, speak=False, stream=False)
+                        except discord.Forbidden:
+                            continue  # Skip channels we can't modify
+                    
+                    # Save mute role to database
+                    if self.bot.db_pool:
+                        async with self.bot.db_pool.acquire() as conn:
+                            await conn.execute(
+                                "UPDATE guilds SET mute_role_id = $1 WHERE id = $2",
+                                str(mute_role.id), str(interaction.guild.id)
+                            )
+                            
+                except discord.Forbidden:
+                    await interaction.response.send_message("❌ I don't have permission to create roles. Please create a 'Muted' role manually or set one using admin commands.", ephemeral=True)
+                    return
+            
+            # Check if user is already muted
+            if mute_role in user.roles:
+                await interaction.response.send_message(f"❌ {user.mention} is already muted.", ephemeral=True)
+                return
+            
+            # Add mute role to user
+            await user.add_roles(mute_role, reason=reason)
+            
+            # Send DM to user
+            try:
+                embed = discord.Embed(
+                    title="You have been muted",
+                    description=f"You have been muted in **{interaction.guild.name}**",
+                    color=0xFF8000,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+                await user.send(embed=embed)
+            except:
+                pass  # User has DMs disabled
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(user.id), str(interaction.user.id), 
+                "mute", reason
+            )
+            
+            embed = discord.Embed(
+                title="User Muted",
+                description=f"**{user.name}** has been muted.",
+                color=0xFF8000,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            embed.add_field(name="Mute Role", value=mute_role.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "mute", parameters)
+            
+        except Exception as e:
+            logger.error(f"Error muting user: {e}")
+            await interaction.response.send_message("❌ Failed to mute user. Please try again.", ephemeral=True)
+    
+    @app_commands.command(name="unmute", description="Unmute a user by removing the configured mute role")
+    @app_commands.describe(
+        user="The user to unmute",
+        reason="Reason for the unmute"
+    )
+    async def unmute(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
+        """Unmute a user by removing the configured mute role"""
+        if not interaction.user.guild_permissions.moderate_members:
+            await interaction.response.send_message("❌ You don't have permission to unmute members.", ephemeral=True)
+            return
+        
+        try:
+            # Get mute role from guild settings
+            mute_role = None
+            if self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    result = await conn.fetchrow("SELECT mute_role_id FROM guilds WHERE id = $1", str(interaction.guild.id))
+                    if result and result['mute_role_id']:
+                        mute_role = interaction.guild.get_role(int(result['mute_role_id']))
+            
+            # If no mute role configured, try to find one named "Muted"
+            if not mute_role:
+                mute_role = discord.utils.get(interaction.guild.roles, name="Muted")
+                
+            if not mute_role:
+                await interaction.response.send_message("❌ No mute role found. Please configure a mute role first.", ephemeral=True)
+                return
+            
+            # Check if user is actually muted
+            if mute_role not in user.roles:
+                await interaction.response.send_message(f"❌ {user.mention} is not currently muted.", ephemeral=True)
+                return
+            
+            # Remove mute role from user
+            await user.remove_roles(mute_role, reason=reason)
+            
+            # Send DM to user
+            try:
+                embed = discord.Embed(
+                    title="You have been unmuted",
+                    description=f"You have been unmuted in **{interaction.guild.name}**",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+                await user.send(embed=embed)
+            except:
+                pass  # User has DMs disabled
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(user.id), str(interaction.user.id), 
+                "unmute", reason
+            )
+            
+            embed = discord.Embed(
+                title="User Unmuted",
+                description=f"**{user.name}** has been unmuted.",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+            # Log command usage
+            parameters = {"user": user.mention, "reason": reason}
+            await self.bot.log_command_usage(interaction, "unmute", parameters)
+            
+        except Exception as e:
+            logger.error(f"Error unmuting user: {e}")
+            await interaction.response.send_message("❌ Failed to unmute user. Please try again.", ephemeral=True)
+
     @app_commands.command(name="lock", description="Lock a channel to prevent members from sending messages")
     @app_commands.describe(
         channel="The channel to lock (defaults to current channel)",
