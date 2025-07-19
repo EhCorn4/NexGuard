@@ -1437,4 +1437,4 @@ export class DatabaseStorage implements IStorage {
 
 // Remove duplicate - using the complete implementation above
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
