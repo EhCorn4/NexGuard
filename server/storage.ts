@@ -93,7 +93,7 @@ export class MemStorage implements IStorage {
   }
 
   private initializeData() {
-    // Initialize news updates with actual development dates
+    // Initialize news updates spanning past 2 months
     this.newsUpdates.set(1, {
       id: 1,
       title: "🚀 Universal Command Logging System",
@@ -109,7 +109,7 @@ export class MemStorage implements IStorage {
       title: "🔒 Advanced Channel Management",
       content: "New lock/unlock commands with permission controls and detailed notifications. Administrators can now quickly secure channels during incidents with comprehensive logging and role-based access management.",
       category: "SECURITY",
-      publishedAt: new Date('2025-07-19T09:30:00Z'),
+      publishedAt: new Date('2025-07-15T14:30:00Z'),
       likes: 156,
       comments: 31,
     });
@@ -119,7 +119,7 @@ export class MemStorage implements IStorage {
       title: "⚡ Enhanced AutoMod Protection",
       content: "Professional automod logging now sends detailed violation reports to configured channels. Real-time spam detection, bad word filtering, and link blocking with escalation actions and comprehensive reporting.",
       category: "SECURITY",
-      publishedAt: new Date('2025-07-19T09:00:00Z'),
+      publishedAt: new Date('2025-07-08T16:00:00Z'),
       likes: 203,
       comments: 47,
     });
@@ -129,7 +129,7 @@ export class MemStorage implements IStorage {
       title: "🎫 Advanced Testimonial System",
       content: "New email-based testimonial approval system with instant notifications. When users submit testimonials, administrators receive professional emails with approve/reject buttons for immediate management.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-19T08:30:00Z'),
+      publishedAt: new Date('2025-07-02T11:30:00Z'),
       likes: 78,
       comments: 19,
     });
@@ -139,7 +139,7 @@ export class MemStorage implements IStorage {
       title: "🎮 Custom AutoRole System",
       content: "Comprehensive autorole command with set, enable, disable, remove, and view actions. Automatic role assignment functionality with role hierarchy validation and permission checking for new member management.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-19T08:00:00Z'),
+      publishedAt: new Date('2025-06-28T09:00:00Z'),
       likes: 134,
       comments: 28,
     });
@@ -149,7 +149,7 @@ export class MemStorage implements IStorage {
       title: "💎 Premium Donation System",
       content: "Simple and empathetic donation system launched to support continued development. Optional contributions help maintain and improve NexGuard while keeping all features completely free for everyone.",
       category: "COMMUNITY",
-      publishedAt: new Date('2025-07-19T07:30:00Z'),
+      publishedAt: new Date('2025-06-22T15:45:00Z'),
       likes: 234,
       comments: 41,
     });
@@ -159,7 +159,7 @@ export class MemStorage implements IStorage {
       title: "🎉 Welcome System Overhaul",
       content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support, channel detection, and comprehensive configuration options for perfect new member onboarding.",
       category: "UPDATE",
-      publishedAt: new Date('2025-07-19T07:00:00Z'),
+      publishedAt: new Date('2025-06-15T13:20:00Z'),
       likes: 112,
       comments: 27,
     });
@@ -169,7 +169,7 @@ export class MemStorage implements IStorage {
       title: "⏰ Temporary Ban System",
       content: "Advanced temporary ban functionality with automatic expiration. Support for duration formats (7d, 2h, 30m) with background processing and automated unban when time expires.",
       category: "UPDATE",
-      publishedAt: new Date('2025-07-18T18:00:00Z'),
+      publishedAt: new Date('2025-06-10T17:15:00Z'),
       likes: 98,
       comments: 25,
     });
@@ -179,7 +179,7 @@ export class MemStorage implements IStorage {
       title: "🎮 Custom Moderation Roles",
       content: "Advanced permission system allowing administrators to set custom moderation roles with hierarchy validation. Precise control over who can moderate your server beyond Discord's default permissions.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-18T17:30:00Z'),
+      publishedAt: new Date('2025-06-05T12:45:00Z'),
       likes: 167,
       comments: 38,
     });
@@ -189,7 +189,7 @@ export class MemStorage implements IStorage {
       title: "📈 Multi-Category Ticket System",
       content: "Enhanced ticket system with category management and Discord channel integration. Organized support with automatic ticket placement, priority levels, and comprehensive filtering options for large communities.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-18T17:00:00Z'),
+      publishedAt: new Date('2025-05-30T18:20:00Z'),
       likes: 145,
       comments: 29,
     });
@@ -199,7 +199,7 @@ export class MemStorage implements IStorage {
       title: "🛡️ Advanced AutoMod Suite",
       content: "State-of-the-art moderation automation with 6 specialized commands. Features intelligent spam protection, link filtering, bad word detection, and real-time message monitoring with escalation actions.",
       category: "SECURITY",
-      publishedAt: new Date('2025-07-18T16:30:00Z'),
+      publishedAt: new Date('2025-05-25T14:10:00Z'),
       likes: 289,
       comments: 62,
     });
@@ -209,7 +209,7 @@ export class MemStorage implements IStorage {
       title: "🤖 Smart Auto-Reply Engine",
       content: "Revolutionary auto-reply system with intelligent keyword matching, rich embed responses, and detailed analytics. Create custom automated responses with multiple trigger types, cooldowns, and comprehensive statistics.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-18T16:00:00Z'),
+      publishedAt: new Date('2025-05-20T10:30:00Z'),
       likes: 234,
       comments: 56,
     });
@@ -219,7 +219,7 @@ export class MemStorage implements IStorage {
       title: "💡 AI-Powered Assistant",
       content: "Integrated AI assistant for server management help and questions. Get instant answers about bot commands, Discord server management, and troubleshooting directly in your server.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-18T15:30:00Z'),
+      publishedAt: new Date('2025-05-15T16:45:00Z'),
       likes: 198,
       comments: 45,
     });
@@ -229,7 +229,7 @@ export class MemStorage implements IStorage {
       title: "🚀 NexGuard 2.3.2 Release",
       content: "Major bot update featuring Python architecture migration, improved performance, enhanced Discord.py integration, and comprehensive slash command support. Faster responses and more reliable operations.",
       category: "FEATURED",
-      publishedAt: new Date('2025-07-18T15:00:00Z'),
+      publishedAt: new Date('2025-05-12T11:15:00Z'),
       likes: 356,
       comments: 78,
     });
@@ -239,7 +239,7 @@ export class MemStorage implements IStorage {
       title: "🎯 44+ Commands Now Available",
       content: "Complete command expansion to 44+ slash commands! Including 17 moderation commands, 15 admin commands, 11 utility commands, and 4 ticket system commands. Most comprehensive Discord bot feature set available.",
       category: "FEATURED",
-      publishedAt: new Date('2025-07-18T14:30:00Z'),
+      publishedAt: new Date('2025-05-08T13:25:00Z'),
       likes: 342,
       comments: 89,
     });
@@ -249,7 +249,7 @@ export class MemStorage implements IStorage {
       title: "📊 Bot Statistics Update: 171+ Users Protected",
       content: "NexGuard is now actively protecting 171+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their moderation and management needs.",
       category: "COMMUNITY",
-      publishedAt: new Date('2025-07-18T14:00:00Z'),
+      publishedAt: new Date('2025-05-22T19:00:00Z'),
       likes: 127,
       comments: 34,
     });
