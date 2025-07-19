@@ -1,0 +1,36 @@
+🛡️ **NexGuard Update v2.3.3 - Welcome System Overhaul** 🛡️
+
+🎉 **Major Welcome System Improvements**
+
+We've completely overhauled the welcome system to provide a smoother and more reliable experience for server administrators!
+
+✅ **Bug Fixes & Stability**
+• **Fixed Discord Interaction Timeouts** - Welcome commands now respond instantly without "Unknown interaction" errors
+• **Eliminated Duplicate Welcome Messages** - Enhanced cooldown system prevents multiple welcome messages for the same user  
+• **Improved Command Reliability** - All welcome configuration actions now work consistently
+
+🔧 **Enhanced Features**
+• **Better Debug Information** - Detailed feedback when configuring welcome settings
+• **Robust Error Handling** - Failed operations are properly handled with helpful error messages
+• **Smart Channel Detection** - Improved fallback logic for welcome channel selection
+
+🎯 **Welcome Command Improvements**
+• `/welcome channel` - Set welcome channel (now works reliably)
+• `/welcome embed true/false` - Toggle embed mode (fixed update issues)  
+• `/welcome view` - Enhanced config display with debug information
+• `/welcome test` - Preview your welcome message setup
+• `/welcome set` - Update welcome message content
+
+📊 **Current Status**
+• **44+ Commands** across all categories
+• **9+ Servers** protected with **170+ users**  
+• **24/7 Uptime** with real-time monitoring
+
+🚀 **What's Next?**
+We're continuously working on improving NexGuard's features and stability. Keep an eye out for upcoming enhancements to our moderation and automod systems!
+
+───────────────────────────────
+
+*Having issues or questions? Use `/support` for assistance or join our support community!*
+
+**NexGuard Team** 🛡️
