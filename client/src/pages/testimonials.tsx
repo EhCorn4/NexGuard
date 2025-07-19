@@ -17,7 +17,6 @@ import { insertTestimonialSchema, type Testimonial } from "@shared/schema";
 import { Star, Quote, MessageCircle, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 const testimonialFormSchema = insertTestimonialSchema.extend({
   rating: z.number().min(1).max(5)
@@ -94,14 +93,6 @@ export default function Testimonials() {
 
   return (
     <div className="min-h-screen hero-gradient circuit-pattern pt-20 relative overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-center opacity-20" 
-        style={{ 
-          backgroundImage: `url(${nexguardIcon})`,
-          backgroundSize: '1920px 1080px',
-          backgroundRepeat: 'no-repeat'
-        }}
-      ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       <div className="container mx-auto px-4 py-12 relative z-10">
         <PageHeader 

@@ -1,20 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-center opacity-20" 
-        style={{ 
-          backgroundImage: `url(${nexguardIcon})`,
-          backgroundSize: '1920px 1080px',
-          backgroundRepeat: 'no-repeat'
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      <div className="relative z-10">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md mx-4">
         <CardContent className="pt-6">
           <div className="flex mb-4 gap-2">
@@ -27,7 +16,6 @@ export default function NotFound() {
           </p>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }

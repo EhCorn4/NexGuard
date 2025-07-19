@@ -19,23 +19,17 @@ import {
   Heart,
   Phone
 } from "lucide-react";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 export default function Contact() {
   return (
     <PageTransition>
-      <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-center opacity-20" 
-          style={{ 
-            backgroundImage: `url(${nexguardIcon})`,
-            backgroundSize: '1920px 1080px',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Circuit Pattern Background */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent animate-pulse"></div>
+        </div>
         
-        <div className="container mx-auto px-4 py-20 relative z-10">
+        <div className="relative z-10">
           <PageHeader
             title="Contact Us"
             description="Need help or have questions? We're here to support you and your community."

@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { BarChart3, Users, MessageSquare, Command, TrendingUp, Activity, Clock, Hash } from "lucide-react";
 import { motion } from "framer-motion";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -47,17 +46,8 @@ export default function AnalyticsPage() {
 
   if (overviewLoading) {
     return (
-      <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-center opacity-20" 
-          style={{ 
-            backgroundImage: `url(${nexguardIcon})`,
-            backgroundSize: '1920px 1080px',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-        <div className="container mx-auto px-4 py-20 relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-6">
+        <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-400"></div>
           </div>
@@ -67,17 +57,8 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-center opacity-20" 
-        style={{ 
-          backgroundImage: `url(${nexguardIcon})`,
-          backgroundSize: '1920px 1080px',
-          backgroundRepeat: 'no-repeat'
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      <div className="container mx-auto px-4 py-20 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <motion.div 
           className="mb-8"

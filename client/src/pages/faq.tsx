@@ -22,7 +22,6 @@ import {
   CheckCircle
 } from "lucide-react";
 import { Link } from "wouter";
-import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 interface FAQCategory {
   id: string;
@@ -205,17 +204,7 @@ export default function FAQ() {
   }, []);
 
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern relative overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-center opacity-20" 
-        style={{ 
-          backgroundImage: `url(${nexguardIcon})`,
-          backgroundSize: '1920px 1080px',
-          backgroundRepeat: 'no-repeat'
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      <div className="relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/50">
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.1),transparent_50%)]" />
@@ -381,7 +370,6 @@ export default function FAQ() {
           </motion.div>
         </div>
       </section>
-      </div>
     </div>
   );
 }
