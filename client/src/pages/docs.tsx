@@ -369,10 +369,10 @@ const Docs = memo(function Docs() {
                           <div>
                             <h4 className="font-medium text-white mb-2">User Permissions for Commands:</h4>
                             <div className="space-y-1 text-sm">
-                              <p>• <strong>Admin Commands:</strong> Require Administrator permission</p>
-                              <p>• <strong>Moderation Commands:</strong> Require Moderate Members permission</p>
-                              <p>• <strong>Ticket Commands:</strong> Available to all users (creation), staff for management</p>
-                              <p>• <strong>Utility Commands:</strong> Available to all users</p>
+                              <p>• <strong>Admin Commands (15):</strong> Administrator permission required</p>
+                              <p>• <strong>Moderation Commands (17):</strong> Moderate Members permission required</p>
+                              <p>• <strong>Ticket Commands (4):</strong> Available to all users (creation), staff for management</p>
+                              <p>• <strong>Utility Commands (11):</strong> Available to all users</p>
                             </div>
                           </div>
                         </div>

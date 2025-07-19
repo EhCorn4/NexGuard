@@ -56,7 +56,7 @@ const Home = memo(function Home() {
           </p>
           
           <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            The ultimate Discord moderation and quality-of-life bot designed to keep your server safe, organized, and thriving. Advanced automation meets intuitive management.
+            The ultimate Discord moderation and quality-of-life bot with 44+ commands, universal logging, and advanced automod protection. Keep your server safe, organized, and thriving with enterprise-grade automation.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

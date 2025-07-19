@@ -201,9 +201,9 @@ export class MemStorage implements IStorage {
     this.features.set(1, {
       id: 1,
       title: "Advanced Moderation Suite",
-      description: "Enterprise-grade moderation tools with 15+ commands including temporary bans, intelligent spam detection, and comprehensive logging to maintain server security and order.",
+      description: "Enterprise-grade moderation tools with 17+ commands including temporary bans, channel management, intelligent automod with logging, and comprehensive tracking systems.",
       icon: "shield",
-      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Smart automod with spam, link, and bad word filtering", "Comprehensive warning system with severity tracking", "Real-time moderation logs and detailed analytics", "Custom moderator role management and permissions"],
+      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Channel lock/unlock with permission management", "Smart automod with professional logging to channels", "Universal command logging for all 44 commands", "Comprehensive warning system with severity tracking", "Custom moderator role management and permissions"],
     });
 
     this.features.set(2, {
@@ -233,20 +233,36 @@ export class MemStorage implements IStorage {
     this.features.set(5, {
       id: 5,
       title: "Comprehensive Command Suite",
-      description: "Complete server administration suite with 41+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
+      description: "Complete server administration suite with 44+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
       icon: "cog",
-      benefits: ["41+ slash commands across all categories", "Admin & advanced moderation tools", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
+      benefits: ["44+ slash commands across all categories", "Advanced admin tools with logging configuration", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
       id: 6,
-      title: "Real-time Analytics Dashboard",
+      title: "Real-time Analytics Dashboard", 
       description: "Professional analytics dashboard with live bot status monitoring, server statistics, command usage tracking, and comprehensive performance insights.",
       icon: "chart-line",
-      benefits: ["Live bot status with real-time updates", "Interactive server statistics and charts", "Command usage tracking and analytics", "Performance monitoring and uptime tracking", "Professional dashboard with data visualization"],
+      benefits: ["Live bot status with real-time updates (9+ servers, 168+ users)", "Interactive server statistics and charts", "Universal command logging with professional embeds", "Performance monitoring and uptime tracking", "Professional dashboard with data visualization"],
     });
 
-    this.currentFeatureId = 7;
+    this.features.set(7, {
+      id: 7,
+      title: "Professional Logging System",
+      description: "Enterprise-grade logging system that tracks all command usage and automod actions with detailed professional embeds sent to configured channels.",
+      icon: "file-text",
+      benefits: ["Universal command logging for all 44 commands", "Automod action logging with detailed context", "Professional embed formatting with user details", "Configurable logging channels per server", "Real-time activity monitoring"],
+    });
+
+    this.features.set(8, {
+      id: 8,
+      title: "Advanced AutoMod Protection",
+      description: "Intelligent automated moderation with comprehensive filtering, smart detection algorithms, and professional logging to maintain server quality.",
+      icon: "shield-check", 
+      benefits: ["Smart spam detection with configurable thresholds", "Bad word filtering with strict and flexible modes", "Link and invite blocking with custom actions", "Professional logging to configured channels", "Cooldown systems to prevent abuse"],
+    });
+
+    this.currentFeatureId = 9;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {

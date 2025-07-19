@@ -23,7 +23,7 @@ const Invite = memo(function Invite() {
         <div className="max-w-6xl mx-auto text-center">
           <PageHeader 
             title="Ready to Protect Your Server?"
-            description="Join thousands of servers already using NexGuard to maintain order and enhance their community experience."
+            description="Join 9+ servers already using NexGuard's 44+ commands with universal logging and advanced automod protection to maintain order and enhance their community experience."
           />
           
           {/* Bot Stats Section */}
@@ -73,19 +73,19 @@ const Invite = memo(function Invite() {
                 <div className="text-left">
                   <h4 className="text-lg font-semibold text-white mb-3">🛡️ Moderation Features</h4>
                   <ul className="text-gray-400 text-sm space-y-2">
-                    <li>• Advanced ban/kick/warn system</li>
-                    <li>• Automated timeout management</li>
-                    <li>• Message purging and filtering</li>
-                    <li>• Comprehensive logging</li>
+                    <li>• 17+ moderation commands with temporary bans</li>
+                    <li>• Channel lock/unlock management</li>
+                    <li>• Universal command logging system</li>
+                    <li>• Advanced automod with professional logging</li>
                   </ul>
                 </div>
                 <div className="text-left">
-                  <h4 className="text-lg font-semibold text-white mb-3">🎨 Customization</h4>
+                  <h4 className="text-lg font-semibold text-white mb-3">⚙️ Advanced Features</h4>
                   <ul className="text-gray-400 text-sm space-y-2">
-                    <li>• Custom welcome messages & embeds</li>
-                    <li>• Advanced embed builder</li>
-                    <li>• Flexible configuration options</li>
-                    <li>• Role-based permissions</li>
+                    <li>• Multi-category ticket system</li>
+                    <li>• Smart auto-reply with analytics</li>
+                    <li>• AI assistant integration</li>
+                    <li>• Real-time dashboard monitoring</li>
                   </ul>
                 </div>
               </div>
