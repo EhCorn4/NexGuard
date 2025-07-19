@@ -285,6 +285,16 @@ The system is a complete Discord bot with integrated website that:
 - July 19, 2025: Enhanced feature descriptions with universal logging, channel management, and automod logging
 - July 19, 2025: Updated bot statistics display to show current live data (9+ servers, 168+ users)
 - July 19, 2025: Comprehensive update of home page, features page, invite page, and docs page content
+- July 19, 2025: **MAJOR ENHANCEMENT** - Comprehensive Advanced Documentation Implementation
+- July 19, 2025: Created dedicated FAQ page with 25+ categorized questions covering all bot features
+- July 19, 2025: Added extensive "Advanced" documentation tab with deep technical guides
+- July 19, 2025: Implemented Advanced AutoMod Configuration documentation with spam detection details
+- July 19, 2025: Added Advanced Auto-Reply System documentation with trigger strategies and rich embed guides
+- July 19, 2025: Created Multi-Server Management documentation for enterprise deployments
+- July 19, 2025: Added Advanced Role Management documentation with hierarchy validation guides
+- July 19, 2025: Implemented Advanced Troubleshooting documentation with performance diagnostics
+- July 19, 2025: Added API Reference & Integration documentation for technical users
+- July 19, 2025: Updated footer navigation to properly link FAQ page to /faq route
 
 ## User Preferences
 
