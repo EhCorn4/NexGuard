@@ -12,6 +12,7 @@ import { AlertCircle, User, Mail, MapPin, Calendar, Award, Code, Briefcase, Grad
 import { SiDiscord, SiGithub, SiX, SiLinkedin, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiDocker, SiTypescript } from "react-icons/si";
 import type { Developer } from "@shared/schema";
 import devAvatar from "@assets/Devavatar_1752722055445.png";
+import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 
 const Developers = memo(function Developers() {
   const { data: developers, isLoading, error } = useQuery<Developer[]>({
@@ -35,6 +36,10 @@ const Developers = memo(function Developers() {
 
   return (
     <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-20" 
+        style={{ backgroundImage: `url(${nexguardIcon})` }}
+      ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
