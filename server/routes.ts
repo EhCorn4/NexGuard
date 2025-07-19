@@ -59,24 +59,93 @@ export function registerRoutes(app: Express): Server {
       
       const testimonial = await storage.createTestimonial(result.data);
       
-      // Send email notification for new testimonial
+      // Send email notification for new testimonial with approval links
       try {
         await emailService.sendTestimonialNotification({
-          name: testimonial.name,
+          id: testimonial.id,
+          name: testimonial.username,
+          serverName: testimonial.serverName,
           rating: testimonial.rating,
-          message: testimonial.message,
-          email: testimonial.email || undefined
+          message: testimonial.content,
+          approvalLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/testimonials/approve/${testimonial.id}`,
+          rejectLink: `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/testimonials/reject/${testimonial.id}`
         });
-        console.log(`📧 Email notification sent for testimonial from ${testimonial.name}`);
+        console.log(`📧 Email notification sent for testimonial from ${testimonial.username} (ID: ${testimonial.id})`);
       } catch (emailError) {
         console.error('Failed to send testimonial email notification:', emailError);
         // Don't fail the request if email fails
       }
       
-      res.json(testimonial);
+      res.json({ message: "Testimonial submitted for approval", id: testimonial.id });
     } catch (error) {
       console.error("Error creating testimonial:", error);
       res.status(500).json({ error: "Failed to create testimonial" });
+    }
+  });
+
+  // Testimonial approval endpoints
+  app.get("/api/testimonials/approve/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid testimonial ID" });
+      }
+      
+      const testimonial = await storage.approveTestimonial(id);
+      if (!testimonial) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      
+      res.send(`
+        <html>
+          <head><title>Testimonial Approved</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <div style="text-align: center; background: linear-gradient(135deg, #06b6d4, #8b5cf6); color: white; padding: 20px; border-radius: 10px;">
+              <h1>✅ Testimonial Approved!</h1>
+              <p>The testimonial from <strong>${testimonial.username}</strong> has been approved and is now live on the NexGuard website.</p>
+              <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Server:</strong> ${testimonial.serverName}</p>
+                <p><strong>Rating:</strong> ${'⭐'.repeat(testimonial.rating)}</p>
+                <p><strong>Message:</strong> "${testimonial.content}"</p>
+              </div>
+              <a href="/" style="display: inline-block; background: white; color: #06b6d4; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">View Website</a>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error approving testimonial:", error);
+      res.status(500).json({ error: "Failed to approve testimonial" });
+    }
+  });
+
+  app.get("/api/testimonials/reject/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid testimonial ID" });
+      }
+      
+      const success = await storage.rejectTestimonial(id);
+      if (!success) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      
+      res.send(`
+        <html>
+          <head><title>Testimonial Rejected</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <div style="text-align: center; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; border-radius: 10px;">
+              <h1>❌ Testimonial Rejected</h1>
+              <p>The testimonial has been rejected and removed from the system.</p>
+              <a href="/" style="display: inline-block; background: white; color: #ef4444; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Return to Website</a>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error rejecting testimonial:", error);
+      res.status(500).json({ error: "Failed to reject testimonial" });
     }
   });
 

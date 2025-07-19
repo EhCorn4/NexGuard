@@ -10,7 +10,10 @@ export interface IStorage {
   getDevelopers(): Promise<Developer[]>;
   getFeatures(): Promise<Feature[]>;
   getTestimonials(): Promise<Testimonial[]>;
+  getApprovedTestimonials(): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  approveTestimonial(id: number): Promise<Testimonial | null>;
+  rejectTestimonial(id: number): Promise<boolean>;
   getFeedback(): Promise<Feedback[]>;
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   
@@ -831,6 +834,10 @@ export class MemStorage implements IStorage {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
+  async getApprovedTestimonials(): Promise<Testimonial[]> {
+    return this.getTestimonials(); // Already filtered for approved
+  }
+
   async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
     const newTestimonial: Testimonial = {
       id: this.currentTestimonialId++,
@@ -840,6 +847,20 @@ export class MemStorage implements IStorage {
     };
     this.testimonialsData.set(newTestimonial.id, newTestimonial);
     return newTestimonial;
+  }
+
+  async approveTestimonial(id: number): Promise<Testimonial | null> {
+    const testimonial = this.testimonialsData.get(id);
+    if (testimonial) {
+      testimonial.isApproved = true;
+      this.testimonialsData.set(id, testimonial);
+      return testimonial;
+    }
+    return null;
+  }
+
+  async rejectTestimonial(id: number): Promise<boolean> {
+    return this.testimonialsData.delete(id);
   }
 
   async getFeedback(): Promise<Feedback[]> {
@@ -1119,9 +1140,29 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(testimonials.createdAt));
   }
 
-  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
-    const result = await db.insert(testimonials).values(testimonial).returning();
+  async getApprovedTestimonials(): Promise<Testimonial[]> {
+    return this.getTestimonials(); // Already filtered
+  }
+
+  async createTestimonial(testimonialData: InsertTestimonial): Promise<Testimonial> {
+    const result = await db.insert(testimonials).values({
+      ...testimonialData,
+      isApproved: false, // Always start as unapproved
+    }).returning();
     return result[0];
+  }
+
+  async approveTestimonial(id: number): Promise<Testimonial | null> {
+    const result = await db.update(testimonials)
+      .set({ isApproved: true })
+      .where(eq(testimonials.id, id))
+      .returning();
+    return result[0] || null;
+  }
+
+  async rejectTestimonial(id: number): Promise<boolean> {
+    const result = await db.delete(testimonials).where(eq(testimonials.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   async getFeedback(): Promise<Feedback[]> {
@@ -1314,5 +1355,6 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Use in-memory storage for development, database for production
-export const storage = new MemStorage();
+// Remove duplicate - using the complete implementation above
+
+export const storage = new DatabaseStorage();
