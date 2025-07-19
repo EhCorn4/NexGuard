@@ -199,7 +199,20 @@ class AdminCommands(commands.Cog):
                 welcome_embed = config.get('welcome_embed', False)
                 channel_id = config.get('welcome_channel_id')
                 
-                channel_info = f"<#{channel_id}>" if channel_id else "Not set"
+                # Properly format channel info
+                if channel_id:
+                    try:
+                        # Validate channel exists and bot can access it
+                        channel = interaction.guild.get_channel(int(channel_id))
+                        if channel:
+                            channel_info = f"<#{channel_id}> (#{channel.name})"
+                        else:
+                            channel_info = f"<#{channel_id}> ⚠️ (Channel not found)"
+                    except (ValueError, TypeError):
+                        channel_info = "⚠️ Invalid channel ID"
+                else:
+                    channel_info = "❌ Not set"
+                
                 status = "✅ Enabled" if welcome_enabled else "❌ Disabled"
                 embed_status = "✅ Enabled" if welcome_embed else "❌ Disabled"
                 
@@ -213,6 +226,7 @@ class AdminCommands(commands.Cog):
                 embed.add_field(name="Embed Mode", value=embed_status, inline=True)
                 embed.add_field(name="Message", value=f"```{welcome_msg}```", inline=False)
                 embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{user.display_name}`, `{user.id}`, `{guild.name}`, `{member.count}`", inline=False)
+                embed.add_field(name="Debug Info", value=f"Channel ID: `{channel_id}`\nEmbed: `{welcome_embed}`", inline=False)
                 
                 await interaction.edit_original_response(content=None, embed=embed)
             
