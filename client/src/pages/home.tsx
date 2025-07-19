@@ -93,9 +93,9 @@ const Home = memo(function Home() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
-                {botStatus?.uptime || '0s'}
+                24/7
               </div>
-              <div className="text-sm text-gray-400">Uptime</div>
+              <div className="text-sm text-gray-400">Support</div>
             </div>
             <div className="text-center">
               <div className={`text-3xl font-bold ${getBotStatusColor(botStatus?.isOnline || false)}`}>
