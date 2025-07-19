@@ -256,11 +256,43 @@ class NexGuardBot(commands.Bot):
                     FROM guilds WHERE id = $1
                 """, str(member.guild.id))
                 
-                if not settings or not settings['welcome_enabled'] or not settings['welcome_channel_id']:
+                if not settings or not settings['welcome_enabled']:
                     return
                 
-                channel = self.get_channel(int(settings['welcome_channel_id']))
+                # Try to get the configured channel first
+                channel = None
+                if settings['welcome_channel_id']:
+                    try:
+                        channel = self.get_channel(int(settings['welcome_channel_id']))
+                        if channel and not channel.permissions_for(member.guild.me).send_messages:
+                            channel = None  # No permission to send messages
+                    except (ValueError, TypeError):
+                        channel = None
+                
+                # Fallback to finding a suitable channel if configured channel doesn't work
                 if not channel:
+                    logger.warning(f"Configured welcome channel not accessible in {member.guild.name}, finding fallback")
+                    
+                    # Try system channel first
+                    if member.guild.system_channel and member.guild.system_channel.permissions_for(member.guild.me).send_messages:
+                        channel = member.guild.system_channel
+                    else:
+                        # Look for general, welcome, main, chat channels
+                        for text_channel in member.guild.text_channels:
+                            if text_channel.permissions_for(member.guild.me).send_messages:
+                                if any(name in text_channel.name.lower() for name in ['general', 'welcome', 'main', 'chat', 'lobby']):
+                                    channel = text_channel
+                                    break
+                        
+                        # If still no channel, use first available text channel
+                        if not channel:
+                            for text_channel in member.guild.text_channels:
+                                if text_channel.permissions_for(member.guild.me).send_messages:
+                                    channel = text_channel
+                                    break
+                
+                if not channel:
+                    logger.error(f"No accessible text channel found for welcome message in {member.guild.name}")
                     return
                 
                 # Enhanced placeholders
@@ -340,7 +372,7 @@ class NexGuardBot(commands.Bot):
                     except:
                         pass  # Ignore reaction errors
                 
-                logger.info(f"Sent enhanced welcome message for {member.name} in {member.guild.name}")
+                logger.info(f"Sent enhanced welcome message for {member.name} in {member.guild.name} to #{channel.name}")
                 
         except Exception as e:
             logger.error(f"Failed to send welcome message: {e}")
