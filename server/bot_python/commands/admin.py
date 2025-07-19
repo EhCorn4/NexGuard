@@ -194,6 +194,9 @@ class AdminCommands(commands.Cog):
                 welcome_embed = config.get('welcome_embed', False)
                 channel_id = config.get('welcome_channel_id')
                 
+                # Log the raw config for debugging
+                logger.info(f"Raw config for {guild_id}: {config}")
+                
                 # Properly format channel info
                 if channel_id:
                     try:
@@ -219,9 +222,9 @@ class AdminCommands(commands.Cog):
                 embed.add_field(name="Status", value=status, inline=True)
                 embed.add_field(name="Channel", value=channel_info, inline=True)
                 embed.add_field(name="Embed Mode", value=embed_status, inline=True)
-                embed.add_field(name="Message", value=f"```{welcome_msg}```", inline=False)
+                embed.add_field(name="Message", value=f"```{welcome_msg[:500]}{'...' if len(welcome_msg) > 500 else ''}```", inline=False)
                 embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{user.display_name}`, `{user.id}`, `{guild.name}`, `{member.count}`", inline=False)
-                embed.add_field(name="Debug Info", value=f"Channel ID: `{channel_id}`\nEmbed: `{welcome_embed}`", inline=False)
+                embed.add_field(name="Raw Debug Values", value=f"**Enabled:** `{welcome_enabled}`\n**Channel ID:** `{channel_id}`\n**Embed:** `{welcome_embed}`\n**Message Length:** `{len(welcome_msg)}`", inline=False)
                 
                 await interaction.followup.send(embed=embed, ephemeral=True)
             

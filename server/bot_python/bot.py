@@ -566,7 +566,12 @@ class NexGuardBot(commands.Bot):
                 """
                 
                 await conn.execute(query, *values)
-                logger.info(f"Updated guild config for {guild_id}")
+                logger.info(f"Updated guild config for {guild_id}: {kwargs}")
+                
+                # Verify the update worked
+                updated_config = await conn.fetchrow("SELECT * FROM guilds WHERE id = $1", guild_id)
+                if updated_config:
+                    logger.info(f"Verified config update - Current values: {dict(updated_config)}")
         except Exception as e:
             logger.error(f"Failed to update guild config: {e}")
     
