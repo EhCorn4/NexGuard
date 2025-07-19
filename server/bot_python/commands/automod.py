@@ -604,22 +604,48 @@ class AutoModCog(commands.Cog):
             
             # Check each automod module
             if await self.check_spam_filter(message, settings.get('spam', {})):
-                return
+                return True
             if await self.check_link_filter(message, settings.get('links', {})):
-                return
+                return True
             if await self.check_badwords_filter(message, settings.get('badwords', {})):
-                return
+                return True
                 
         except Exception as e:
             logger.error(f"Error in automod message handler: {e}")
+        
+        return False
     
     async def check_spam_filter(self, message, settings) -> bool:
         """Check message against spam filter"""
         if not settings.get('enabled', False):
             return False
         
-        # Basic spam detection logic would go here
-        # For now, just return False
+        max_messages = settings.get('max_messages', 5)
+        time_window = settings.get('time_window', 10)  # seconds
+        action = settings.get('action', 'delete')
+        
+        if not self.bot.db_pool:
+            return False
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Get recent messages from this user
+                cutoff_time = datetime.utcnow() - timedelta(seconds=time_window)
+                
+                # Count recent messages (we'll store this in analytics for now)
+                recent_count = await conn.fetchval('''
+                    SELECT COUNT(*) FROM message_analytics 
+                    WHERE user_id = $1 AND guild_id = $2 AND timestamp > $3
+                ''', str(message.author.id), str(message.guild.id), cutoff_time)
+                
+                if recent_count and recent_count >= max_messages:
+                    # Spam detected! Take action
+                    await self.take_automod_action(message, 'spam', action, f"Sent {recent_count + 1} messages in {time_window} seconds")
+                    return True
+                    
+        except Exception as e:
+            logger.error(f"Error checking spam filter: {e}")
+        
         return False
     
     async def check_link_filter(self, message, settings) -> bool:

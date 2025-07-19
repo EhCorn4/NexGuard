@@ -152,6 +152,37 @@ class NexGuardBot(commands.Bot):
             return
         
         # Only process auto-replies and other commands if bot wasn't mentioned
+        # Check AutoMod first (it may delete messages)
+        automod_cog = self.get_cog('AutoModCog')
+        if automod_cog:
+            # If AutoMod takes action (deletes message), it returns True
+            automod_action_taken = await automod_cog.on_message(message)
+            if automod_action_taken:
+                return  # Don't process further if message was deleted
+        
+        # Track message analytics for spam detection
+        analytics_cog = self.get_cog('AnalyticsTracker')
+        if analytics_cog:
+            try:
+                if not self.db_pool or message.author.bot:
+                    pass
+                else:
+                    async with self.db_pool.acquire() as conn:
+                        await conn.execute('''
+                            INSERT INTO message_analytics (guild_id, user_id, channel_id, message_id, content_length, has_attachments, timestamp)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        ''', 
+                        str(message.guild.id) if message.guild else None,
+                        str(message.author.id),
+                        str(message.channel.id),
+                        str(message.id),
+                        len(message.content),
+                        len(message.attachments) > 0,
+                        datetime.utcnow()
+                        )
+            except Exception as e:
+                logger.error(f"Error storing message analytics: {e}")
+        
         # Check for auto-replies
         autoreply_cog = self.get_cog('AutoReply')
         if autoreply_cog:

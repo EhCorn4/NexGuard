@@ -471,5 +471,70 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error processing auto-reply: {e}")
 
+    async def process_auto_replies(self, message):
+        """Process messages for auto-reply triggers"""
+        if message.author.bot or not message.guild:
+            return
+        
+        if not self.bot.db_pool:
+            return
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Get active auto-reply rules for this guild
+                rules = await conn.fetch('''
+                    SELECT id, trigger, response_title, response_description, response_color, trigger_type, cooldown
+                    FROM auto_replies 
+                    WHERE guild_id = $1 AND is_active = true
+                ''', str(message.guild.id))
+                
+                for rule in rules:
+                    # Check if message matches trigger
+                    content = message.content.lower()
+                    trigger = rule['trigger'].lower()
+                    
+                    match_found = False
+                    if rule['trigger_type'] == 'contains':
+                        match_found = trigger in content
+                    elif rule['trigger_type'] == 'exact':
+                        match_found = content == trigger
+                    elif rule['trigger_type'] == 'starts_with':
+                        match_found = content.startswith(trigger)
+                    elif rule['trigger_type'] == 'ends_with':
+                        match_found = content.endswith(trigger)
+                    
+                    if match_found:
+                        # Check cooldown if applicable
+                        if rule['cooldown'] and rule['cooldown'] > 0:
+                            last_triggered = await conn.fetchval('''
+                                SELECT MAX(triggered_at) FROM auto_reply_logs 
+                                WHERE rule_id = $1 AND guild_id = $2
+                            ''', rule['id'], str(message.guild.id))
+                            
+                            if last_triggered:
+                                cooldown_end = last_triggered + timedelta(seconds=rule['cooldown'])
+                                if datetime.utcnow() < cooldown_end:
+                                    continue  # Still in cooldown
+                        
+                        # Send auto-reply
+                        embed = discord.Embed(
+                            title=rule['response_title'] or "Auto-Reply",
+                            description=rule['response_description'] or "Automated response triggered",
+                            color=int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
+                        )
+                        
+                        await message.reply(embed=embed)
+                        
+                        # Log the trigger
+                        await conn.execute('''
+                            INSERT INTO auto_reply_logs (rule_id, guild_id, user_id, triggered_at, message_content)
+                            VALUES ($1, $2, $3, $4, $5)
+                        ''', rule['id'], str(message.guild.id), str(message.author.id), datetime.utcnow(), message.content[:500])
+                        
+                        break  # Only trigger one rule per message
+                        
+        except Exception as e:
+            logger.error(f"Error processing auto-reply: {e}")
+
 async def setup(bot):
     await bot.add_cog(AutoReply(bot))
