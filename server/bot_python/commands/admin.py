@@ -122,50 +122,46 @@ class AdminCommands(commands.Cog):
             await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
             return
         
+        # Always respond immediately to prevent timeout
+        await interaction.response.defer(ephemeral=True)
+        
         try:
             guild_id = str(interaction.guild.id)
             
-            # Respond immediately to prevent timeout
             if action == "enable":
-                await interaction.response.send_message("⏳ Enabling welcome messages...", ephemeral=True)
                 await self.bot.update_guild_config(guild_id, welcome_enabled=True)
-                await interaction.edit_original_response(content="✅ Welcome messages enabled! Use `/welcome channel` to set a welcome channel.")
+                await interaction.followup.send("✅ Welcome messages enabled! Use `/welcome channel` to set a welcome channel.", ephemeral=True)
                 
             elif action == "disable":
-                await interaction.response.send_message("⏳ Disabling welcome messages...", ephemeral=True)
                 await self.bot.update_guild_config(guild_id, welcome_enabled=False)
-                await interaction.edit_original_response(content="❌ Welcome messages disabled.")
+                await interaction.followup.send("❌ Welcome messages disabled.", ephemeral=True)
                 
             elif action == "channel":
                 if not channel:
-                    await interaction.response.send_message("❌ Please specify a channel.", ephemeral=True)
+                    await interaction.followup.send("❌ Please specify a channel.", ephemeral=True)
                     return
                 
-                await interaction.response.send_message("⏳ Setting welcome channel...", ephemeral=True)
                 await self.bot.update_guild_config(guild_id, welcome_channel_id=str(channel.id))
-                await interaction.edit_original_response(content=f"✅ Welcome channel set to {channel.mention}")
+                await interaction.followup.send(f"✅ Welcome channel set to {channel.mention}", ephemeral=True)
                 
             elif action == "embed":
                 if embed_mode is None:
-                    await interaction.response.send_message("❌ Please specify whether to enable or disable embed mode.", ephemeral=True)
+                    await interaction.followup.send("❌ Please specify whether to enable or disable embed mode.", ephemeral=True)
                     return
                 
-                await interaction.response.send_message("⏳ Updating embed mode...", ephemeral=True)
                 await self.bot.update_guild_config(guild_id, welcome_embed=embed_mode)
                 status = "enabled" if embed_mode else "disabled"
-                await interaction.edit_original_response(content=f"✅ Welcome embed mode {status}.")
+                await interaction.followup.send(f"✅ Welcome embed mode {status}.", ephemeral=True)
                 
             elif action == "set":
                 if not message:
-                    await interaction.response.send_message("❌ Please provide a welcome message.", ephemeral=True)
+                    await interaction.followup.send("❌ Please provide a welcome message.", ephemeral=True)
                     return
                 
-                await interaction.response.send_message("⏳ Updating welcome message...", ephemeral=True)
                 await self.bot.update_guild_config(guild_id, welcome_message=message)
-                await interaction.edit_original_response(content=f"✅ Welcome message updated:\n```{message}```")
+                await interaction.followup.send(f"✅ Welcome message updated:\n```{message}```", ephemeral=True)
                 
             elif action == "test":
-                await interaction.response.send_message("⏳ Generating welcome message preview...", ephemeral=True)
                 config = await self.bot.get_guild_config(guild_id)
                 welcome_msg = config.get('welcome_message') or 'Welcome {user.mention} to {guild.name}!'
                 
@@ -189,10 +185,9 @@ class AdminCommands(commands.Cog):
                 embed.add_field(name="👥 Member Count", value=f"**{interaction.guild.member_count}**", inline=True)
                 embed.set_footer(text=f"Member #{interaction.guild.member_count}", icon_url=interaction.guild.icon.url if interaction.guild.icon else None)
                 
-                await interaction.edit_original_response(content="**Welcome Message Preview:**", embed=embed)
+                await interaction.followup.send("**Welcome Message Preview:**", embed=embed, ephemeral=True)
                 
             elif action == "view":
-                await interaction.response.send_message("⏳ Loading welcome configuration...", ephemeral=True)
                 config = await self.bot.get_guild_config(guild_id)
                 welcome_enabled = config.get('welcome_enabled', False)
                 welcome_msg = config.get('welcome_message', 'Welcome {user.mention} to {guild.name}!')
@@ -228,7 +223,7 @@ class AdminCommands(commands.Cog):
                 embed.add_field(name="Available Placeholders", value="`{user.mention}`, `{user.name}`, `{user.display_name}`, `{user.id}`, `{guild.name}`, `{member.count}`", inline=False)
                 embed.add_field(name="Debug Info", value=f"Channel ID: `{channel_id}`\nEmbed: `{welcome_embed}`", inline=False)
                 
-                await interaction.edit_original_response(content=None, embed=embed)
+                await interaction.followup.send(embed=embed, ephemeral=True)
             
             # Log command usage
             parameters = {"action": action}
@@ -243,15 +238,9 @@ class AdminCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Error with welcome command: {e}")
             try:
-                if not interaction.response.is_done():
-                    await interaction.response.send_message("❌ Failed to process welcome command. Please try again.", ephemeral=True)
-                else:
-                    await interaction.edit_original_response(content="❌ Failed to process welcome command. Please try again.")
+                await interaction.followup.send("❌ Failed to process welcome command. Please try again.", ephemeral=True)
             except:
-                try:
-                    await interaction.followup.send("❌ Failed to process welcome command. Please try again.", ephemeral=True)
-                except:
-                    pass
+                pass
     
     @app_commands.command(name="settings", description="View server settings")
     async def settings(self, interaction: discord.Interaction):
