@@ -72,7 +72,7 @@ const Community = memo(function Community() {
         className="absolute inset-0 bg-center opacity-20" 
         style={{ 
           backgroundImage: `url(${nexguardIcon})`,
-          backgroundSize: '400px 400px',
+          backgroundSize: '1920px 1080px',
           backgroundRepeat: 'no-repeat'
         }}
       ></div>
