@@ -107,6 +107,8 @@ class NexGuardBot(commands.Bot):
     
     async def on_member_join(self, member):
         """Called when a member joins a guild"""
+        logger.info(f"👋 Member join event triggered: {member.name} joined {member.guild.name}")
+        
         # Track member join analytics
         try:
             if self.db_pool:
@@ -121,7 +123,7 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Error tracking member join: {e}")
         
-        # Handle welcome and autorole
+        # Handle welcome and autorole in sequence (not parallel to avoid race conditions)
         await self.handle_welcome_message(member)
         await self.handle_auto_role(member)
     
@@ -256,13 +258,16 @@ class NexGuardBot(commands.Bot):
         if not hasattr(self, '_welcome_cooldowns'):
             self._welcome_cooldowns = {}
         
-        # Check if already processed recently
+        # Check if already processed recently (more robust check)
+        current_time = datetime.utcnow()
         if cooldown_key in self._welcome_cooldowns:
-            logger.info(f"Duplicate welcome prevented for {member.name} in {member.guild.name}")
+            time_diff = (current_time - self._welcome_cooldowns[cooldown_key]).total_seconds()
+            logger.warning(f"🚫 DUPLICATE WELCOME PREVENTED for {member.name} in {member.guild.name} (blocked after {time_diff:.1f}s)")
             return
         
-        # Add to cooldown immediately
-        self._welcome_cooldowns[cooldown_key] = datetime.utcnow()
+        # Add to cooldown immediately with timestamp
+        self._welcome_cooldowns[cooldown_key] = current_time
+        logger.info(f"🎉 Processing welcome message for {member.name} in {member.guild.name} (cooldown set)")
         
         try:
             async with self.db_pool.acquire() as conn:
@@ -390,21 +395,27 @@ class NexGuardBot(commands.Bot):
                     except:
                         pass  # Ignore reaction errors
                 
-                logger.info(f"Sent enhanced welcome message for {member.name} in {member.guild.name} to #{channel.name}")
+                logger.info(f"✅ Successfully sent welcome message for {member.name} in {member.guild.name} to #{channel.name}")
                 
         except Exception as e:
-            logger.error(f"Failed to send welcome message: {e}")
+            logger.error(f"❌ Failed to send welcome message for {member.name} in {member.guild.name}: {e}")
+            # Remove from cooldown if failed to allow retry
+            if cooldown_key in self._welcome_cooldowns:
+                del self._welcome_cooldowns[cooldown_key]
         finally:
-            # Clean up old cooldowns (older than 5 minutes)
+            # Clean up old cooldowns (older than 2 minutes)
             if hasattr(self, '_welcome_cooldowns'):
                 current_time = datetime.utcnow()
                 to_remove = []
                 for key, timestamp in self._welcome_cooldowns.items():
-                    if (current_time - timestamp).total_seconds() > 300:  # 5 minutes
+                    if (current_time - timestamp).total_seconds() > 120:  # 2 minutes
                         to_remove.append(key)
                 
                 for key in to_remove:
                     del self._welcome_cooldowns[key]
+                    
+                if to_remove:
+                    logger.debug(f"🧹 Cleaned up {len(to_remove)} old welcome cooldowns")
     
     @tasks.loop(seconds=30)
     async def update_bot_status(self):
