@@ -65,6 +65,7 @@ This is a comprehensive NexGuard Discord bot with a professional website showcas
 - **Feedback**: Support system for bug reports, feature requests, and general feedback
 - **Docs**: Comprehensive documentation and help center with search functionality
 - **Contact**: Contact information and support options
+- **FAQ**: Comprehensive frequently asked questions with categorized sections
 - **Legal Pages**: Terms of Service, Privacy Policy, Cookies Policy
 
 ### Design System

@@ -40,7 +40,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><a href="https://discord.gg/wpjZMPXaRT" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Discord Server</a></li>
               <li><Link href="/docs" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Documentation</Link></li>
-              <li><Link href="/feedback" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">FAQ</Link></li>
+              <li><Link href="/faq" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">FAQ</Link></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors">Contact</Link></li>
             </ul>
           </div>

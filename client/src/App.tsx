@@ -21,6 +21,7 @@ const Developers = lazy(() => import("@/pages/developers"));
 const Community = lazy(() => import("@/pages/community"));
 const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
+const FAQ = lazy(() => import("@/pages/faq"));
 const Docs = lazy(() => import("@/pages/docs"));
 const Analytics = lazy(() => import("@/pages/analytics"));
 // Dashboard functionality removed
@@ -88,6 +89,13 @@ function Router() {
                 <PageTransition key="feedback">
                   <PerformanceWrapper skeletonType="card" skeletonCount={2}>
                     <Feedback />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/faq" component={() => (
+                <PageTransition key="faq">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={5}>
+                    <FAQ />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
