@@ -93,88 +93,168 @@ export class MemStorage implements IStorage {
   }
 
   private initializeData() {
-    // Initialize news updates
+    // Initialize news updates with realistic dates
     this.newsUpdates.set(1, {
       id: 1,
-      title: "🚀 Advanced Auto-Reply System Launched",
-      content: "Revolutionary auto-reply system with smart keyword matching, rich embed responses, and comprehensive analytics. Create custom automated responses with multiple trigger types and detailed statistics tracking.",
+      title: "🚀 Universal Command Logging System",
+      content: "Comprehensive logging system now tracks all 44+ commands with professional embeds. Every moderation action, admin command, and utility usage is beautifully logged with detailed context and user information.",
       category: "NEW FEATURE",
-      publishedAt: new Date(),
-      likes: 187,
-      comments: 34,
+      publishedAt: new Date('2025-01-19T10:00:00Z'),
+      likes: 89,
+      comments: 23,
     });
 
     this.newsUpdates.set(2, {
       id: 2,
-      title: "🛡️ Comprehensive AutoMod System",
-      content: "State-of-the-art moderation automation with 6 specialized commands. Features spam protection, link filtering, bad words detection, and real-time message monitoring with escalation actions.",
+      title: "🔒 Advanced Channel Management",
+      content: "New lock/unlock commands with permission controls and detailed notifications. Administrators can now quickly secure channels during incidents with comprehensive logging and role-based access management.",
       category: "SECURITY",
-      publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-      likes: 243,
-      comments: 51,
+      publishedAt: new Date('2025-01-18T15:30:00Z'),
+      likes: 156,
+      comments: 31,
     });
 
     this.newsUpdates.set(3, {
       id: 3,
-      title: "⚡ Custom Moderation Role Management",
-      content: "Advanced permission system allowing administrators to set custom moderation roles with hierarchy validation. Precise control over who can moderate your server beyond Discord's defaults.",
-      category: "NEW FEATURE",
-      publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      likes: 156,
-      comments: 28,
+      title: "⚡ Enhanced AutoMod Protection",
+      content: "Professional automod logging now sends detailed violation reports to configured channels. Real-time spam detection, bad word filtering, and link blocking with escalation actions and comprehensive reporting.",
+      category: "SECURITY",
+      publishedAt: new Date('2025-01-17T12:00:00Z'),
+      likes: 203,
+      comments: 47,
     });
 
     this.newsUpdates.set(4, {
       id: 4,
-      title: "📊 Live Bot Statistics Integration",
-      content: "Real-time bot status monitoring now displaying live data: 9+ servers, 167+ users, and accurate uptime tracking. Enhanced transparency and performance monitoring.",
-      category: "UPDATE",
-      publishedAt: new Date(Date.now() - 36 * 60 * 60 * 1000),
-      likes: 92,
-      comments: 15,
+      title: "📊 Bot Statistics Update: 171+ Users Protected",
+      content: "NexGuard is now actively protecting 171+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their moderation and management needs.",
+      category: "COMMUNITY",
+      publishedAt: new Date('2025-01-16T18:00:00Z'),
+      likes: 127,
+      comments: 34,
     });
 
     this.newsUpdates.set(5, {
       id: 5,
-      title: "🎫 Multi-Category Ticket System",
-      content: "Enhanced ticket system with category management and Discord channel integration. Organized support with automatic ticket placement and comprehensive filtering options.",
+      title: "🎫 Advanced Testimonial System",
+      content: "New email-based testimonial approval system with instant notifications. When users submit testimonials, administrators receive professional emails with approve/reject buttons for immediate management.",
       category: "NEW FEATURE",
-      publishedAt: new Date(Date.now() - 48 * 60 * 60 * 1000),
-      likes: 134,
-      comments: 22,
+      publishedAt: new Date('2025-01-15T09:45:00Z'),
+      likes: 78,
+      comments: 19,
     });
 
     this.newsUpdates.set(6, {
       id: 6,
-      title: "🎯 41+ Commands Now Available",
-      content: "Massive expansion to 41+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management. Most comprehensive Discord bot feature set available.",
+      title: "🎯 44+ Commands Now Available",
+      content: "Complete command expansion to 44+ slash commands! Including 17 moderation commands, 15 admin commands, 11 utility commands, and 4 ticket system commands. Most comprehensive Discord bot feature set available.",
       category: "FEATURED",
-      publishedAt: new Date(Date.now() - 60 * 60 * 60 * 1000),
-      likes: 298,
-      comments: 67,
+      publishedAt: new Date('2025-01-14T14:20:00Z'),
+      likes: 342,
+      comments: 89,
     });
 
     this.newsUpdates.set(7, {
       id: 7,
-      title: "💬 Community Milestone: 167+ Users Protected",
-      content: "NexGuard is now actively protecting 167+ users across 9+ Discord servers! Thank you to our growing community for trusting us with your server management needs.",
-      category: "COMMUNITY",
-      publishedAt: new Date(Date.now() - 72 * 60 * 60 * 1000),
-      likes: 89,
-      comments: 19,
+      title: "🤖 Smart Auto-Reply Engine",
+      content: "Revolutionary auto-reply system with intelligent keyword matching, rich embed responses, and detailed analytics. Create custom automated responses with multiple trigger types, cooldowns, and comprehensive statistics.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-01-13T11:30:00Z'),
+      likes: 234,
+      comments: 56,
     });
 
     this.newsUpdates.set(8, {
       id: 8,
-      title: "🔧 Enhanced Welcome System",
-      content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support and comprehensive configuration options for new member onboarding.",
+      title: "⏰ Temporary Ban System",
+      content: "Advanced temporary ban functionality with automatic expiration. Support for duration formats (7d, 2h, 30m) with background processing and automated unban when time expires.",
       category: "UPDATE",
-      publishedAt: new Date(Date.now() - 84 * 60 * 60 * 1000),
-      likes: 76,
-      comments: 12,
+      publishedAt: new Date('2025-01-12T16:15:00Z'),
+      likes: 98,
+      comments: 25,
     });
 
-    this.currentNewsId = 9;
+    this.newsUpdates.set(9, {
+      id: 9,
+      title: "🎮 Custom Moderation Roles",
+      content: "Advanced permission system allowing administrators to set custom moderation roles with hierarchy validation. Precise control over who can moderate your server beyond Discord's default permissions.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-01-11T13:20:00Z'),
+      likes: 167,
+      comments: 38,
+    });
+
+    this.newsUpdates.set(10, {
+      id: 10,
+      title: "📈 Multi-Category Ticket System",
+      content: "Enhanced ticket system with category management and Discord channel integration. Organized support with automatic ticket placement, priority levels, and comprehensive filtering options for large communities.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-01-10T09:30:00Z'),
+      likes: 145,
+      comments: 29,
+    });
+
+    this.newsUpdates.set(11, {
+      id: 11,
+      title: "🛡️ Advanced AutoMod Suite",
+      content: "State-of-the-art moderation automation with 6 specialized commands. Features intelligent spam protection, link filtering, bad word detection, and real-time message monitoring with escalation actions.",
+      category: "SECURITY",
+      publishedAt: new Date('2025-01-09T14:45:00Z'),
+      likes: 289,
+      comments: 62,
+    });
+
+    this.newsUpdates.set(12, {
+      id: 12,
+      title: "🎉 Welcome System Overhaul",
+      content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support, channel detection, and comprehensive configuration options for perfect new member onboarding.",
+      category: "UPDATE",
+      publishedAt: new Date('2025-01-08T11:00:00Z'),
+      likes: 112,
+      comments: 27,
+    });
+
+    this.newsUpdates.set(13, {
+      id: 13,
+      title: "💡 AI-Powered Assistant",
+      content: "Integrated AI assistant for server management help and questions. Get instant answers about bot commands, Discord server management, and troubleshooting directly in your server.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-01-07T17:20:00Z'),
+      likes: 198,
+      comments: 45,
+    });
+
+    this.newsUpdates.set(14, {
+      id: 14,
+      title: "🚀 NexGuard 2.3.2 Release",
+      content: "Major bot update featuring Python architecture migration, improved performance, enhanced Discord.py integration, and comprehensive slash command support. Faster responses and more reliable operations.",
+      category: "FEATURED",
+      publishedAt: new Date('2025-01-06T12:30:00Z'),
+      likes: 356,
+      comments: 78,
+    });
+
+    this.newsUpdates.set(15, {
+      id: 15,
+      title: "💎 Premium Donation System",
+      content: "Simple and empathetic donation system launched to support continued development. Optional contributions help maintain and improve NexGuard while keeping all features completely free for everyone.",
+      category: "COMMUNITY",
+      publishedAt: new Date('2025-01-05T08:15:00Z'),
+      likes: 234,
+      comments: 41,
+    });
+
+    this.newsUpdates.set(25, {
+      id: 25,
+      title: "🔍 AI-Powered Spam Detection",
+      content: "Next-generation spam detection using machine learning algorithms to identify patterns and prevent coordinated attacks. Smart detection adapts to new spam techniques automatically.",
+      category: "SECURITY",
+      publishedAt: new Date('2025-01-04T19:30:00Z'),
+      likes: 178,
+      comments: 33,
+    });
+
+    this.currentNewsId = 26;
 
     // Initialize developers
     this.developers.set(1, {
