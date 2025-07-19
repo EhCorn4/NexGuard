@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import fetch from "node-fetch";
+import { emailService } from "./lib/emailService";
 
 export function registerRoutes(app: Express): Server {
   // News endpoints
@@ -57,6 +58,21 @@ export function registerRoutes(app: Express): Server {
       }
       
       const testimonial = await storage.createTestimonial(result.data);
+      
+      // Send email notification for new testimonial
+      try {
+        await emailService.sendTestimonialNotification({
+          name: testimonial.name,
+          rating: testimonial.rating,
+          message: testimonial.message,
+          email: testimonial.email || undefined
+        });
+        console.log(`📧 Email notification sent for testimonial from ${testimonial.name}`);
+      } catch (emailError) {
+        console.error('Failed to send testimonial email notification:', emailError);
+        // Don't fail the request if email fails
+      }
+      
       res.json(testimonial);
     } catch (error) {
       console.error("Error creating testimonial:", error);
@@ -84,6 +100,20 @@ export function registerRoutes(app: Express): Server {
       
       // Store feedback locally
       const feedback = await storage.createFeedback(result.data);
+      
+      // Send email notification for new feedback
+      try {
+        await emailService.sendFeedbackNotification({
+          name: feedback.username,
+          email: feedback.email || undefined,
+          type: feedback.type,
+          message: feedback.message
+        });
+        console.log(`📧 Email notification sent for feedback from ${feedback.username}`);
+      } catch (emailError) {
+        console.error('Failed to send feedback email notification:', emailError);
+        // Don't fail the request if email fails
+      }
       
       // Send feedback to NexGuard website
       const feedbackData = {
