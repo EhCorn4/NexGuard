@@ -179,10 +179,7 @@ export class MemStorage implements IStorage {
       name: "Caleb Weston",
       role: "Lead Developer",
       bio: "Passionate full-stack developer with expertise in Discord bot development, web technologies, and system architecture. Leading NexGuard's development with a focus on creating robust, scalable solutions for Discord communities.",
-      githubUrl: "https://github.com/calebweston",
-      twitterUrl: "https://twitter.com/calebweston",
-      linkedinUrl: "https://linkedin.com/in/calebweston",
-      location: "United States",
+      location: "Canada",
       experience: "5+ years of experience in software development, specializing in Discord bot development, web applications, and community management tools.",
       skills: ["JavaScript", "TypeScript", "Node.js", "React", "Discord.js", "PostgreSQL", "Docker", "AWS", "Python", "Express.js"],
       specialties: ["Discord Bot Development", "Full-Stack Web Development", "Database Architecture", "API Design", "Community Management Tools"],
@@ -191,7 +188,6 @@ export class MemStorage implements IStorage {
       education: "Computer Science",
       email: "caleb@nexguard.com",
       discord: "calebweston",
-      website: "https://calebweston.dev",
       yearsOfExperience: 5,
     });
 
