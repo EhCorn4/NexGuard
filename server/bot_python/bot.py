@@ -62,15 +62,15 @@ class NexGuardBot(commands.Bot):
     async def load_extensions(self):
         """Load all command extensions"""
         extensions = [
-            'commands.admin',
-            'commands.moderation', 
-            'commands.utility',
-            'commands.tickets',
-            'commands.embedhelp',
-            'commands.autoreply',
-            'commands.automod',
-            'commands.modrole',
-            'commands.analytics'
+            'server.bot_python.commands.admin',
+            'server.bot_python.commands.moderation', 
+            'server.bot_python.commands.utility',
+            'server.bot_python.commands.tickets',
+            'server.bot_python.commands.embedhelp',
+            'server.bot_python.commands.autoreply',
+            'server.bot_python.commands.automod',
+            'server.bot_python.commands.modrole',
+            'server.bot_python.commands.analytics'
         ]
         
         for extension in extensions:
@@ -108,7 +108,6 @@ class NexGuardBot(commands.Bot):
     async def on_member_join(self, member):
         """Called when a member joins a guild"""
         await self.handle_welcome_message(member)
-        await self.handle_auto_role(member)
     
     async def on_message(self, message):
         """Called when a message is sent"""
@@ -142,7 +141,7 @@ class NexGuardBot(commands.Bot):
             
             embed.add_field(
                 name="🚀 Get Started",
-                value="Use `/commands` to explore **45+ slash commands**\nVisit our website for full documentation and setup guides",
+                value="Use `/commands` to explore **41+ slash commands**\nVisit our website for full documentation and setup guides",
                 inline=False
             )
             
@@ -579,91 +578,6 @@ class NexGuardBot(commands.Bot):
             
         except Exception as e:
             logger.error(f"Failed to send guild welcome message to {guild.name}: {e}")
-
-    async def handle_auto_role(self, member):
-        """Handle automatic role assignment for new members"""
-        if not self.db_pool:
-            return
-            
-        try:
-            async with self.db_pool.acquire() as conn:
-                # Get auto-role settings for the guild
-                settings = await conn.fetchrow("""
-                    SELECT auto_role_enabled, auto_role_id
-                    FROM guilds WHERE id = $1
-                """, str(member.guild.id))
-                
-                if not settings or not settings['auto_role_enabled'] or not settings['auto_role_id']:
-                    return  # Auto-role not enabled or not configured
-                
-                # Get the role object
-                role = member.guild.get_role(int(settings['auto_role_id']))
-                if not role:
-                    logger.warning(f"Auto-role {settings['auto_role_id']} not found in guild {member.guild.name}")
-                    return
-                
-                # Check if bot has permission to assign the role
-                if role.position >= member.guild.me.top_role.position:
-                    logger.warning(f"Cannot assign auto-role {role.name} in {member.guild.name} - bot role too low")
-                    return
-                
-                # Check if member already has the role
-                if role in member.roles:
-                    return  # Member already has the role
-                
-                # Assign the role
-                await member.add_roles(role, reason="Auto-role assignment")
-                logger.info(f"✅ Auto-role {role.name} assigned to {member.display_name} in {member.guild.name}")
-                
-                # Log to the guild's log channel if configured
-                guild_config = await self.get_guild_config(str(member.guild.id))
-                log_channel_id = guild_config.get('log_channel_id')
-                
-                if log_channel_id:
-                    log_channel = self.get_channel(int(log_channel_id))
-                    if log_channel:
-                        embed = discord.Embed(
-                            title="🤖 Auto-Role Assigned",
-                            description=f"**{member.display_name}** ({member.mention}) was automatically assigned the {role.mention} role.",
-                            color=0x00FF00,
-                            timestamp=datetime.utcnow()
-                        )
-                        
-                        embed.add_field(
-                            name="User",
-                            value=f"{member.mention}\n(`{member.id}`)",
-                            inline=True
-                        )
-                        
-                        embed.add_field(
-                            name="Role",
-                            value=f"{role.mention}\n(`{role.id}`)",
-                            inline=True
-                        )
-                        
-                        embed.add_field(
-                            name="Member Count",
-                            value=f"#{member.guild.member_count}",
-                            inline=True
-                        )
-                        
-                        embed.set_thumbnail(url=member.display_avatar.url)
-                        embed.set_footer(
-                            text=f"Auto-Role System | {member.guild.name}",
-                            icon_url=member.guild.icon.url if member.guild.icon else None
-                        )
-                        
-                        try:
-                            await log_channel.send(embed=embed)
-                        except Exception as log_error:
-                            logger.error(f"Failed to log auto-role assignment: {log_error}")
-                
-        except discord.Forbidden:
-            logger.warning(f"Missing permissions to assign auto-role in {member.guild.name}")
-        except discord.HTTPException as e:
-            logger.error(f"HTTP error assigning auto-role in {member.guild.name}: {e}")
-        except Exception as e:
-            logger.error(f"Error handling auto-role for {member.display_name} in {member.guild.name}: {e}")
 
     async def close(self):
         """Cleanup when bot shuts down"""

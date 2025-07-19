@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { AnimatedShield } from "@/components/ui/animated-shield";
 import { SiDiscord } from "react-icons/si";
-import nexguardLogo from "@assets/Nexguard_1751937048860.png";
+import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Footer() {
   return (
@@ -11,7 +11,7 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-3 mb-4">
               <img 
-                src={nexguardLogo} 
+                src={nexguardIcon} 
                 alt="NexGuard" 
                 className="w-8 h-8 rounded-lg"
               />

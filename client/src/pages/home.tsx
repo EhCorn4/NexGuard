@@ -3,9 +3,9 @@ import { GradientText } from "@/components/ui/gradient-text";
 import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
 import nexguardLogo from "@assets/Nexguard_1751937048860.png";
-// import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
-// import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
-// import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
+import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
+import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
+import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
 import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -35,7 +35,7 @@ const Home = memo(function Home() {
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20" 
-        style={{ backgroundImage: `url(${nexguardLogo})` }}
+        style={{ backgroundImage: `url(${nexguardIcon})` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       
@@ -43,7 +43,7 @@ const Home = memo(function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
             <img 
-              src={nexguardLogo} 
+              src={nexguardBanner} 
               alt="NexGuard Banner" 
               className="w-64 md:w-80 h-auto max-w-full animate-float"
             />
@@ -119,9 +119,11 @@ const Home = memo(function Home() {
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 text-center transform hover:scale-105 transition-all duration-300">
               <div className="flex justify-center mb-6">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gradient-to-br from-cyan-400 to-purple-500 p-1">
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">BLRP</span>
-                  </div>
+                  <img 
+                    src={blrpLogo} 
+                    alt="BlueLine RolePlay Logo" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
               </div>
               

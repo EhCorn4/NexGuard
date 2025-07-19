@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { BotStatusIndicator } from "@/components/ui/bot-status";
 import { HoverScale } from "@/components/ui/hover-scale";
 import { motion } from "framer-motion";
-// Placeholder for logo - need to get proper asset
+import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -44,7 +44,7 @@ export function Navbar() {
           <HoverScale scale={1.05}>
             <Link href="/" className="flex items-center space-x-3">
               <motion.img 
-                src={nexguardLogo} 
+                src={nexguardIcon} 
                 alt="NexGuard" 
                 className="w-10 h-10 rounded-lg"
                 whileHover={{ rotate: 5 }}

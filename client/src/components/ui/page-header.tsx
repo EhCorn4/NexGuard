@@ -1,5 +1,5 @@
 import { GradientText } from "@/components/ui/gradient-text";
-import nexguardLogo from "@assets/Nexguard_1751937048860.png";
+import nexguardLogo from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751941112899.png";
 
 interface PageHeaderProps {
   title: string;

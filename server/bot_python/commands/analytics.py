@@ -35,14 +35,15 @@ class AnalyticsTracker(commands.Cog):
                         # Get message and command counts for this hour
                         messages_this_hour = self.message_counts.get(str(guild.id), 0)
                         commands_this_hour = self.command_counts.get(str(guild.id), 0)
-                        today = datetime.utcnow().date()
                         
                         # Insert server analytics
                         await conn.execute("""
                             INSERT INTO server_analytics 
-                            (guild_id, member_count, message_count, command_count, date)
-                            VALUES ($1, $2, $3, $4, $5)
-                        """, str(guild.id), member_count, messages_this_hour, commands_this_hour, today)
+                            (guild_id, member_count, online_members, messages_per_hour, 
+                             commands_executed, voice_members)
+                            VALUES ($1, $2, $3, $4, $5, $6)
+                        """, str(guild.id), member_count, online_members, 
+                             messages_this_hour, commands_this_hour, voice_members)
                         
                         # Update channel analytics
                         for channel in guild.text_channels:
@@ -177,8 +178,13 @@ class AnalyticsTracker(commands.Cog):
         try:
             if self.bot.db_pool:
                 async with self.bot.db_pool.acquire() as conn:
-                    # Track member join in analytics
-                    pass  # Simplified - removed non-existent column update
+                    # Update server analytics with new join
+                    await conn.execute("""
+                        UPDATE server_analytics 
+                        SET new_joins = new_joins + 1
+                        WHERE guild_id = $1 
+                        AND timestamp >= $2
+                    """, str(member.guild.id), datetime.utcnow() - timedelta(hours=1))
                     
         except Exception as e:
             logger.error(f"Error tracking member join: {e}")
@@ -189,8 +195,13 @@ class AnalyticsTracker(commands.Cog):
         try:
             if self.bot.db_pool:
                 async with self.bot.db_pool.acquire() as conn:
-                    # Track member leave in analytics
-                    pass  # Simplified - removed non-existent column update
+                    # Update server analytics with new leave
+                    await conn.execute("""
+                        UPDATE server_analytics 
+                        SET new_leaves = new_leaves + 1
+                        WHERE guild_id = $1 
+                        AND timestamp >= $2
+                    """, str(member.guild.id), datetime.utcnow() - timedelta(hours=1))
                     
         except Exception as e:
             logger.error(f"Error tracking member leave: {e}")

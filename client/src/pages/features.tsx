@@ -52,7 +52,7 @@ const Features = memo(function Features() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
           title="Bot Features"
-          description="NexGuard offers comprehensive Discord bot functionality with 45+ slash commands, universal logging system, advanced automod protection, and real-time analytics to enhance your server management experience."
+          description="NexGuard offers comprehensive Discord bot functionality with 44+ slash commands, universal logging system, advanced automod protection, and real-time analytics to enhance your server management experience."
         />
         
         {/* Bot Status Section */}
@@ -61,7 +61,7 @@ const Features = memo(function Features() {
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-sm text-gray-300">Bot Online & Ready</span>
             <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">45 Commands</span>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">44 Commands</span>
             <div className="w-px h-4 bg-slate-600"></div>
             <span className="text-sm text-[hsl(var(--nexguard-cyan))]">9 Servers</span>
           </div>

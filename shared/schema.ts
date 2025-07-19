@@ -144,8 +144,6 @@ export const guilds = pgTable("guilds", {
   welcomeEmbedColor: text("welcome_embed_color").default("#00FFFF"),
   welcomeEmbedThumbnail: boolean("welcome_embed_thumbnail").default(true).notNull(),
   welcomeEmbedFooter: text("welcome_embed_footer").default("Member #{member_count}"),
-  autoRoleEnabled: boolean("auto_role_enabled").default(false).notNull(),
-  autoRoleId: text("auto_role_id"),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

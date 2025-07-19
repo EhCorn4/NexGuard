@@ -77,7 +77,7 @@ app.use((req, res, next) => {
   
   function startPythonBot() {
     console.log('🚀 Starting Python NexGuard Bot...');
-    pythonBot = spawn('python', ['server/bot_python/bot.py'], {
+    pythonBot = spawn('python', ['server/bot_python/run.py'], {
       stdio: 'inherit',
       env: process.env
     });

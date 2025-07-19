@@ -143,8 +143,8 @@ export class MemStorage implements IStorage {
 
     this.newsUpdates.set(6, {
       id: 6,
-      title: "🎯 45+ Commands Now Available",
-      content: "Massive expansion to 45+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management. Most comprehensive Discord bot feature set available.",
+      title: "🎯 41+ Commands Now Available",
+      content: "Massive expansion to 41+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management. Most comprehensive Discord bot feature set available.",
       category: "FEATURED",
       publishedAt: new Date(Date.now() - 60 * 60 * 60 * 1000),
       likes: 298,
@@ -203,7 +203,7 @@ export class MemStorage implements IStorage {
       title: "Advanced Moderation Suite",
       description: "Enterprise-grade moderation tools with 17+ commands including temporary bans, channel management, intelligent automod with logging, and comprehensive tracking systems.",
       icon: "shield",
-      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Channel lock/unlock with permission management", "Smart automod with professional logging to channels", "Universal command logging for all 45 commands", "Comprehensive warning system with severity tracking", "Custom moderator role management and permissions"],
+      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Channel lock/unlock with permission management", "Smart automod with professional logging to channels", "Universal command logging for all 44 commands", "Comprehensive warning system with severity tracking", "Custom moderator role management and permissions"],
     });
 
     this.features.set(2, {
@@ -233,9 +233,9 @@ export class MemStorage implements IStorage {
     this.features.set(5, {
       id: 5,
       title: "Comprehensive Command Suite",
-      description: "Complete server administration suite with 45+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
+      description: "Complete server administration suite with 44+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
       icon: "cog",
-      benefits: ["45+ slash commands across all categories", "Advanced admin tools with logging configuration", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
+      benefits: ["44+ slash commands across all categories", "Advanced admin tools with logging configuration", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
@@ -251,7 +251,7 @@ export class MemStorage implements IStorage {
       title: "Professional Logging System",
       description: "Enterprise-grade logging system that tracks all command usage and automod actions with detailed professional embeds sent to configured channels.",
       icon: "file-text",
-      benefits: ["Universal command logging for all 45 commands", "Automod action logging with detailed context", "Professional embed formatting with user details", "Configurable logging channels per server", "Real-time activity monitoring"],
+      benefits: ["Universal command logging for all 44 commands", "Automod action logging with detailed context", "Professional embed formatting with user details", "Configurable logging channels per server", "Real-time activity monitoring"],
     });
 
     this.features.set(8, {
@@ -262,15 +262,7 @@ export class MemStorage implements IStorage {
       benefits: ["Smart spam detection with configurable thresholds", "Bad word filtering with strict and flexible modes", "Link and invite blocking with custom actions", "Professional logging to configured channels", "Cooldown systems to prevent abuse"],
     });
 
-    this.features.set(9, {
-      id: 9,
-      title: "Auto-Role Assignment System",
-      description: "Intelligent automated role assignment system that automatically gives new members specified roles when they join your server with comprehensive permission validation.",
-      icon: "users",
-      benefits: ["Automatic role assignment on member join", "Permission hierarchy validation and safety checks", "Easy enable/disable/configure functionality", "Professional logging to configured channels", "Support for custom roles with conflict prevention"],
-    });
-
-    this.currentFeatureId = 10;
+    this.currentFeatureId = 9;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {

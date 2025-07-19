@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discord OAuth Test</title>
+</head>
+<body>
+    <h1>Discord OAuth Test</h1>
+    <p>Click the button below to test Discord OAuth:</p>
+    <button onclick="testOAuth()">Test Discord Login</button>
+    <div id="result"></div>
+    
+    <script>
+        function testOAuth() {
+            const clientId = '1389775821794705429';
+            const redirectUri = 'https://ed8c2fad-d762-4890-ab60-2ba13bfca210-00-1mxalymkn4j67.janeway.replit.dev/api/auth/discord/callback';
+            const scopes = 'identify+guilds';
+            
+            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scopes}`;
+            
+            document.getElementById('result').innerHTML = `
+                <p><strong>Auth URL:</strong></p>
+                <p style="word-break: break-all;">${authUrl}</p>
+                <p><strong>Redirect URI you need to add to Discord:</strong></p>
+                <p style="word-break: break-all; background: #f0f0f0; padding: 10px;">${redirectUri}</p>
+            `;
+            
+            window.open(authUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
