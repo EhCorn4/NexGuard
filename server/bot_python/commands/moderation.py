@@ -423,6 +423,65 @@ class ModerationCommands(commands.Cog):
             logger.error(f"Error timing out user: {e}")
             await interaction.response.send_message("❌ Failed to timeout user. Please try again.", ephemeral=True)
     
+    @app_commands.command(name="untimeout", description="Remove timeout from a user")
+    @app_commands.describe(
+        user="The user to remove timeout from",
+        reason="Reason for removing the timeout"
+    )
+    async def untimeout(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
+        """Remove timeout from a user"""
+        if not interaction.user.guild_permissions.moderate_members:
+            await interaction.response.send_message("❌ You don't have permission to manage member timeouts.", ephemeral=True)
+            return
+        
+        if user.top_role >= interaction.user.top_role:
+            await interaction.response.send_message("❌ You cannot manage timeouts for this user due to role hierarchy.", ephemeral=True)
+            return
+        
+        # Check if user is actually timed out
+        if not user.is_timed_out():
+            await interaction.response.send_message("❌ This user is not currently timed out.", ephemeral=True)
+            return
+        
+        try:
+            # Remove timeout from user
+            await user.timeout(None, reason=reason)
+            
+            # Send DM to user
+            try:
+                embed = discord.Embed(
+                    title="Timeout Removed",
+                    description=f"Your timeout has been removed in **{interaction.guild.name}**",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+                await user.send(embed=embed)
+            except:
+                pass  # User has DMs disabled
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(user.id), str(interaction.user.id), 
+                "untimeout", reason
+            )
+            
+            embed = discord.Embed(
+                title="Timeout Removed",
+                description=f"**{user.name}**'s timeout has been removed.",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error removing timeout from user: {e}")
+            await interaction.response.send_message("❌ Failed to remove timeout from user. Please try again.", ephemeral=True)
+    
     @app_commands.command(name="unban", description="Unban a user")
     @app_commands.describe(
         user_id="The ID of the user to unban",
