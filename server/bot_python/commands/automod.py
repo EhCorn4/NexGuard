@@ -404,19 +404,19 @@ class AutoModCog(commands.Cog):
     @app_commands.command(name="automod-words", description="Manage custom bad words list")
     @app_commands.describe(
         action="Action to perform",
-        word="Word to add or remove"
+        words="Word(s) to add or remove (separate multiple words with commas)"
     )
     @app_commands.choices(
         action=[
-            app_commands.Choice(name="Add Word", value="add"),
-            app_commands.Choice(name="Remove Word", value="remove"),
+            app_commands.Choice(name="Add Words", value="add"),
+            app_commands.Choice(name="Remove Words", value="remove"),
             app_commands.Choice(name="List Words", value="list"),
             app_commands.Choice(name="Clear All", value="clear")
         ]
     )
     async def automod_words(self, interaction: discord.Interaction,
                            action: str,
-                           word: str = None):
+                           words: str = None):
         """Manage custom bad words list"""
         if not await self.is_admin_or_moderator(interaction):
             await interaction.response.send_message(
@@ -433,54 +433,124 @@ class AutoModCog(commands.Cog):
             custom_words = settings['badwords'].get('custom_words', [])
             
             if action == "add":
-                if not word:
+                if not words:
                     await interaction.response.send_message(
-                        f"{EMOJIS['ERROR']} Please provide a word to add.", 
+                        f"{EMOJIS['ERROR']} Please provide word(s) to add. Separate multiple words with commas.", 
                         ephemeral=True
                     )
                     return
                 
-                word = word.lower().strip()
-                if word not in custom_words:
-                    custom_words.append(word)
+                # Split by commas and clean up
+                word_list = [word.lower().strip() for word in words.split(',') if word.strip()]
+                
+                if not word_list:
+                    await interaction.response.send_message(
+                        f"{EMOJIS['ERROR']} No valid words provided.", 
+                        ephemeral=True
+                    )
+                    return
+                
+                added_words = []
+                existing_words = []
+                
+                for word in word_list:
+                    if word not in custom_words:
+                        custom_words.append(word)
+                        added_words.append(word)
+                    else:
+                        existing_words.append(word)
+                
+                if added_words:
                     settings['badwords']['custom_words'] = custom_words
                     await self.save_automod_settings(str(interaction.guild.id), settings)
-                    
+                
+                # Create response embed
+                if added_words and existing_words:
                     embed = discord.Embed(
-                        title=f"{EMOJIS['SUCCESS']} Word Added",
-                        description=f"Added '||{word}||' to the bad words filter.",
+                        title=f"{EMOJIS['SUCCESS']} Words Processed",
+                        color=COLORS['SUCCESS']
+                    )
+                    embed.add_field(
+                        name="Added Words",
+                        value="• " + "\n• ".join([f"||{w}||" for w in added_words]),
+                        inline=False
+                    )
+                    embed.add_field(
+                        name="Already Existed",
+                        value="• " + "\n• ".join([f"||{w}||" for w in existing_words]),
+                        inline=False
+                    )
+                elif added_words:
+                    embed = discord.Embed(
+                        title=f"{EMOJIS['SUCCESS']} Words Added",
+                        description=f"Added {len(added_words)} word(s) to the bad words filter:\n• " + "\n• ".join([f"||{w}||" for w in added_words]),
                         color=COLORS['SUCCESS']
                     )
                 else:
                     embed = discord.Embed(
-                        title=f"{EMOJIS['WARNING']} Word Already Exists",
-                        description=f"'||{word}||' is already in the bad words filter.",
+                        title=f"{EMOJIS['WARNING']} All Words Already Exist",
+                        description="All provided words are already in the bad words filter.",
                         color=COLORS['WARNING']
                     )
             
             elif action == "remove":
-                if not word:
+                if not words:
                     await interaction.response.send_message(
-                        f"{EMOJIS['ERROR']} Please provide a word to remove.", 
+                        f"{EMOJIS['ERROR']} Please provide word(s) to remove. Separate multiple words with commas.", 
                         ephemeral=True
                     )
                     return
                 
-                word = word.lower().strip()
-                if word in custom_words:
-                    custom_words.remove(word)
+                # Split by commas and clean up
+                word_list = [word.lower().strip() for word in words.split(',') if word.strip()]
+                
+                if not word_list:
+                    await interaction.response.send_message(
+                        f"{EMOJIS['ERROR']} No valid words provided.", 
+                        ephemeral=True
+                    )
+                    return
+                
+                removed_words = []
+                not_found_words = []
+                
+                for word in word_list:
+                    if word in custom_words:
+                        custom_words.remove(word)
+                        removed_words.append(word)
+                    else:
+                        not_found_words.append(word)
+                
+                if removed_words:
                     settings['badwords']['custom_words'] = custom_words
                     await self.save_automod_settings(str(interaction.guild.id), settings)
-                    
+                
+                # Create response embed
+                if removed_words and not_found_words:
                     embed = discord.Embed(
-                        title=f"{EMOJIS['SUCCESS']} Word Removed",
-                        description=f"Removed '||{word}||' from the bad words filter.",
+                        title=f"{EMOJIS['SUCCESS']} Words Processed",
+                        color=COLORS['SUCCESS']
+                    )
+                    embed.add_field(
+                        name="Removed Words",
+                        value="• " + "\n• ".join([f"||{w}||" for w in removed_words]),
+                        inline=False
+                    )
+                    embed.add_field(
+                        name="Not Found",
+                        value="• " + "\n• ".join([f"||{w}||" for w in not_found_words]),
+                        inline=False
+                    )
+                elif removed_words:
+                    embed = discord.Embed(
+                        title=f"{EMOJIS['SUCCESS']} Words Removed",
+                        description=f"Removed {len(removed_words)} word(s) from the bad words filter:\n• " + "\n• ".join([f"||{w}||" for w in removed_words]),
                         color=COLORS['SUCCESS']
                     )
                 else:
                     embed = discord.Embed(
-                        title=f"{EMOJIS['WARNING']} Word Not Found",
-                        description=f"'||{word}||' is not in the bad words filter.",
+                        title=f"{EMOJIS['WARNING']} No Words Found",
+                        description="None of the provided words were found in the bad words filter.",
                         color=COLORS['WARNING']
                     )
             
