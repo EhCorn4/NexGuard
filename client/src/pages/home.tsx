@@ -34,18 +34,19 @@ const Home = memo(function Home() {
   return (
     <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--nexguard-cyan))]/10 to-[hsl(var(--nexguard-purple))]/10"
+        className="absolute inset-0 bg-cover bg-center opacity-20" 
+        style={{ backgroundImage: `url(${nexguardLogo})` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
       
       <div className="container mx-auto px-4 text-center relative z-10 pt-20">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
-            <div className="text-center">
-              <h1 className="text-6xl md:text-8xl font-bold mb-4">
-                <GradientText>NEXGUARD</GradientText>
-              </h1>
-            </div>
+            <img 
+              src={nexguardLogo} 
+              alt="NexGuard Banner" 
+              className="w-64 md:w-80 h-auto max-w-full animate-float"
+            />
           </div>
           
 

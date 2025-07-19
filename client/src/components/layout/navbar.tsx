@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { BotStatusIndicator } from "@/components/ui/bot-status";
 import { HoverScale } from "@/components/ui/hover-scale";
 import { motion } from "framer-motion";
-// import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
+// Placeholder for logo - need to get proper asset
 
 export function Navbar() {
   const [location] = useLocation();
@@ -43,7 +43,13 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           <HoverScale scale={1.05}>
             <Link href="/" className="flex items-center space-x-3">
-              <AnimatedShield className="w-10 h-10 text-[hsl(var(--nexguard-cyan))]" />
+              <motion.img 
+                src={nexguardLogo} 
+                alt="NexGuard" 
+                className="w-10 h-10 rounded-lg"
+                whileHover={{ rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              />
               <div>
                 <h1 className="text-xl font-bold text-white">NEXGUARD</h1>
                 <p className="text-xs text-[hsl(var(--nexguard-cyan))]">PROTECT. MANAGE. ENHANCE.</p>
