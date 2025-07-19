@@ -235,7 +235,17 @@ class NexGuardBot(commands.Bot):
         """Handle welcome message for new members"""
         if not self.db_pool:
             return
-            
+        
+        # Prevent duplicate welcome messages with a simple cooldown check
+        cooldown_key = f"welcome_{member.guild.id}_{member.id}"
+        if hasattr(self, '_welcome_cooldowns'):
+            if cooldown_key in self._welcome_cooldowns:
+                return  # Already processed this member recently
+        else:
+            self._welcome_cooldowns = {}
+        
+        self._welcome_cooldowns[cooldown_key] = True
+        
         try:
             async with self.db_pool.acquire() as conn:
                 # Get comprehensive guild welcome settings
@@ -334,6 +344,15 @@ class NexGuardBot(commands.Bot):
                 
         except Exception as e:
             logger.error(f"Failed to send welcome message: {e}")
+        finally:
+            # Remove from cooldown after 30 seconds to allow for genuine re-joins
+            if hasattr(self, '_welcome_cooldowns') and cooldown_key in self._welcome_cooldowns:
+                async def remove_cooldown():
+                    await asyncio.sleep(30)
+                    if hasattr(self, '_welcome_cooldowns') and cooldown_key in self._welcome_cooldowns:
+                        del self._welcome_cooldowns[cooldown_key]
+                
+                asyncio.create_task(remove_cooldown())
     
     @tasks.loop(seconds=30)
     async def update_bot_status(self):
