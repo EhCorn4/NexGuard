@@ -93,13 +93,13 @@ export class MemStorage implements IStorage {
   }
 
   private initializeData() {
-    // Initialize news updates with realistic dates
+    // Initialize news updates with actual development dates
     this.newsUpdates.set(1, {
       id: 1,
       title: "🚀 Universal Command Logging System",
       content: "Comprehensive logging system now tracks all 44+ commands with professional embeds. Every moderation action, admin command, and utility usage is beautifully logged with detailed context and user information.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-19T10:00:00Z'),
+      publishedAt: new Date('2025-07-19T10:00:00Z'),
       likes: 89,
       comments: 23,
     });
@@ -109,7 +109,7 @@ export class MemStorage implements IStorage {
       title: "🔒 Advanced Channel Management",
       content: "New lock/unlock commands with permission controls and detailed notifications. Administrators can now quickly secure channels during incidents with comprehensive logging and role-based access management.",
       category: "SECURITY",
-      publishedAt: new Date('2025-01-18T15:30:00Z'),
+      publishedAt: new Date('2025-07-19T09:30:00Z'),
       likes: 156,
       comments: 31,
     });
@@ -119,49 +119,49 @@ export class MemStorage implements IStorage {
       title: "⚡ Enhanced AutoMod Protection",
       content: "Professional automod logging now sends detailed violation reports to configured channels. Real-time spam detection, bad word filtering, and link blocking with escalation actions and comprehensive reporting.",
       category: "SECURITY",
-      publishedAt: new Date('2025-01-17T12:00:00Z'),
+      publishedAt: new Date('2025-07-19T09:00:00Z'),
       likes: 203,
       comments: 47,
     });
 
     this.newsUpdates.set(4, {
       id: 4,
-      title: "📊 Bot Statistics Update: 171+ Users Protected",
-      content: "NexGuard is now actively protecting 171+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their moderation and management needs.",
-      category: "COMMUNITY",
-      publishedAt: new Date('2025-01-16T18:00:00Z'),
-      likes: 127,
-      comments: 34,
-    });
-
-    this.newsUpdates.set(5, {
-      id: 5,
       title: "🎫 Advanced Testimonial System",
       content: "New email-based testimonial approval system with instant notifications. When users submit testimonials, administrators receive professional emails with approve/reject buttons for immediate management.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-15T09:45:00Z'),
+      publishedAt: new Date('2025-07-19T08:30:00Z'),
       likes: 78,
       comments: 19,
     });
 
+    this.newsUpdates.set(5, {
+      id: 5,
+      title: "🎮 Custom AutoRole System",
+      content: "Comprehensive autorole command with set, enable, disable, remove, and view actions. Automatic role assignment functionality with role hierarchy validation and permission checking for new member management.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-07-19T08:00:00Z'),
+      likes: 134,
+      comments: 28,
+    });
+
     this.newsUpdates.set(6, {
       id: 6,
-      title: "🎯 44+ Commands Now Available",
-      content: "Complete command expansion to 44+ slash commands! Including 17 moderation commands, 15 admin commands, 11 utility commands, and 4 ticket system commands. Most comprehensive Discord bot feature set available.",
-      category: "FEATURED",
-      publishedAt: new Date('2025-01-14T14:20:00Z'),
-      likes: 342,
-      comments: 89,
+      title: "💎 Premium Donation System",
+      content: "Simple and empathetic donation system launched to support continued development. Optional contributions help maintain and improve NexGuard while keeping all features completely free for everyone.",
+      category: "COMMUNITY",
+      publishedAt: new Date('2025-07-19T07:30:00Z'),
+      likes: 234,
+      comments: 41,
     });
 
     this.newsUpdates.set(7, {
       id: 7,
-      title: "🤖 Smart Auto-Reply Engine",
-      content: "Revolutionary auto-reply system with intelligent keyword matching, rich embed responses, and detailed analytics. Create custom automated responses with multiple trigger types, cooldowns, and comprehensive statistics.",
-      category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-13T11:30:00Z'),
-      likes: 234,
-      comments: 56,
+      title: "🎉 Welcome System Overhaul",
+      content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support, channel detection, and comprehensive configuration options for perfect new member onboarding.",
+      category: "UPDATE",
+      publishedAt: new Date('2025-07-19T07:00:00Z'),
+      likes: 112,
+      comments: 27,
     });
 
     this.newsUpdates.set(8, {
@@ -169,7 +169,7 @@ export class MemStorage implements IStorage {
       title: "⏰ Temporary Ban System",
       content: "Advanced temporary ban functionality with automatic expiration. Support for duration formats (7d, 2h, 30m) with background processing and automated unban when time expires.",
       category: "UPDATE",
-      publishedAt: new Date('2025-01-12T16:15:00Z'),
+      publishedAt: new Date('2025-07-18T18:00:00Z'),
       likes: 98,
       comments: 25,
     });
@@ -179,7 +179,7 @@ export class MemStorage implements IStorage {
       title: "🎮 Custom Moderation Roles",
       content: "Advanced permission system allowing administrators to set custom moderation roles with hierarchy validation. Precise control over who can moderate your server beyond Discord's default permissions.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-11T13:20:00Z'),
+      publishedAt: new Date('2025-07-18T17:30:00Z'),
       likes: 167,
       comments: 38,
     });
@@ -189,7 +189,7 @@ export class MemStorage implements IStorage {
       title: "📈 Multi-Category Ticket System",
       content: "Enhanced ticket system with category management and Discord channel integration. Organized support with automatic ticket placement, priority levels, and comprehensive filtering options for large communities.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-10T09:30:00Z'),
+      publishedAt: new Date('2025-07-18T17:00:00Z'),
       likes: 145,
       comments: 29,
     });
@@ -199,19 +199,19 @@ export class MemStorage implements IStorage {
       title: "🛡️ Advanced AutoMod Suite",
       content: "State-of-the-art moderation automation with 6 specialized commands. Features intelligent spam protection, link filtering, bad word detection, and real-time message monitoring with escalation actions.",
       category: "SECURITY",
-      publishedAt: new Date('2025-01-09T14:45:00Z'),
+      publishedAt: new Date('2025-07-18T16:30:00Z'),
       likes: 289,
       comments: 62,
     });
 
     this.newsUpdates.set(12, {
       id: 12,
-      title: "🎉 Welcome System Overhaul",
-      content: "Rich welcome embeds with custom colors, thumbnails, and interactive elements. Advanced placeholder support, channel detection, and comprehensive configuration options for perfect new member onboarding.",
-      category: "UPDATE",
-      publishedAt: new Date('2025-01-08T11:00:00Z'),
-      likes: 112,
-      comments: 27,
+      title: "🤖 Smart Auto-Reply Engine",
+      content: "Revolutionary auto-reply system with intelligent keyword matching, rich embed responses, and detailed analytics. Create custom automated responses with multiple trigger types, cooldowns, and comprehensive statistics.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-07-18T16:00:00Z'),
+      likes: 234,
+      comments: 56,
     });
 
     this.newsUpdates.set(13, {
@@ -219,7 +219,7 @@ export class MemStorage implements IStorage {
       title: "💡 AI-Powered Assistant",
       content: "Integrated AI assistant for server management help and questions. Get instant answers about bot commands, Discord server management, and troubleshooting directly in your server.",
       category: "NEW FEATURE",
-      publishedAt: new Date('2025-01-07T17:20:00Z'),
+      publishedAt: new Date('2025-07-18T15:30:00Z'),
       likes: 198,
       comments: 45,
     });
@@ -229,29 +229,29 @@ export class MemStorage implements IStorage {
       title: "🚀 NexGuard 2.3.2 Release",
       content: "Major bot update featuring Python architecture migration, improved performance, enhanced Discord.py integration, and comprehensive slash command support. Faster responses and more reliable operations.",
       category: "FEATURED",
-      publishedAt: new Date('2025-01-06T12:30:00Z'),
+      publishedAt: new Date('2025-07-18T15:00:00Z'),
       likes: 356,
       comments: 78,
     });
 
     this.newsUpdates.set(15, {
       id: 15,
-      title: "💎 Premium Donation System",
-      content: "Simple and empathetic donation system launched to support continued development. Optional contributions help maintain and improve NexGuard while keeping all features completely free for everyone.",
-      category: "COMMUNITY",
-      publishedAt: new Date('2025-01-05T08:15:00Z'),
-      likes: 234,
-      comments: 41,
+      title: "🎯 44+ Commands Now Available",
+      content: "Complete command expansion to 44+ slash commands! Including 17 moderation commands, 15 admin commands, 11 utility commands, and 4 ticket system commands. Most comprehensive Discord bot feature set available.",
+      category: "FEATURED",
+      publishedAt: new Date('2025-07-18T14:30:00Z'),
+      likes: 342,
+      comments: 89,
     });
 
     this.newsUpdates.set(25, {
       id: 25,
-      title: "🔍 AI-Powered Spam Detection",
-      content: "Next-generation spam detection using machine learning algorithms to identify patterns and prevent coordinated attacks. Smart detection adapts to new spam techniques automatically.",
-      category: "SECURITY",
-      publishedAt: new Date('2025-01-04T19:30:00Z'),
-      likes: 178,
-      comments: 33,
+      title: "📊 Bot Statistics Update: 171+ Users Protected",
+      content: "NexGuard is now actively protecting 171+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their moderation and management needs.",
+      category: "COMMUNITY",
+      publishedAt: new Date('2025-07-18T14:00:00Z'),
+      likes: 127,
+      comments: 34,
     });
 
     this.currentNewsId = 26;
