@@ -108,6 +108,7 @@ class NexGuardBot(commands.Bot):
     async def on_member_join(self, member):
         """Called when a member joins a guild"""
         await self.handle_welcome_message(member)
+        await self.handle_auto_role(member)
     
     async def on_message(self, message):
         """Called when a message is sent"""
@@ -578,6 +579,69 @@ class NexGuardBot(commands.Bot):
             
         except Exception as e:
             logger.error(f"Failed to send guild welcome message to {guild.name}: {e}")
+
+    async def handle_auto_role(self, member):
+        """Handle automatic role assignment for new members"""
+        if not self.db_pool:
+            return
+            
+        try:
+            guild_id = str(member.guild.id)
+            config = await self.get_guild_config(guild_id)
+            
+            # Check if auto-role is enabled and configured
+            if not config.get('autorole_enabled', False):
+                return
+            
+            role_id = config.get('autorole_role_id')
+            if not role_id:
+                return
+            
+            # Get the role object
+            role = member.guild.get_role(int(role_id))
+            if not role:
+                logger.warning(f"Auto-role {role_id} not found in guild {member.guild.name}")
+                return
+            
+            # Check if bot can assign the role
+            if role.position >= member.guild.me.top_role.position:
+                logger.warning(f"Cannot assign auto-role {role.name} - role hierarchy issue in {member.guild.name}")
+                return
+            
+            # Check if the member already has the role
+            if role in member.roles:
+                return
+            
+            # Assign the role
+            await member.add_roles(role, reason="Auto-role assignment")
+            
+            # Log the action
+            logger.info(f"Assigned auto-role {role.name} to {member.name} in {member.guild.name}")
+            
+            # Log to command logging channel if configured
+            log_channel_id = config.get('log_channel_id')
+            if log_channel_id:
+                log_channel = self.get_channel(int(log_channel_id))
+                if log_channel:
+                    embed = discord.Embed(
+                        title="🎭 Auto-Role Assigned",
+                        description=f"Automatically assigned role to new member",
+                        color=0x00FF00,
+                        timestamp=datetime.utcnow()
+                    )
+                    embed.add_field(name="Member", value=f"{member.mention} ({member.name})", inline=True)
+                    embed.add_field(name="Role", value=role.mention, inline=True)
+                    embed.add_field(name="Member ID", value=str(member.id), inline=True)
+                    embed.set_footer(text="NexGuard Auto-Role System")
+                    embed.set_thumbnail(url=member.display_avatar.url)
+                    
+                    try:
+                        await log_channel.send(embed=embed)
+                    except Exception as e:
+                        logger.error(f"Failed to send auto-role log: {e}")
+            
+        except Exception as e:
+            logger.error(f"Error assigning auto-role to {member.name}: {e}")
 
     async def close(self):
         """Cleanup when bot shuts down"""

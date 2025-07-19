@@ -257,12 +257,175 @@ class AdminCommands(commands.Cog):
             mod_role = f"<@&{config.get('mod_role_id')}>" if config.get('mod_role_id') else "Not set"
             embed.add_field(name="Mod Role", value=mod_role, inline=True)
             
+            autorole_role = f"<@&{config.get('autorole_role_id')}>" if config.get('autorole_role_id') else "Not set"
+            autorole_status = "✅ Enabled" if config.get('autorole_enabled', False) else "❌ Disabled"
+            embed.add_field(name="Auto-Role", value=f"{autorole_role}\n{autorole_status}", inline=True)
+            
             await interaction.response.send_message(embed=embed, ephemeral=True)
             
         except Exception as e:
             logger.error(f"Error viewing settings: {e}")
             await interaction.response.send_message("❌ Failed to load settings. Please try again.", ephemeral=True)
     
+    @app_commands.command(name="autorole", description="Configure automatic role assignment for new members")
+    @app_commands.describe(
+        action="Action to perform",
+        role="Role to assign to new members"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="set", value="set"),
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
+        app_commands.Choice(name="remove", value="remove"),
+        app_commands.Choice(name="view", value="view")
+    ])
+    async def autorole(self, interaction: discord.Interaction, action: str, role: discord.Role = None):
+        """Configure automatic role assignment for new members"""
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
+            return
+        
+        try:
+            guild_id = str(interaction.guild.id)
+            config = await self.bot.get_guild_config(guild_id)
+            
+            if action == "set":
+                if not role:
+                    await interaction.response.send_message("❌ Please specify a role to set as auto-role.", ephemeral=True)
+                    return
+                
+                # Check if the role is manageable by the bot
+                if role.position >= interaction.guild.me.top_role.position:
+                    await interaction.response.send_message("❌ I cannot assign this role as it's higher than or equal to my highest role.", ephemeral=True)
+                    return
+                
+                # Check if the role is @everyone
+                if role.id == interaction.guild.id:
+                    await interaction.response.send_message("❌ Cannot set @everyone as auto-role.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, autorole_role_id=str(role.id), autorole_enabled=True)
+                
+                embed = discord.Embed(
+                    title="✅ Auto-Role Configured",
+                    description=f"New members will automatically receive the {role.mention} role.",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(name="Role", value=role.mention, inline=True)
+                embed.add_field(name="Status", value="✅ Enabled", inline=True)
+                embed.set_footer(text=f"Set by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Log command usage
+                parameters = {"action": action, "role": role.name}
+                await self.bot.log_command_usage(interaction, "autorole", parameters)
+                
+            elif action == "enable":
+                if not config.get('autorole_role_id'):
+                    await interaction.response.send_message("❌ No auto-role has been set. Use `/autorole set @role` first.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, autorole_enabled=True)
+                
+                role_id = config.get('autorole_role_id')
+                role_obj = interaction.guild.get_role(int(role_id))
+                role_mention = role_obj.mention if role_obj else f"<@&{role_id}>"
+                
+                embed = discord.Embed(
+                    title="✅ Auto-Role Enabled",
+                    description=f"Auto-role feature has been enabled. New members will receive {role_mention}.",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text=f"Enabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Log command usage
+                parameters = {"action": action}
+                await self.bot.log_command_usage(interaction, "autorole", parameters)
+                
+            elif action == "disable":
+                await self.bot.update_guild_config(guild_id, autorole_enabled=False)
+                
+                embed = discord.Embed(
+                    title="❌ Auto-Role Disabled",
+                    description="Auto-role feature has been disabled. New members will not receive automatic roles.",
+                    color=0xFF4444,
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Log command usage
+                parameters = {"action": action}
+                await self.bot.log_command_usage(interaction, "autorole", parameters)
+                
+            elif action == "remove":
+                await self.bot.update_guild_config(guild_id, autorole_role_id=None, autorole_enabled=False)
+                
+                embed = discord.Embed(
+                    title="🗑️ Auto-Role Removed",
+                    description="Auto-role configuration has been completely removed.",
+                    color=0xFF4444,
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text=f"Removed by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Log command usage
+                parameters = {"action": action}
+                await self.bot.log_command_usage(interaction, "autorole", parameters)
+                
+            elif action == "view":
+                role_id = config.get('autorole_role_id')
+                enabled = config.get('autorole_enabled', False)
+                
+                embed = discord.Embed(
+                    title="📋 Auto-Role Configuration",
+                    color=0x00FFFF,
+                    timestamp=datetime.utcnow()
+                )
+                
+                if role_id:
+                    role_obj = interaction.guild.get_role(int(role_id))
+                    if role_obj:
+                        embed.add_field(name="Role", value=role_obj.mention, inline=True)
+                        embed.add_field(name="Role Name", value=role_obj.name, inline=True)
+                        embed.add_field(name="Role ID", value=role_id, inline=True)
+                    else:
+                        embed.add_field(name="Role", value=f"⚠️ Role not found (ID: {role_id})", inline=False)
+                else:
+                    embed.add_field(name="Role", value="Not configured", inline=False)
+                
+                status_emoji = "✅" if enabled else "❌"
+                status_text = "Enabled" if enabled else "Disabled"
+                embed.add_field(name="Status", value=f"{status_emoji} {status_text}", inline=True)
+                
+                if role_id and enabled:
+                    embed.add_field(name="Bot Can Assign", value="✅ Yes" if role_obj and role_obj.position < interaction.guild.me.top_role.position else "❌ No", inline=True)
+                
+                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+                # Log command usage
+                parameters = {"action": action}
+                await self.bot.log_command_usage(interaction, "autorole", parameters)
+                
+        except Exception as e:
+            logger.error(f"Error with autorole command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to configure auto-role. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to configure auto-role. Please try again.", ephemeral=True)
+            except:
+                pass
 
 
 async def setup(bot):

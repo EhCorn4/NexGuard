@@ -285,6 +285,15 @@ The system is a complete Discord bot with integrated website that:
 - July 19, 2025: Enhanced feature descriptions with universal logging, channel management, and automod logging
 - July 19, 2025: Updated bot statistics display to show current live data (9+ servers, 168+ users)
 - July 19, 2025: Comprehensive update of home page, features page, invite page, and docs page content
+- July 19, 2025: **FEATURE RESTORATION** - Added comprehensive autorole command system
+- July 19, 2025: Implemented `/autorole` command with set, enable, disable, remove, and view actions
+- July 19, 2025: Added automatic role assignment functionality to member join events
+- July 19, 2025: Enhanced autorole with role hierarchy validation and permission checking
+- July 19, 2025: Added comprehensive autorole logging with professional embeds
+- July 19, 2025: Updated settings command to display current autorole configuration
+- July 19, 2025: **ENHANCEMENT** - Comprehensive FAQ page implementation
+- July 19, 2025: Created detailed FAQ page with 6 categories and 25+ questions covering setup, moderation, features, troubleshooting, and advanced usage
+- July 19, 2025: Updated footer navigation to point FAQ link to dedicated `/faq` page instead of feedback
 
 ## User Preferences
 
