@@ -109,30 +109,21 @@ class AutoReply(commands.Cog):
                 )
                 return
             
-            # Create response data
-            response_data = {
-                'title': title,
-                'description': description,
-                'color': embed_color,
-                'timestamp': True,
-                'footer': {
-                    'text': f'Auto-reply: {name}', 
-                    'icon_url': str(interaction.guild.icon) if interaction.guild.icon else None
-                }
-            }
+            # Note: response_data removed since we're using individual columns
             
-            # Save to database
+            # Save to database using correct column names
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute('''
                     INSERT INTO auto_replies 
-                    (guild_id, trigger, response, trigger_type, case_sensitive, is_active, created_by, created_by_name)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    (guild_id, trigger, response_title, response_description, response_color, trigger_type, is_active, created_by_id, created_by_name)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ''', (
                     str(interaction.guild.id),
                     keywords.lower(),
-                    json.dumps(response_data),
+                    title,
+                    description,
+                    str(embed_color),
                     match_type,
-                    False,  # case_sensitive
                     True,   # is_active
                     str(interaction.user.id),
                     interaction.user.display_name
@@ -428,7 +419,7 @@ class AutoReply(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 # Get all active auto-reply rules for this guild
                 rules = await conn.fetch('''
-                    SELECT id, trigger, response, trigger_type, case_sensitive
+                    SELECT id, trigger, response_title, response_description, response_color, trigger_type
                     FROM auto_replies 
                     WHERE guild_id = $1 AND is_active = true
                     ORDER BY created_at ASC
@@ -438,25 +429,20 @@ class AutoReply(commands.Cog):
                     # Check if message matches this rule
                     if self.check_message_for_keywords(message.content, rule['trigger'], rule['trigger_type']):
                         try:
-                            # Parse response data
-                            response_data = json.loads(rule['response'])
+                            # Create embed from database columns
+                            embed_color = int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
                             
-                            # Create embed
                             embed = discord.Embed(
-                                title=response_data.get('title', 'Auto-Reply'),
-                                description=response_data.get('description', 'No description provided'),
-                                color=response_data.get('color', COLORS['INFO'])
+                                title=rule['response_title'] or 'Auto-Reply',
+                                description=rule['response_description'] or 'No description provided',
+                                color=embed_color,
+                                timestamp=datetime.utcnow()
                             )
                             
-                            if response_data.get('timestamp'):
-                                embed.timestamp = datetime.utcnow()
-                            
-                            if response_data.get('footer'):
-                                footer_data = response_data['footer']
-                                embed.set_footer(
-                                    text=footer_data.get('text', ''),
-                                    icon_url=footer_data.get('icon_url')
-                                )
+                            embed.set_footer(
+                                text=f'Auto-reply triggered by: {rule["trigger"]}',
+                                icon_url=str(message.guild.icon) if message.guild.icon else None
+                            )
                             
                             # Send the auto-reply
                             await message.channel.send(embed=embed)
@@ -485,7 +471,7 @@ class AutoReply(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 # Get active auto-reply rules for this guild
                 rules = await conn.fetch('''
-                    SELECT id, trigger, response, trigger_type
+                    SELECT id, trigger, response_title, response_description, response_color, trigger_type
                     FROM auto_replies 
                     WHERE guild_id = $1 AND is_active = true
                 ''', str(message.guild.id))
@@ -507,25 +493,20 @@ class AutoReply(commands.Cog):
                     
                     if match_found:
                         try:
-                            # Parse response data
-                            response_data = json.loads(rule['response'])
+                            # Create embed from database columns
+                            embed_color = int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
                             
-                            # Create embed
                             embed = discord.Embed(
-                                title=response_data.get('title', 'Auto-Reply'),
-                                description=response_data.get('description', 'Automated response triggered'),
-                                color=response_data.get('color', COLORS['INFO'])
+                                title=rule['response_title'] or 'Auto-Reply',
+                                description=rule['response_description'] or 'Automated response triggered',
+                                color=embed_color,
+                                timestamp=datetime.utcnow()
                             )
                             
-                            if response_data.get('timestamp'):
-                                embed.timestamp = datetime.utcnow()
-                            
-                            if response_data.get('footer'):
-                                footer_data = response_data['footer']
-                                embed.set_footer(
-                                    text=footer_data.get('text', ''),
-                                    icon_url=footer_data.get('icon_url')
-                                )
+                            embed.set_footer(
+                                text=f'Auto-reply triggered by: {rule["trigger"]}',
+                                icon_url=str(message.guild.icon) if message.guild.icon else None
+                            )
                             
                             await message.reply(embed=embed)
                             logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
