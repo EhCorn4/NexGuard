@@ -340,7 +340,11 @@ The system is a complete Discord bot with integrated website that:
 - July 21, 2025: Fixed SQL parameter passing issues that were causing "expected 9 arguments, 1 passed" errors
 - July 21, 2025: Enhanced error handling with proper Discord interaction response management
 - July 21, 2025: Error logging system successfully tested and confirmed working in live Discord environment
-- July 21, 2025: Bot now has 48+ commands including comprehensive error tracking and auto-reply functionality
+- July 21, 2025: **AUTO-REPLY ENHANCEMENT** - Fixed duplicate message issue by removing duplicate on_message listener
+- July 21, 2025: Added 30-second cooldown system per user per rule to prevent spam and abuse
+- July 21, 2025: Enhanced footer display to show rule names instead of trigger keywords for better user experience
+- July 21, 2025: Added rule_name column to database for improved organization and display
+- July 21, 2025: Bot now has 48+ commands including comprehensive error tracking and fully functional auto-reply system
 
 ## User Preferences
 
