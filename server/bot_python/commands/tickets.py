@@ -2,14 +2,997 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import logging
+import json
+import asyncio
 from datetime import datetime
-import uuid
+from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger(__name__)
+
+class TicketPanelView(discord.ui.View):
+    """Main view for ticket creation panels - TicketsBot.net style"""
+    def __init__(self, panels: List[Dict[str, Any]]):
+        super().__init__(timeout=None)
+        self.panels = panels
+        
+        # Create buttons dynamically from panels
+        for panel in panels[:5]:  # Discord max 5 buttons per row
+            button = TicketButton(
+                panel_id=panel['panel_id'],
+                title=panel['title'],
+                emoji=panel.get('emoji'),
+                custom_id=f"ticket_panel_{panel['panel_id']}"
+            )
+            self.add_item(button)
+
+class TicketButton(discord.ui.Button):
+    """Individual ticket creation button"""
+    def __init__(self, panel_id: str, title: str, emoji: Optional[str] = None, **kwargs):
+        super().__init__(
+            label=title[:80],  # Discord label limit
+            emoji=emoji,
+            style=discord.ButtonStyle.primary,
+            **kwargs
+        )
+        self.panel_id = panel_id
+        self.title = title
+    
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            bot = interaction.client
+            
+            # Check if user already has an open ticket
+            if bot.db_pool:
+                async with bot.db_pool.acquire() as conn:
+                    existing_ticket = await conn.fetchrow("""
+                        SELECT channel_id FROM tickets 
+                        WHERE guild_id = $1 AND user_id = $2 AND status IN ('open', 'claimed', 'in-progress')
+                        LIMIT 1
+                    """, str(interaction.guild.id), str(interaction.user.id))
+                    
+                    if existing_ticket:
+                        channel = interaction.guild.get_channel(int(existing_ticket['channel_id']))
+                        if channel:
+                            await interaction.response.send_message(
+                                f"❌ You already have an open ticket: {channel.mention}\nPlease close it before creating a new one.",
+                                ephemeral=True
+                            )
+                        else:
+                            await interaction.response.send_message(
+                                "❌ You already have an open ticket. Please close it before creating a new one.",
+                                ephemeral=True
+                            )
+                        return
+                    
+                    # Get panel configuration
+                    panel = await conn.fetchrow("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2 AND is_active = TRUE
+                    """, str(interaction.guild.id), self.panel_id)
+                    
+                    if not panel:
+                        await interaction.response.send_message("❌ This ticket panel is no longer active.", ephemeral=True)
+                        return
+                    
+                    # Check if panel has forms
+                    if panel['has_form'] and panel['form_questions']:
+                        modal = TicketFormModal(panel, self.panel_id)
+                        await interaction.response.send_modal(modal)
+                    else:
+                        # Create ticket directly
+                        await self.create_ticket_direct(interaction, panel)
+            else:
+                await interaction.response.send_message("❌ Database unavailable.", ephemeral=True)
+                
+        except Exception as e:
+            logger.error(f"Error in ticket button callback: {e}")
+            await interaction.response.send_message("❌ An error occurred. Please try again.", ephemeral=True)
+    
+    async def create_ticket_direct(self, interaction: discord.Interaction, panel):
+        """Create ticket without form"""
+        try:
+            # Generate unique ticket ID
+            ticket_count = await self.get_ticket_count(interaction, interaction.client.db_pool)
+            ticket_id = f"ticket-{ticket_count + 1:04d}"
+            
+            # Create ticket channel and store in database
+            channel = await self.setup_ticket_channel(interaction, panel, ticket_id)
+            
+            await interaction.response.send_message(
+                f"✅ Ticket created! Continue in {channel.mention}",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            logger.error(f"Error creating direct ticket: {e}")
+            await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+    
+    async def setup_ticket_channel(self, interaction, panel, ticket_id, form_data=None):
+        """Setup the ticket channel with proper permissions and embeds"""
+        # Get category if specified
+        category = None
+        if panel['category_id']:
+            category = interaction.guild.get_channel(int(panel['category_id']))
+        
+        # Set up permissions
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            interaction.user: discord.PermissionOverwrite(
+                view_channel=True, send_messages=True, read_message_history=True
+            ),
+            interaction.guild.me: discord.PermissionOverwrite(
+                view_channel=True, send_messages=True, manage_channels=True, 
+                read_message_history=True, manage_messages=True
+            )
+        }
+        
+        # Add support team permissions
+        if panel['support_team_ids']:
+            try:
+                team_ids = json.loads(panel['support_team_ids'])
+                for role_id in team_ids:
+                    role = interaction.guild.get_role(int(role_id))
+                    if role:
+                        overwrites[role] = discord.PermissionOverwrite(
+                            view_channel=True, send_messages=True, read_message_history=True
+                        )
+            except (json.JSONDecodeError, ValueError):
+                pass
+        
+        # Create channel
+        channel = await interaction.guild.create_text_channel(
+            name=f"ticket-{interaction.user.name}".lower(),
+            category=category,
+            overwrites=overwrites,
+            topic=f"Ticket {ticket_id} | {panel['title']} | {interaction.user.display_name}"
+        )
+        
+        # Store in database
+        async with interaction.client.db_pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO tickets (
+                    ticket_id, guild_id, channel_id, user_id, username,
+                    panel_id, subject, status, priority, form_responses, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            """, 
+                ticket_id, str(interaction.guild.id), str(channel.id),
+                str(interaction.user.id), interaction.user.display_name,
+                self.panel_id, panel['title'], 'open', 'medium',
+                json.dumps(form_data) if form_data else None, datetime.utcnow()
+            )
+        
+        # Send welcome embed with controls
+        embed = discord.Embed(
+            title=f"🎫 {panel['title']}",
+            description=panel.get('welcome_message', "Thank you for creating a ticket. Our team will assist you shortly."),
+            color=0x00ff00
+        )
+        embed.add_field(name="Created by", value=interaction.user.mention, inline=True)
+        embed.add_field(name="Ticket ID", value=ticket_id, inline=True)
+        embed.add_field(name="Created", value=f"<t:{int(datetime.utcnow().timestamp())}:R>", inline=True)
+        
+        # Add form responses if any
+        if form_data:
+            try:
+                questions = json.loads(panel['form_questions'])
+                for i, question in enumerate(questions):
+                    if f'question_{i}' in form_data:
+                        embed.add_field(
+                            name=question.get('label', f'Question {i+1}'),
+                            value=form_data[f'question_{i}'][:1000],
+                            inline=False
+                        )
+            except (json.JSONDecodeError, KeyError):
+                pass
+        
+        embed.set_footer(text=f"Ticket ID: {ticket_id}")
+        
+        # Add ticket control buttons
+        view = TicketControlView(ticket_id)
+        await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
+        
+        # Ping support team if configured
+        if panel['support_team_ids']:
+            try:
+                team_ids = json.loads(panel['support_team_ids'])
+                mentions = []
+                for role_id in team_ids:
+                    role = interaction.guild.get_role(int(role_id))
+                    if role:
+                        mentions.append(role.mention)
+                if mentions:
+                    await channel.send(f"🔔 Support team: {' '.join(mentions)}", delete_after=5)
+            except:
+                pass
+        
+        return channel
+    
+    async def get_ticket_count(self, interaction, db_pool):
+        """Get current ticket count for ID generation"""
+        try:
+            async with db_pool.acquire() as conn:
+                result = await conn.fetchval("""
+                    SELECT COUNT(*) FROM tickets WHERE guild_id = $1
+                """, str(interaction.guild.id))
+                return result or 0
+        except:
+            return 0
+
+class TicketFormModal(discord.ui.Modal):
+    """Modal for collecting pre-ticket information"""
+    def __init__(self, panel, panel_id: str):
+        super().__init__(title=f"{panel['title']} - Information Required")
+        self.panel = panel
+        self.panel_id = panel_id
+        
+        # Parse form questions
+        try:
+            questions = json.loads(panel['form_questions']) if panel['form_questions'] else []
+            
+            for i, question in enumerate(questions[:5]):  # Discord limit
+                field = discord.ui.TextInput(
+                    label=question.get('label', f'Question {i+1}')[:45],  # Discord limit
+                    placeholder=question.get('placeholder', 'Your answer...')[:100],
+                    required=question.get('required', True),
+                    max_length=min(question.get('max_length', 1000), 4000),  # Discord limit
+                    style=discord.TextStyle.paragraph if question.get('multiline', True) else discord.TextStyle.short
+                )
+                self.add_item(field)
+                
+        except (json.JSONDecodeError, KeyError):
+            # Fallback single question
+            field = discord.ui.TextInput(
+                label="Please describe your issue",
+                placeholder="Tell us how we can help you...",
+                required=True,
+                max_length=1000,
+                style=discord.TextStyle.paragraph
+            )
+            self.add_item(field)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            # Collect form responses
+            form_data = {}
+            for i, item in enumerate(self.children):
+                if isinstance(item, discord.ui.TextInput):
+                    form_data[f'question_{i}'] = item.value
+            
+            # Create ticket with form data
+            button = TicketButton(self.panel_id, self.panel['title'])
+            await button.setup_ticket_channel(interaction, self.panel, 
+                await button.get_ticket_count(interaction, interaction.client.db_pool) + 1, form_data)
+            
+            await interaction.response.send_message(
+                f"✅ Ticket created with your information!",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            logger.error(f"Error submitting form: {e}")
+            await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+
+class TicketControlView(discord.ui.View):
+    """Control buttons for managing tickets"""
+    def __init__(self, ticket_id: str):
+        super().__init__(timeout=None)
+        self.ticket_id = ticket_id
+    
+    @discord.ui.button(label="🔒 Close", style=discord.ButtonStyle.danger, custom_id="close_ticket")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Close ticket with feedback collection"""
+        try:
+            # Check permissions
+            if not (interaction.user.guild_permissions.manage_channels or 
+                   await self.is_ticket_owner(interaction) or 
+                   await self.is_support_staff(interaction)):
+                await interaction.response.send_message("❌ You don't have permission to close this ticket.", ephemeral=True)
+                return
+            
+            modal = CloseTicketModal(self.ticket_id)
+            await interaction.response.send_modal(modal)
+            
+        except Exception as e:
+            logger.error(f"Error closing ticket: {e}")
+            await interaction.response.send_message("❌ Failed to close ticket.", ephemeral=True)
+    
+    @discord.ui.button(label="🎯 Claim", style=discord.ButtonStyle.secondary, custom_id="claim_ticket")
+    async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Claim ticket for dedicated support"""
+        try:
+            # Check if user is support staff
+            if not await self.is_support_staff(interaction):
+                await interaction.response.send_message("❌ Only support staff can claim tickets.", ephemeral=True)
+                return
+            
+            async with interaction.client.db_pool.acquire() as conn:
+                # Check current claim status
+                ticket = await conn.fetchrow("""
+                    SELECT claimed_by, status FROM tickets 
+                    WHERE ticket_id = $1 AND guild_id = $2
+                """, self.ticket_id, str(interaction.guild.id))
+                
+                if not ticket:
+                    await interaction.response.send_message("❌ Ticket not found.", ephemeral=True)
+                    return
+                
+                if ticket['claimed_by']:
+                    claimer = interaction.guild.get_member(int(ticket['claimed_by']))
+                    name = claimer.display_name if claimer else "Unknown User"
+                    await interaction.response.send_message(f"❌ Already claimed by {name}.", ephemeral=True)
+                    return
+                
+                # Claim the ticket
+                await conn.execute("""
+                    UPDATE tickets 
+                    SET claimed_by = $1, claimed_at = $2, status = 'claimed'
+                    WHERE ticket_id = $3
+                """, str(interaction.user.id), datetime.utcnow(), self.ticket_id)
+                
+                embed = discord.Embed(
+                    title="🎯 Ticket Claimed",
+                    description=f"{interaction.user.mention} has claimed this ticket.",
+                    color=0xff9900
+                )
+                embed.set_footer(text="You now have dedicated support!")
+                
+                await interaction.response.send_message(embed=embed)
+                
+        except Exception as e:
+            logger.error(f"Error claiming ticket: {e}")
+            await interaction.response.send_message("❌ Failed to claim ticket.", ephemeral=True)
+    
+    @discord.ui.button(label="📋 Info", style=discord.ButtonStyle.secondary, custom_id="ticket_info")
+    async def ticket_info(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Show ticket information"""
+        try:
+            async with interaction.client.db_pool.acquire() as conn:
+                ticket = await conn.fetchrow("""
+                    SELECT * FROM tickets 
+                    WHERE ticket_id = $1 AND guild_id = $2
+                """, self.ticket_id, str(interaction.guild.id))
+                
+                if not ticket:
+                    await interaction.response.send_message("❌ Ticket not found.", ephemeral=True)
+                    return
+                
+                embed = discord.Embed(
+                    title=f"🎫 Ticket {self.ticket_id}",
+                    color=0x00ff00 if ticket['status'] == 'open' else 0xff9900
+                )
+                
+                embed.add_field(name="Subject", value=ticket['subject'], inline=False)
+                embed.add_field(name="Status", value=ticket['status'].title(), inline=True)
+                embed.add_field(name="Priority", value=ticket['priority'].title(), inline=True)
+                embed.add_field(name="Created", value=f"<t:{int(ticket['created_at'].timestamp())}:F>", inline=True)
+                
+                if ticket['claimed_by']:
+                    claimer = interaction.guild.get_member(int(ticket['claimed_by']))
+                    embed.add_field(
+                        name="Claimed by", 
+                        value=claimer.mention if claimer else "Unknown User", 
+                        inline=True
+                    )
+                
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                
+        except Exception as e:
+            logger.error(f"Error showing ticket info: {e}")
+            await interaction.response.send_message("❌ Failed to get ticket info.", ephemeral=True)
+    
+    async def is_ticket_owner(self, interaction: discord.Interaction) -> bool:
+        """Check if user owns this ticket"""
+        try:
+            async with interaction.client.db_pool.acquire() as conn:
+                result = await conn.fetchval("""
+                    SELECT user_id FROM tickets 
+                    WHERE ticket_id = $1 AND guild_id = $2
+                """, self.ticket_id, str(interaction.guild.id))
+                return result == str(interaction.user.id)
+        except:
+            return False
+    
+    async def is_support_staff(self, interaction: discord.Interaction) -> bool:
+        """Check if user is support staff"""
+        if interaction.user.guild_permissions.manage_channels:
+            return True
+        
+        try:
+            async with interaction.client.db_pool.acquire() as conn:
+                # Get panel for this ticket
+                ticket = await conn.fetchrow("""
+                    SELECT panel_id FROM tickets 
+                    WHERE ticket_id = $1 AND guild_id = $2
+                """, self.ticket_id, str(interaction.guild.id))
+                
+                if not ticket:
+                    return False
+                
+                # Get support team roles for this panel
+                panel = await conn.fetchrow("""
+                    SELECT support_team_ids FROM ticket_panels 
+                    WHERE guild_id = $1 AND panel_id = $2
+                """, str(interaction.guild.id), ticket['panel_id'])
+                
+                if panel and panel['support_team_ids']:
+                    team_ids = json.loads(panel['support_team_ids'])
+                    user_role_ids = [role.id for role in interaction.user.roles]
+                    return any(int(role_id) in user_role_ids for role_id in team_ids)
+                    
+        except:
+            pass
+        
+        return False
+
+class CloseTicketModal(discord.ui.Modal):
+    """Modal for closing tickets with transcript generation"""
+    def __init__(self, ticket_id: str):
+        super().__init__(title="Close Ticket")
+        self.ticket_id = ticket_id
+        
+        self.reason = discord.ui.TextInput(
+            label="Reason for closing (optional)",
+            placeholder="Why is this ticket being closed?",
+            required=False,
+            max_length=1000,
+            style=discord.TextStyle.paragraph
+        )
+        self.add_item(self.reason)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            await interaction.response.defer()
+            
+            # Generate transcript
+            transcript_data = await self.generate_transcript(interaction.channel)
+            
+            # Get ticket info for user feedback
+            async with interaction.client.db_pool.acquire() as conn:
+                ticket = await conn.fetchrow("""
+                    SELECT user_id FROM tickets 
+                    WHERE ticket_id = $1 AND guild_id = $2
+                """, self.ticket_id, str(interaction.guild.id))
+                
+                # Update ticket status with transcript
+                await conn.execute("""
+                    UPDATE tickets 
+                    SET status = 'closed', closed_by = $1, closed_at = $2, 
+                        close_reason = $3, transcript_url = $4
+                    WHERE ticket_id = $5
+                """, 
+                    str(interaction.user.id), datetime.utcnow(),
+                    self.reason.value or "No reason provided",
+                    f"transcript_{self.ticket_id}", self.ticket_id
+                )
+                
+                # Store transcript
+                if transcript_data:
+                    await conn.execute("""
+                        INSERT INTO ticket_transcripts (ticket_id, guild_id, transcript_data, created_at)
+                        VALUES ($1, $2, $3, $4)
+                    """, self.ticket_id, str(interaction.guild.id), transcript_data, datetime.utcnow())
+            
+            # Send closing message
+            embed = discord.Embed(
+                title="🔒 Ticket Closed",
+                description=f"This ticket has been closed by {interaction.user.mention}",
+                color=0xff0000
+            )
+            embed.add_field(name="Reason", value=self.reason.value or "No reason provided", inline=False)
+            embed.set_footer(text="This channel will be deleted in 30 seconds.")
+            
+            await interaction.followup.send(embed=embed)
+            
+            # Send feedback request to user
+            if ticket:
+                user = interaction.client.get_user(int(ticket['user_id']))
+                if user:
+                    try:
+                        feedback_embed = discord.Embed(
+                            title="📝 Rate Your Support Experience",
+                            description=f"Your ticket `{self.ticket_id}` has been resolved. How was our support?",
+                            color=0x00ff00
+                        )
+                        view = FeedbackView(self.ticket_id)
+                        await user.send(embed=feedback_embed, view=view)
+                    except:
+                        pass  # User might have DMs disabled
+            
+            # Delete channel after delay
+            await asyncio.sleep(30)
+            try:
+                await interaction.channel.delete(reason="Ticket closed")
+            except:
+                pass  # Channel might already be deleted
+                
+        except Exception as e:
+            logger.error(f"Error closing ticket: {e}")
+            await interaction.followup.send("❌ Failed to close ticket.", ephemeral=True)
+    
+    async def generate_transcript(self, channel) -> Optional[str]:
+        """Generate transcript of ticket conversation"""
+        try:
+            messages = []
+            async for message in channel.history(limit=1000, oldest_first=True):
+                if not message.author.bot or message.embeds:  # Include bot messages with embeds
+                    msg_data = {
+                        'timestamp': message.created_at.isoformat(),
+                        'author': message.author.display_name,
+                        'author_id': str(message.author.id),
+                        'content': message.content,
+                        'attachments': [att.url for att in message.attachments],
+                        'embeds': len(message.embeds) > 0
+                    }
+                    messages.append(msg_data)
+            
+            return json.dumps(messages, indent=2)
+            
+        except Exception as e:
+            logger.error(f"Error generating transcript: {e}")
+            return None
+
+class FeedbackView(discord.ui.View):
+    """User feedback collection after ticket closure"""
+    def __init__(self, ticket_id: str):
+        super().__init__(timeout=300)  # 5 minutes
+        self.ticket_id = ticket_id
+        
+        # Star rating buttons
+        for i in range(1, 6):
+            button = discord.ui.Button(
+                label=f"{i} ⭐",
+                style=discord.ButtonStyle.secondary,
+                custom_id=f"rating_{i}"
+            )
+            button.callback = self.create_rating_callback(i)
+            self.add_item(button)
+    
+    def create_rating_callback(self, rating: int):
+        async def rating_callback(interaction: discord.Interaction):
+            modal = FeedbackModal(self.ticket_id, rating)
+            await interaction.response.send_modal(modal)
+        return rating_callback
+
+class FeedbackModal(discord.ui.Modal):
+    """Modal for detailed feedback submission"""
+    def __init__(self, ticket_id: str, rating: int):
+        super().__init__(title=f"Feedback - {rating} Star{'s' if rating != 1 else ''}")
+        self.ticket_id = ticket_id
+        self.rating = rating
+        
+        self.comment = discord.ui.TextInput(
+            label="Additional comments (optional)",
+            placeholder="Tell us about your support experience...",
+            required=False,
+            max_length=1000,
+            style=discord.TextStyle.paragraph
+        )
+        self.add_item(self.comment)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            # Find the ticket (it might be in any guild the bot is in)
+            bot = interaction.client
+            if bot.db_pool:
+                async with bot.db_pool.acquire() as conn:
+                    await conn.execute("""
+                        UPDATE tickets 
+                        SET satisfaction = $1, satisfaction_comment = $2, feedback_at = $3
+                        WHERE ticket_id = $4
+                    """, self.rating, self.comment.value, datetime.utcnow(), self.ticket_id)
+            
+            embed = discord.Embed(
+                title="✅ Thank You for Your Feedback!",
+                description=f"Your {self.rating}-star rating has been recorded. We appreciate your feedback!",
+                color=0x00ff00
+            )
+            
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error submitting feedback: {e}")
+            await interaction.response.send_message("❌ Failed to submit feedback.", ephemeral=True)
 
 class TicketCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        
+        # Ensure tables exist
+        self.bot.loop.create_task(self.ensure_tables())
+    
+    async def ensure_tables(self):
+        """Ensure all necessary tables exist"""
+        if not self.bot.db_pool:
+            return
+            
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Create ticket_panels table if not exists
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS ticket_panels (
+                        id SERIAL PRIMARY KEY,
+                        guild_id TEXT NOT NULL,
+                        panel_id TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        emoji TEXT,
+                        category_id TEXT,
+                        support_team_ids TEXT,
+                        welcome_message TEXT DEFAULT 'Thank you for creating a ticket. Our team will assist you shortly.',
+                        has_form BOOLEAN DEFAULT FALSE,
+                        form_questions TEXT,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(guild_id, panel_id)
+                    )
+                """)
+                
+                # Create ticket_transcripts table if not exists
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS ticket_transcripts (
+                        id SERIAL PRIMARY KEY,
+                        ticket_id TEXT NOT NULL,
+                        guild_id TEXT NOT NULL,
+                        transcript_data TEXT NOT NULL,
+                        message_count INTEGER DEFAULT 0,
+                        participant_count INTEGER DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """)
+                
+                # Add new columns to tickets table if they don't exist
+                columns_to_add = [
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS claimed_by TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMP",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS panel_id TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS form_responses TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS transcript_url TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS close_reason TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS closed_by TEXT",
+                    "ALTER TABLE tickets ADD COLUMN IF NOT EXISTS feedback_at TIMESTAMP"
+                ]
+                
+                for column_query in columns_to_add:
+                    try:
+                        await conn.execute(column_query)
+                    except:
+                        pass  # Column might already exist
+                        
+                logger.info("Ticket tables ensured")
+                
+        except Exception as e:
+            logger.error(f"Error ensuring ticket tables: {e}")
+    
+    @app_commands.command(name="ticket-panel", description="Create and manage ticket panels - TicketsBot.net style")
+    @app_commands.describe(
+        action="Action to perform",
+        name="Panel identifier (unique name for this panel)",
+        title="Display title for the panel button",
+        description="Description of what this panel is for", 
+        category="Discord category to create tickets in",
+        emoji="Emoji for the button (optional)",
+        support_roles="Roles that handle tickets from this panel (comma-separated)"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="Create Panel", value="create"),
+        app_commands.Choice(name="Edit Panel", value="edit"), 
+        app_commands.Choice(name="Delete Panel", value="delete"),
+        app_commands.Choice(name="List Panels", value="list"),
+        app_commands.Choice(name="Deploy Panels", value="deploy")
+    ])
+    async def ticket_panel(
+        self,
+        interaction: discord.Interaction,
+        action: str,
+        name: str = None,
+        title: str = None,
+        description: str = None,
+        category: discord.CategoryChannel = None,
+        emoji: str = None,
+        support_roles: str = None
+    ):
+        if not interaction.user.guild_permissions.manage_guild:
+            await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
+            return
+            
+        await interaction.response.defer()
+        
+        try:
+            if action == "create":
+                await self.create_panel(interaction, name, title, description, category, emoji, support_roles)
+            elif action == "edit":
+                await self.edit_panel(interaction, name, title, description, category, emoji, support_roles)
+            elif action == "delete":
+                await self.delete_panel(interaction, name)
+            elif action == "list":
+                await self.list_panels(interaction)
+            elif action == "deploy":
+                await self.deploy_panels(interaction)
+                
+        except Exception as e:
+            logger.error(f"Error in ticket panel command: {e}")
+            await interaction.followup.send("❌ An error occurred. Please try again.", ephemeral=True)
+    
+    async def create_panel(self, interaction, name, title, description, category, emoji, support_roles):
+        if not name or not title:
+            await interaction.followup.send("❌ Panel name and title are required.", ephemeral=True)
+            return
+        
+        # Parse support roles
+        support_role_ids = []
+        if support_roles:
+            for role_name in support_roles.split(','):
+                role_name = role_name.strip()
+                role = discord.utils.get(interaction.guild.roles, name=role_name)
+                if role:
+                    support_role_ids.append(str(role.id))
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                await conn.execute("""
+                    INSERT INTO ticket_panels (
+                        guild_id, panel_id, title, description, category_id,
+                        emoji, support_team_ids, is_active, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    ON CONFLICT (guild_id, panel_id) DO UPDATE SET
+                        title = EXCLUDED.title,
+                        description = EXCLUDED.description,
+                        category_id = EXCLUDED.category_id,
+                        emoji = EXCLUDED.emoji,
+                        support_team_ids = EXCLUDED.support_team_ids,
+                        is_active = TRUE,
+                        updated_at = NOW()
+                """,
+                    str(interaction.guild.id), name.lower().replace(' ', '_'),
+                    title, description or f"Support tickets for {title}",
+                    str(category.id) if category else None,
+                    emoji, json.dumps(support_role_ids) if support_role_ids else None,
+                    True, datetime.utcnow()
+                )
+            
+            embed = discord.Embed(
+                title="✅ Ticket Panel Created",
+                description=f"Panel `{name}` has been created successfully!",
+                color=0x00ff00
+            )
+            embed.add_field(name="Title", value=title, inline=False)
+            embed.add_field(name="Panel ID", value=name, inline=True)
+            if description:
+                embed.add_field(name="Description", value=description[:1000], inline=False)
+            if category:
+                embed.add_field(name="Category", value=category.mention, inline=True)
+            if support_role_ids:
+                role_mentions = [f"<@&{role_id}>" for role_id in support_role_ids]
+                embed.add_field(name="Support Team", value=" ".join(role_mentions), inline=True)
+            embed.add_field(
+                name="Next Step", 
+                value="Use `/ticket-panel deploy` to deploy all panels to a channel", 
+                inline=False
+            )
+            
+            await interaction.followup.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error creating panel: {e}")
+            await interaction.followup.send("❌ Failed to create panel.", ephemeral=True)
+    
+    async def list_panels(self, interaction):
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                panels = await conn.fetch("""
+                    SELECT * FROM ticket_panels 
+                    WHERE guild_id = $1 AND is_active = TRUE
+                    ORDER BY created_at DESC
+                """, str(interaction.guild.id))
+            
+            if not panels:
+                await interaction.followup.send("📋 No ticket panels found. Create one with `/ticket-panel create`.", ephemeral=True)
+                return
+            
+            embed = discord.Embed(
+                title="🎫 Ticket Panels",
+                description=f"Found {len(panels)} active panel(s)",
+                color=0x00ff00
+            )
+            
+            for panel in panels:
+                value_parts = [f"**Title:** {panel['title']}"]
+                if panel['description']:
+                    value_parts.append(f"**Description:** {panel['description']}")
+                if panel['category_id']:
+                    category = interaction.guild.get_channel(int(panel['category_id']))
+                    if category:
+                        value_parts.append(f"**Category:** {category.mention}")
+                if panel['support_team_ids']:
+                    try:
+                        team_ids = json.loads(panel['support_team_ids'])
+                        roles = [interaction.guild.get_role(int(rid)) for rid in team_ids]
+                        valid_roles = [f"<@&{r.id}>" for r in roles if r]
+                        if valid_roles:
+                            value_parts.append(f"**Support Team:** {' '.join(valid_roles)}")
+                    except:
+                        pass
+                
+                embed.add_field(
+                    name=f"{panel['emoji'] or '🎫'} {panel['panel_id']}",
+                    value="\n".join(value_parts),
+                    inline=False
+                )
+            
+            embed.set_footer(text="Use `/ticket-panel deploy` to deploy panels to a channel")
+            await interaction.followup.send(embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error listing panels: {e}")
+            await interaction.followup.send("❌ Failed to list panels.", ephemeral=True)
+    
+    async def deploy_panels(self, interaction):
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                panels = await conn.fetch("""
+                    SELECT * FROM ticket_panels 
+                    WHERE guild_id = $1 AND is_active = TRUE
+                    ORDER BY created_at ASC
+                """, str(interaction.guild.id))
+            
+            if not panels:
+                await interaction.followup.send("❌ No ticket panels to deploy. Create one first.", ephemeral=True)
+                return
+            
+            # Convert to list of dicts for the view
+            panel_data = []
+            for panel in panels:
+                panel_data.append({
+                    'panel_id': panel['panel_id'],
+                    'title': panel['title'],
+                    'emoji': panel['emoji']
+                })
+            
+            embed = discord.Embed(
+                title="🎫 Support Tickets",
+                description="Click a button below to create a ticket for the relevant category. Our support team will assist you promptly.",
+                color=0x00ff00
+            )
+            
+            for panel in panels:
+                embed.add_field(
+                    name=f"{panel['emoji'] or '🎫'} {panel['title']}",
+                    value=panel['description'] or "Support tickets",
+                    inline=True
+                )
+            
+            embed.set_footer(text="✨ Powered by NexGuard Advanced Ticket System")
+            
+            view = TicketPanelView(panel_data)
+            await interaction.followup.send(embed=embed, view=view)
+            
+            # Send success message
+            await interaction.followup.send(
+                f"✅ Deployed {len(panels)} ticket panel(s)! Users can now create tickets using the buttons above.",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            logger.error(f"Error deploying panels: {e}")
+            await interaction.followup.send("❌ Failed to deploy panels.", ephemeral=True)
+    
+    async def delete_panel(self, interaction, name):
+        if not name:
+            await interaction.followup.send("❌ Panel name is required.", ephemeral=True)
+            return
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                result = await conn.execute("""
+                    UPDATE ticket_panels 
+                    SET is_active = FALSE 
+                    WHERE guild_id = $1 AND panel_id = $2
+                """, str(interaction.guild.id), name.lower().replace(' ', '_'))
+            
+            if result == "UPDATE 1":
+                await interaction.followup.send(f"✅ Panel `{name}` has been deleted.", ephemeral=True)
+            else:
+                await interaction.followup.send(f"❌ Panel `{name}` not found.", ephemeral=True)
+                
+        except Exception as e:
+            logger.error(f"Error deleting panel: {e}")
+            await interaction.followup.send("❌ Failed to delete panel.", ephemeral=True)
+    
+    @app_commands.command(name="ticket-stats", description="View ticket statistics and analytics")
+    @app_commands.describe(
+        timeframe="Time period to analyze"
+    )
+    @app_commands.choices(timeframe=[
+        app_commands.Choice(name="Last 7 days", value="7d"),
+        app_commands.Choice(name="Last 30 days", value="30d"), 
+        app_commands.Choice(name="All time", value="all")
+    ])
+    async def ticket_stats(self, interaction: discord.Interaction, timeframe: str = "30d"):
+        if not interaction.user.guild_permissions.manage_guild:
+            await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
+            return
+            
+        await interaction.response.defer()
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Base stats
+                total_tickets = await conn.fetchval("""
+                    SELECT COUNT(*) FROM tickets WHERE guild_id = $1
+                """, str(interaction.guild.id))
+                
+                open_tickets = await conn.fetchval("""
+                    SELECT COUNT(*) FROM tickets 
+                    WHERE guild_id = $1 AND status IN ('open', 'claimed', 'in-progress')
+                """, str(interaction.guild.id))
+                
+                closed_tickets = await conn.fetchval("""
+                    SELECT COUNT(*) FROM tickets 
+                    WHERE guild_id = $1 AND status = 'closed'
+                """, str(interaction.guild.id))
+                
+                # Average satisfaction
+                avg_satisfaction = await conn.fetchval("""
+                    SELECT AVG(satisfaction) FROM tickets 
+                    WHERE guild_id = $1 AND satisfaction IS NOT NULL
+                """, str(interaction.guild.id))
+                
+                # Panel breakdown
+                panel_stats = await conn.fetch("""
+                    SELECT panel_id, COUNT(*) as count
+                    FROM tickets 
+                    WHERE guild_id = $1 
+                    GROUP BY panel_id 
+                    ORDER BY count DESC
+                """, str(interaction.guild.id))
+                
+                embed = discord.Embed(
+                    title="📊 Ticket Statistics",
+                    color=0x00ff00
+                )
+                
+                embed.add_field(name="📈 Total Tickets", value=str(total_tickets or 0), inline=True)
+                embed.add_field(name="🟢 Open Tickets", value=str(open_tickets or 0), inline=True)  
+                embed.add_field(name="🔴 Closed Tickets", value=str(closed_tickets or 0), inline=True)
+                
+                if avg_satisfaction:
+                    stars = "⭐" * round(float(avg_satisfaction))
+                    embed.add_field(
+                        name="💯 Average Rating", 
+                        value=f"{avg_satisfaction:.1f}/5 {stars}", 
+                        inline=True
+                    )
+                else:
+                    embed.add_field(name="💯 Average Rating", value="No ratings yet", inline=True)
+                
+                if total_tickets and closed_tickets:
+                    resolution_rate = (closed_tickets / total_tickets) * 100
+                    embed.add_field(name="✅ Resolution Rate", value=f"{resolution_rate:.1f}%", inline=True)
+                
+                # Panel breakdown
+                if panel_stats:
+                    panel_text = []
+                    for panel in panel_stats[:5]:  # Top 5 panels
+                        panel_text.append(f"• {panel['panel_id']}: {panel['count']} tickets")
+                    embed.add_field(
+                        name="📋 Top Panels", 
+                        value="\n".join(panel_text) or "No data",
+                        inline=False
+                    )
+                
+                embed.set_footer(text=f"Timeframe: {timeframe} | Generated by NexGuard")
+                embed.timestamp = datetime.utcnow()
+                
+                await interaction.followup.send(embed=embed)
+                
+        except Exception as e:
+            logger.error(f"Error getting ticket stats: {e}")
+            await interaction.followup.send("❌ Failed to get ticket statistics.", ephemeral=True)
+
+async def setup(bot):
+    await bot.add_cog(TicketCommands(bot))
+    logger.info("TicketsBot.net-style ticket system loaded")
     
     async def get_ticket_categories(self, guild_id: str):
         """Get all ticket categories for a guild"""

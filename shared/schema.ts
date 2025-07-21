@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -182,10 +182,18 @@ export const tickets = pgTable("tickets", {
   subject: text("subject").notNull(),
   description: text("description"), // Detailed description of the issue
   category: text("category").notNull(), // "general", "bug", "feature", "billing", "technical"
-  status: text("status").default("open").notNull(), // "open", "in-progress", "pending", "resolved", "closed"
+  status: text("status").default("open").notNull(), // "open", "claimed", "in-progress", "pending", "resolved", "closed"
   priority: text("priority").default("medium").notNull(), // "low", "medium", "high", "urgent", "critical"
   assignedTo: text("assigned_to"),
   assignedBy: text("assigned_by"),
+  claimedBy: text("claimed_by"), // Staff member who claimed the ticket
+  claimedAt: timestamp("claimed_at"), // When ticket was claimed
+  panelId: text("panel_id"), // Which panel was used to create this ticket
+  formResponses: text("form_responses"), // JSON string of form responses
+  transcriptUrl: text("transcript_url"), // URL to transcript after closing
+  closeReason: text("close_reason"), // Reason for closing
+  closedBy: text("closed_by"), // Who closed the ticket
+  feedbackAt: timestamp("feedback_at"), // When user provided feedback
   tags: text("tags").array().default([]), // Custom tags for organization
   slaDeadline: timestamp("sla_deadline"), // SLA deadline for response/resolution
   firstResponseAt: timestamp("first_response_at"), // When staff first responded
@@ -196,6 +204,48 @@ export const tickets = pgTable("tickets", {
   isArchived: boolean("is_archived").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   closedAt: timestamp("closed_at"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Ticket Panels - TicketsBot.net style reaction panels
+export const ticketPanels = pgTable("ticket_panels", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  panelId: text("panel_id").notNull(), // Unique panel identifier
+  title: text("title").notNull(),
+  description: text("description"),
+  emoji: text("emoji"), // Button emoji
+  categoryId: text("category_id"), // Discord category to create tickets in
+  supportTeamIds: text("support_team_ids"), // JSON array of role IDs that handle this panel
+  welcomeMessage: text("welcome_message").default("Thank you for creating a ticket. Our team will assist you shortly."),
+  hasForm: boolean("has_form").default(false), // Whether this panel has a form
+  formQuestions: text("form_questions"), // JSON array of form questions
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Ticket Transcripts - Auto-saved conversation history
+export const ticketTranscripts = pgTable("ticket_transcripts", {
+  id: serial("id").primaryKey(),
+  ticketId: text("ticket_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  transcriptData: text("transcript_data").notNull(), // JSON string of all messages
+  messageCount: integer("message_count").default(0),
+  participantCount: integer("participant_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Support Teams - Different teams for different ticket types
+export const supportTeams = pgTable("support_teams", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  teamName: text("team_name").notNull(),
+  description: text("description"),
+  roleIds: text("role_ids").notNull(), // JSON array of Discord role IDs
+  permissions: text("permissions").default("[]"), // JSON array of permissions
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -321,6 +371,9 @@ export const insertCommandSchema = createInsertSchema(commands);
 export const insertTicketSchema = createInsertSchema(tickets);
 export const insertTicketNoteSchema = createInsertSchema(ticketNotes);
 export const insertTicketTemplateSchema = createInsertSchema(ticketTemplates);
+export const insertTicketPanelSchema = createInsertSchema(ticketPanels);
+export const insertTicketTranscriptSchema = createInsertSchema(ticketTranscripts);
+export const insertSupportTeamSchema = createInsertSchema(supportTeams);
 export const insertModerationLogSchema = createInsertSchema(moderationLogs);
 export const insertBanListSchema = createInsertSchema(banList);
 export const insertWarnHistorySchema = createInsertSchema(warnHistory);
@@ -344,6 +397,9 @@ export type Command = typeof commands.$inferSelect;
 export type Ticket = typeof tickets.$inferSelect;
 export type TicketNote = typeof ticketNotes.$inferSelect;
 export type TicketTemplate = typeof ticketTemplates.$inferSelect;
+export type TicketPanel = typeof ticketPanels.$inferSelect;
+export type TicketTranscript = typeof ticketTranscripts.$inferSelect;
+export type SupportTeam = typeof supportTeams.$inferSelect;
 export type ModerationLog = typeof moderationLogs.$inferSelect;
 export type BanList = typeof banList.$inferSelect;
 export type WarnHistory = typeof warnHistory.$inferSelect;
