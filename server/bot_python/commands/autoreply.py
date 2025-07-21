@@ -176,9 +176,12 @@ class AutoReply(commands.Cog):
             return
         
         try:
+            # Defer immediately to prevent timeout
+            await interaction.response.defer()
+            
             async with self.bot.db_pool.acquire() as conn:
                 rules = await conn.fetch('''
-                    SELECT id, trigger, is_active, trigger_type, created_at, created_by_name
+                    SELECT id, trigger, is_active, trigger_type, created_at, created_by_name, rule_name
                     FROM auto_replies 
                     WHERE guild_id = $1
                     ORDER BY created_at DESC
@@ -191,7 +194,7 @@ class AutoReply(commands.Cog):
                     description="No auto-reply rules found. Use `/autoreply-create` to create one.",
                     color=COLORS['INFO']
                 )
-                await interaction.response.send_message(embed=embed)
+                await interaction.followup.send(embed=embed)
                 return
             
             embed = discord.Embed(
@@ -202,27 +205,22 @@ class AutoReply(commands.Cog):
             
             for rule in rules:
                 status = f"{EMOJIS['SUCCESS']} Enabled" if rule['is_active'] else f"{EMOJIS['ERROR']} Disabled"
+                rule_name = rule['rule_name'] or f"Rule #{rule['id']}"
                 embed.add_field(
-                    name=f"#{rule['id']} - {rule['trigger'][:20]}{'...' if len(rule['trigger']) > 20 else ''}",
-                    value=f"**Keywords:** {rule['trigger'][:50]}{'...' if len(rule['trigger']) > 50 else ''}\n**Status:** {status}\n**Match:** {rule['trigger_type']}\n**Created by:** {rule['created_by_name']}",
+                    name=f"{rule_name} - {status}",
+                    value=f"**Keywords:** {rule['trigger'][:50]}{'...' if len(rule['trigger']) > 50 else ''}\n**Match:** {rule['trigger_type']}\n**Created by:** {rule['created_by_name']}",
                     inline=False
                 )
             
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
             
         except Exception as e:
             logger.error(f"Error listing auto-reply rules: {e}")
             await self.bot.log_error(interaction.guild.id, "Auto-Reply List Error", str(e), "autoreply-list command")
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
-                    ephemeral=True
-                )
-            else:
-                await interaction.followup.send(
-                    f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
-                    ephemeral=True
-                )
+            await interaction.followup.send(
+                f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
+                ephemeral=True
+            )
     
     @app_commands.command(name="autoreply-toggle", description="Enable or disable an auto-reply rule")
     @app_commands.describe(rule_id="ID of the auto-reply rule to toggle")
