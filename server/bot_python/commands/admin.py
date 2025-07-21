@@ -297,28 +297,18 @@ class AdminCommands(commands.Cog):
             # Get basic guild config
             config = await self.bot.get_guild_config(guild_id)
             
-            # Get automod settings from database
-            automod_settings = {}
+            # Get additional settings from database (safely handle missing columns)
             if self.bot.db_pool:
                 async with self.bot.db_pool.acquire() as conn:
-                    # Get automod settings
-                    automod_result = await conn.fetchrow('''
-                        SELECT automod_spam_enabled, automod_spam_limit, automod_spam_window,
-                               automod_links_enabled, automod_badwords_enabled, automod_badwords_strict
-                        FROM guilds WHERE id = $1
+                    # Get all available guild data
+                    guild_result = await conn.fetchrow('''
+                        SELECT * FROM guilds WHERE id = $1
                     ''', guild_id)
                     
-                    if automod_result:
-                        automod_settings = dict(automod_result)
-                    
-                    # Get role settings
-                    role_result = await conn.fetchrow('''
-                        SELECT moderator_role_id, admin_role_id
-                        FROM guilds WHERE id = $1
-                    ''', guild_id)
-                    
-                    if role_result:
-                        config.update(dict(role_result))
+                    if guild_result:
+                        # Merge guild data into config
+                        guild_data = dict(guild_result)
+                        config.update(guild_data)
             
             embed = discord.Embed(
                 title=f"🛠️ Server Settings - {interaction.guild.name}",
@@ -357,9 +347,10 @@ class AdminCommands(commands.Cog):
             # Role Configuration (including new hierarchical roles)
             roles_config = []
             
-            # Mod role (basic moderation)
-            if config.get('moderator_role_id'):
-                mod_role = interaction.guild.get_role(int(config.get('moderator_role_id')))
+            # Mod role (basic moderation) - check both possible column names
+            mod_role_id = config.get('moderator_role_id') or config.get('mod_role_id')
+            if mod_role_id:
+                mod_role = interaction.guild.get_role(int(mod_role_id))
                 roles_config.append(f"**Moderation Role:** {mod_role.mention if mod_role else '⚠️ Role not found'}")
             else:
                 roles_config.append("**Moderation Role:** ❌ Not set (using Discord defaults)")
@@ -382,31 +373,38 @@ class AdminCommands(commands.Cog):
                 inline=False
             )
             
-            # AutoMod Settings (detailed status)
+            # AutoMod Settings (check if columns exist)
             automod_status = []
             
-            # Spam Protection
-            spam_enabled = automod_settings.get('automod_spam_enabled', False)
-            if spam_enabled:
-                spam_limit = automod_settings.get('automod_spam_limit', 5)
-                spam_window = automod_settings.get('automod_spam_window', 10)
-                automod_status.append(f"**Spam Protection:** ✅ Enabled")
-                automod_status.append(f"  └ Limit: {spam_limit} messages per {spam_window} seconds")
+            if 'automod_spam_enabled' in config:
+                # Spam Protection
+                spam_enabled = config.get('automod_spam_enabled', False)
+                if spam_enabled:
+                    spam_limit = config.get('automod_spam_limit', 5)
+                    spam_window = config.get('automod_spam_window', 10)
+                    automod_status.append(f"**Spam Protection:** ✅ Enabled")
+                    automod_status.append(f"  └ Limit: {spam_limit} messages per {spam_window} seconds")
+                else:
+                    automod_status.append("**Spam Protection:** ❌ Disabled")
+                
+                # Link Blocking
+                links_enabled = config.get('automod_links_enabled', False)
+                automod_status.append(f"**Link Blocking:** {'✅ Enabled' if links_enabled else '❌ Disabled'}")
+                
+                # Bad Words Filter
+                badwords_enabled = config.get('automod_badwords_enabled', False)
+                if badwords_enabled:
+                    strict_mode = config.get('automod_badwords_strict', False)
+                    automod_status.append(f"**Bad Words Filter:** ✅ Enabled")
+                    automod_status.append(f"  └ Strict Mode: {'✅ On' if strict_mode else '❌ Off'}")
+                else:
+                    automod_status.append("**Bad Words Filter:** ❌ Disabled")
             else:
-                automod_status.append("**Spam Protection:** ❌ Disabled")
-            
-            # Link Blocking
-            links_enabled = automod_settings.get('automod_links_enabled', False)
-            automod_status.append(f"**Link Blocking:** {'✅ Enabled' if links_enabled else '❌ Disabled'}")
-            
-            # Bad Words Filter
-            badwords_enabled = automod_settings.get('automod_badwords_enabled', False)
-            if badwords_enabled:
-                strict_mode = automod_settings.get('automod_badwords_strict', False)
-                automod_status.append(f"**Bad Words Filter:** ✅ Enabled")
-                automod_status.append(f"  └ Strict Mode: {'✅ On' if strict_mode else '❌ Off'}")
-            else:
-                automod_status.append("**Bad Words Filter:** ❌ Disabled")
+                # Check for basic automod_enabled column
+                automod_enabled = config.get('automod_enabled', False)
+                automod_status.append(f"**AutoMod:** {'✅ Enabled' if automod_enabled else '❌ Disabled'}")
+                if not automod_enabled:
+                    automod_status.append("Use `/automod-config` to configure protection")
             
             embed.add_field(
                 name="🛡️ AutoMod Protection",
