@@ -154,6 +154,7 @@ class AutoReply(commands.Cog):
             
         except Exception as e:
             logger.error(f"Error creating auto-reply rule: {e}")
+            await self.bot.log_error(interaction.guild.id, "Auto-Reply Creation Error", str(e), "autoreply-create command")
             await interaction.response.send_message(
                 f"{EMOJIS['ERROR']} Failed to create auto-reply rule: {str(e)}", 
                 ephemeral=True
@@ -470,6 +471,7 @@ class AutoReply(commands.Cog):
                             
         except Exception as e:
             logger.error(f"Error processing auto-reply: {e}")
+            await self.bot.log_error(message.guild.id, "Auto-Reply Message Processing Error", str(e), "on_message autoreply handler")
 
     async def process_auto_replies(self, message):
         """Process messages for auto-reply triggers"""
@@ -483,7 +485,7 @@ class AutoReply(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 # Get active auto-reply rules for this guild
                 rules = await conn.fetch('''
-                    SELECT id, trigger, response_title, response_description, response_color, trigger_type, cooldown
+                    SELECT id, trigger, response, trigger_type
                     FROM auto_replies 
                     WHERE guild_id = $1 AND is_active = true
                 ''', str(message.guild.id))
@@ -504,37 +506,40 @@ class AutoReply(commands.Cog):
                         match_found = content.endswith(trigger)
                     
                     if match_found:
-                        # Check cooldown if applicable
-                        if rule['cooldown'] and rule['cooldown'] > 0:
-                            last_triggered = await conn.fetchval('''
-                                SELECT MAX(triggered_at) FROM auto_reply_logs 
-                                WHERE rule_id = $1 AND guild_id = $2
-                            ''', rule['id'], str(message.guild.id))
+                        try:
+                            # Parse response data
+                            response_data = json.loads(rule['response'])
                             
-                            if last_triggered:
-                                cooldown_end = last_triggered + timedelta(seconds=rule['cooldown'])
-                                if datetime.utcnow() < cooldown_end:
-                                    continue  # Still in cooldown
-                        
-                        # Send auto-reply
-                        embed = discord.Embed(
-                            title=rule['response_title'] or "Auto-Reply",
-                            description=rule['response_description'] or "Automated response triggered",
-                            color=int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
-                        )
-                        
-                        await message.reply(embed=embed)
-                        
-                        # Log the trigger
-                        await conn.execute('''
-                            INSERT INTO auto_reply_logs (rule_id, guild_id, user_id, triggered_at, message_content)
-                            VALUES ($1, $2, $3, $4, $5)
-                        ''', rule['id'], str(message.guild.id), str(message.author.id), datetime.utcnow(), message.content[:500])
+                            # Create embed
+                            embed = discord.Embed(
+                                title=response_data.get('title', 'Auto-Reply'),
+                                description=response_data.get('description', 'Automated response triggered'),
+                                color=response_data.get('color', COLORS['INFO'])
+                            )
+                            
+                            if response_data.get('timestamp'):
+                                embed.timestamp = datetime.utcnow()
+                            
+                            if response_data.get('footer'):
+                                footer_data = response_data['footer']
+                                embed.set_footer(
+                                    text=footer_data.get('text', ''),
+                                    icon_url=footer_data.get('icon_url')
+                                )
+                            
+                            await message.reply(embed=embed)
+                            logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
+                            break  # Only trigger first matching rule
+                            
+                        except Exception as e:
+                            logger.error(f"Error sending auto-reply: {e}")
+                            await self.bot.log_error(message.guild.id, "Auto-Reply Error", str(e), f"Processing rule: {rule['trigger']}")
                         
                         break  # Only trigger one rule per message
                         
         except Exception as e:
             logger.error(f"Error processing auto-reply: {e}")
+            await self.bot.log_error(message.guild.id, "Auto-Reply Processing Error", str(e), "process_auto_replies method")
 
 async def setup(bot):
     await bot.add_cog(AutoReply(bot))

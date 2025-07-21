@@ -135,6 +135,8 @@ export const guilds = pgTable("guilds", {
   moderatorRoleId: text("moderator_role_id"),
   muteRoleId: text("mute_role_id"),
   logChannelId: text("log_channel_id"),
+  errorLogChannelId: text("error_log_channel_id"),
+  errorLoggingEnabled: boolean("error_logging_enabled").default(false).notNull(),
   welcomeChannelId: text("welcome_channel_id"),
   welcomeEnabled: boolean("welcome_enabled").default(false).notNull(),
   welcomeMessage: text("welcome_message").default("Welcome to {server}, {user}! You are our #{member_count} member."),

@@ -35,7 +35,8 @@ class AdminCommands(commands.Cog):
         app_commands.Choice(name="moderation", value="moderation"),
         app_commands.Choice(name="welcome", value="welcome"),
         app_commands.Choice(name="automod", value="automod"),
-        app_commands.Choice(name="logging", value="logging")
+        app_commands.Choice(name="logging", value="logging"),
+        app_commands.Choice(name="error-logging", value="error-logging")
     ])
     async def configure(self, interaction: discord.Interaction, setting: str, value: str):
         """Configure server settings"""
@@ -79,6 +80,19 @@ class AdminCommands(commands.Cog):
                     if channel and channel.guild.id == interaction.guild.id:
                         await self.bot.update_guild_config(guild_id, log_channel_id=channel_id)
                         await interaction.response.send_message(f"✅ Logging channel set to {channel.mention}.", ephemeral=True)
+                    else:
+                        await interaction.response.send_message("❌ Invalid channel. Please mention a valid channel.", ephemeral=True)
+                except ValueError:
+                    await interaction.response.send_message("❌ Invalid channel ID. Please mention a valid channel.", ephemeral=True)
+                    
+            elif setting == "error-logging":
+                # Parse channel mention or ID
+                channel_id = value.replace('<#', '').replace('>', '')
+                try:
+                    channel = self.bot.get_channel(int(channel_id))
+                    if channel and channel.guild.id == interaction.guild.id:
+                        await self.bot.update_guild_config(guild_id, error_log_channel_id=channel_id)
+                        await interaction.response.send_message(f"✅ Error logging channel set to {channel.mention}.", ephemeral=True)
                     else:
                         await interaction.response.send_message("❌ Invalid channel. Please mention a valid channel.", ephemeral=True)
                 except ValueError:
@@ -466,6 +480,99 @@ class AdminCommands(commands.Cog):
             except:
                 pass
 
+
+    @app_commands.command(name="errorlog", description="Configure error logging for this server")
+    @app_commands.describe(
+        action="Action to perform",
+        channel="Channel to send error logs to"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
+        app_commands.Choice(name="set", value="set"),
+        app_commands.Choice(name="view", value="view")
+    ])
+    async def errorlog(self, interaction: discord.Interaction, action: str, channel: discord.TextChannel = None):
+        """Configure error logging channel"""
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
+            return
+        
+        try:
+            guild_id = str(interaction.guild.id)
+            guild_config = await self.bot.get_guild_config(guild_id)
+            
+            if action == "enable":
+                if not guild_config.get('error_log_channel_id'):
+                    await interaction.response.send_message("❌ Please set an error log channel first using `/errorlog set #channel`.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, error_logging_enabled=True)
+                channel = self.bot.get_channel(int(guild_config['error_log_channel_id']))
+                await interaction.response.send_message(f"✅ Error logging enabled! Errors will be sent to {channel.mention}.", ephemeral=True)
+                
+            elif action == "disable":
+                await self.bot.update_guild_config(guild_id, error_logging_enabled=False)
+                await interaction.response.send_message("❌ Error logging disabled.", ephemeral=True)
+                
+            elif action == "set":
+                if not channel:
+                    await interaction.response.send_message("❌ Please specify a channel for error logging.", ephemeral=True)
+                    return
+                
+                await self.bot.update_guild_config(guild_id, error_log_channel_id=str(channel.id), error_logging_enabled=True)
+                await interaction.response.send_message(f"✅ Error logging channel set to {channel.mention} and enabled!", ephemeral=True)
+                
+            elif action == "view":
+                error_channel_id = guild_config.get('error_log_channel_id')
+                error_enabled = guild_config.get('error_logging_enabled', False)
+                
+                embed = discord.Embed(
+                    title="🚨 Error Logging Configuration",
+                    color=0xFF4444,
+                    timestamp=datetime.utcnow()
+                )
+                
+                if error_channel_id:
+                    channel = self.bot.get_channel(int(error_channel_id))
+                    embed.add_field(
+                        name="Error Log Channel",
+                        value=channel.mention if channel else f"<#{error_channel_id}> (Not found)",
+                        inline=False
+                    )
+                else:
+                    embed.add_field(
+                        name="Error Log Channel",
+                        value="Not configured",
+                        inline=False
+                    )
+                
+                embed.add_field(
+                    name="Status",
+                    value="🟢 Enabled" if error_enabled else "🔴 Disabled",
+                    inline=False
+                )
+                
+                embed.set_footer(text=f"Server: {interaction.guild.name}")
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            # Log command usage
+            if not interaction.response.is_done():
+                parameters = {"action": action}
+                if channel:
+                    parameters["channel"] = channel.name
+                await self.bot.log_command_usage(interaction, "errorlog", parameters)
+                    
+        except Exception as e:
+            logger.error(f"Error configuring error logging: {e}")
+            await self.bot.log_error(interaction.guild.id, "ErrorLog Command Error", str(e), "errorlog command")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to configure error logging. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to configure error logging. Please try again.", ephemeral=True)
+            except:
+                pass
 
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))

@@ -455,6 +455,75 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to update bot status: {e}")
     
+    async def log_error(self, guild_id: int, error_title: str, error_message: str, command_context: str = None):
+        """Log errors to the configured error log channel"""
+        try:
+            guild_config = await self.get_guild_config(str(guild_id))
+            error_channel_id = guild_config.get('error_log_channel_id')
+            error_logging_enabled = guild_config.get('error_logging_enabled', False)
+            
+            if not error_channel_id or not error_logging_enabled:
+                return  # No error logging configured or disabled
+            
+            error_channel = self.get_channel(int(error_channel_id))
+            if not error_channel:
+                return  # Channel doesn't exist or bot can't access it
+            
+            # Create detailed error embed
+            embed = discord.Embed(
+                title=f"🚨 {error_title}",
+                color=0xFF4444,
+                timestamp=datetime.utcnow()
+            )
+            
+            # Truncate error message if too long
+            if len(error_message) > 1024:
+                error_message = error_message[:1021] + "..."
+            
+            embed.add_field(
+                name="Error Details",
+                value=f"```\n{error_message}\n```",
+                inline=False
+            )
+            
+            if command_context:
+                embed.add_field(
+                    name="Context",
+                    value=command_context,
+                    inline=True
+                )
+            
+            embed.add_field(
+                name="Timestamp",
+                value=f"{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC",
+                inline=True
+            )
+            
+            guild = self.get_guild(guild_id)
+            if guild:
+                embed.add_field(
+                    name="Server",
+                    value=f"{guild.name} (`{guild.id}`)",
+                    inline=True
+                )
+            
+            embed.add_field(
+                name="Bot Status",
+                value=f"Guilds: {len(self.guilds)}\nUsers: {sum(guild.member_count for guild in self.guilds)}",
+                inline=True
+            )
+            
+            embed.set_footer(
+                text="NexGuard Error Logging System",
+                icon_url=self.user.display_avatar.url if self.user else None
+            )
+            
+            await error_channel.send(embed=embed)
+            logger.info(f"📝 Error logged to #{error_channel.name} in {guild.name if guild else guild_id}")
+            
+        except Exception as log_error:
+            logger.error(f"Failed to log error to channel: {log_error}")
+    
     async def log_command_usage(self, interaction: discord.Interaction, command_name: str, parameters: dict = None, result: str = "Success"):
         """Log command usage to the guild's configured logging channel"""
         try:
