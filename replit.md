@@ -350,6 +350,13 @@ The system is a complete Discord bot with integrated website that:
 - July 21, 2025: Made settings command robust to handle varying database schemas with proper fallback handling
 - July 21, 2025: Settings command uses proper defer() handling to prevent Discord interaction timeouts
 - July 21, 2025: Bot successfully operational across 9 servers with 174+ users and all 49 commands functional
+- July 21, 2025: **NEW AUTOMOD FEATURES** - Added caps lock filter and mention limits protection commands
+- July 21, 2025: Implemented `/automod-caps` command with configurable threshold percentage (10-100%) for caps lock detection
+- July 21, 2025: Added `/automod-mentions` command with configurable limits (1-20) for @user, @role, @everyone, @here mentions
+- July 21, 2025: Enhanced automod enforcement to automatically detect and delete excessive caps and mention spam
+- July 21, 2025: Updated `/automod-config` and `/settings` commands to display new caps and mention limit protection status
+- July 21, 2025: Bot now has 51+ commands including comprehensive caps lock and mention spam protection across all automod features
+- July 21, 2025: All automod features bypass users with Manage Messages permission for moderator flexibility
 - July 21, 2025: **AUTO-REPLY SYSTEM PERFECTED** - Fixed remaining duplicate issues by removing duplicate keywords from triggers
 - July 21, 2025: Added duplicate rule prevention tracking to ensure only one response per matching message
 - July 21, 2025: Fixed autoreply-list command interaction timeouts with proper defer() handling

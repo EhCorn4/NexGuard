@@ -130,7 +130,7 @@ class AutoModCog(commands.Cog):
             
             embed.add_field(
                 name="📚 Available Commands",
-                value="• `/automod-spam` - Configure spam protection\n• `/automod-links` - Configure link filtering\n• `/automod-badwords` - Configure bad words filter\n• `/automod-words` - Manage custom words\n• `/automod-reset` - Reset all settings",
+                value="• `/automod-spam` - Configure spam protection\n• `/automod-links` - Configure link filtering\n• `/automod-badwords` - Configure bad words filter\n• `/automod-caps` - Configure caps lock filter\n• `/automod-mentions` - Configure mention limits\n• `/automod-words` - Manage custom words\n• `/automod-reset` - Reset all settings",
                 inline=False
             )
             
@@ -630,6 +630,16 @@ class AutoModCog(commands.Cog):
                 color=COLORS['WARNING']
             )
             
+            # Reset database columns too
+            if self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    await conn.execute('''
+                        UPDATE guilds SET 
+                            automod_caps_enabled = $1,
+                            automod_mentions_enabled = $1
+                        WHERE id = $2
+                    ''', False, str(interaction.guild.id))
+            
             embed.add_field(
                 name="What was reset:",
                 value="• Spam Protection\n• Link Filtering\n• Bad Words Filter\n• Custom Words List\n• Caps Lock Filter\n• Mention Limits",
@@ -681,6 +691,10 @@ class AutoModCog(commands.Cog):
             if await self.check_link_filter(message, settings.get('links', {})):
                 return True
             if await self.check_badwords_filter(message, settings.get('badwords', {})):
+                return True
+            if await self.check_caps_filter(message):
+                return True
+            if await self.check_mentions_filter(message):
                 return True
                 
         except Exception as e:
@@ -932,6 +946,338 @@ class AutoModCog(commands.Cog):
         
         except Exception as e:
             logger.error(f"Error taking automod action: {e}")
+
+    async def check_caps_filter(self, message) -> bool:
+        """Check message for excessive caps lock"""
+        if not self.bot.db_pool:
+            return False
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                config = await conn.fetchrow('''
+                    SELECT automod_caps_enabled, automod_caps_threshold 
+                    FROM guilds WHERE id = $1
+                ''', str(message.guild.id))
+                
+                if not config or not config['automod_caps_enabled']:
+                    return False
+                
+                threshold = config['automod_caps_threshold'] or 70
+                
+                # Calculate caps percentage
+                text = message.content
+                if len(text) < 3:  # Skip very short messages
+                    return False
+                
+                # Count letters only (ignore numbers, symbols, spaces)
+                letters = [c for c in text if c.isalpha()]
+                if len(letters) < 3:  # Need at least 3 letters to check
+                    return False
+                
+                caps_count = sum(1 for c in letters if c.isupper())
+                caps_percentage = (caps_count / len(letters)) * 100
+                
+                if caps_percentage >= threshold:
+                    # Take action
+                    await self.take_automod_action(message, "caps", f"Excessive caps ({caps_percentage:.1f}% >= {threshold}%)")
+                    
+                    # Log to configured channel
+                    await self.log_automod_action(
+                        message, 
+                        "Caps Lock Filter", 
+                        f"Message contained {caps_percentage:.1f}% caps (threshold: {threshold}%)",
+                        COLORS['WARNING']
+                    )
+                    return True
+                    
+        except Exception as e:
+            logger.error(f"Error checking caps filter: {e}")
+        
+        return False
+
+    async def check_mentions_filter(self, message) -> bool:
+        """Check message for excessive mentions"""
+        if not self.bot.db_pool:
+            return False
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                config = await conn.fetchrow('''
+                    SELECT automod_mentions_enabled, automod_mentions_limit 
+                    FROM guilds WHERE id = $1
+                ''', str(message.guild.id))
+                
+                if not config or not config['automod_mentions_enabled']:
+                    return False
+                
+                limit = config['automod_mentions_limit'] or 5
+                
+                # Count all types of mentions
+                mention_count = 0
+                mention_count += len(message.mentions)  # User mentions
+                mention_count += len(message.role_mentions)  # Role mentions
+                if message.mention_everyone:  # @everyone or @here
+                    mention_count += 1
+                
+                if mention_count > limit:
+                    # Take action
+                    await self.take_automod_action(message, "mentions", f"Excessive mentions ({mention_count} > {limit})")
+                    
+                    # Log to configured channel
+                    await self.log_automod_action(
+                        message, 
+                        "Mention Limits", 
+                        f"Message contained {mention_count} mentions (limit: {limit})",
+                        COLORS['WARNING']
+                    )
+                    return True
+                    
+        except Exception as e:
+            logger.error(f"Error checking mentions filter: {e}")
+        
+        return False
+
+    @app_commands.command(name="automod-caps", description="Configure caps lock filter")
+    @app_commands.describe(
+        action="Enable or disable caps lock filter",
+        threshold="Percentage of caps required to trigger (default: 70%)"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
+        app_commands.Choice(name="settings", value="settings")
+    ])
+    async def automod_caps(self, interaction: discord.Interaction, action: str, threshold: int = 70):
+        """Configure caps lock filter protection"""
+        if not await self.is_admin_or_moderator(interaction):
+            await interaction.response.send_message("❌ You need Manage Server or Manage Messages permissions to use this command.", ephemeral=True)
+            return
+        
+        if threshold < 10 or threshold > 100:
+            await interaction.response.send_message("❌ Threshold must be between 10% and 100%.", ephemeral=True)
+            return
+        
+        try:
+            guild_id = str(interaction.guild.id)
+            
+            if action == "enable":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        await conn.execute('''
+                            UPDATE guilds 
+                            SET automod_caps_enabled = $1, automod_caps_threshold = $2
+                            WHERE id = $3
+                        ''', True, threshold, guild_id)
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['CAPS']} Caps Lock Filter Enabled",
+                    description=f"Caps lock filter is now **enabled** with {threshold}% threshold.",
+                    color=COLORS['SUCCESS'],
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(
+                    name="📊 Settings",
+                    value=f"**Threshold:** {threshold}% caps required to trigger\n"
+                          f"**Action:** Delete message and warn user\n"
+                          f"**Bypass:** Users with Manage Messages permission",
+                    inline=False
+                )
+                embed.set_footer(text=f"Configured by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+            elif action == "disable":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        await conn.execute('''
+                            UPDATE guilds SET automod_caps_enabled = $1 WHERE id = $2
+                        ''', False, guild_id)
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['CAPS']} Caps Lock Filter Disabled",
+                    description="Caps lock filter protection has been **disabled**.",
+                    color=COLORS['WARNING'],
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+            elif action == "settings":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        config = await conn.fetchrow('''
+                            SELECT automod_caps_enabled, automod_caps_threshold 
+                            FROM guilds WHERE id = $1
+                        ''', guild_id)
+                        
+                        caps_enabled = config['automod_caps_enabled'] if config else False
+                        caps_threshold = config['automod_caps_threshold'] if config else 70
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['CAPS']} Caps Lock Filter Settings",
+                    description=f"Current caps lock filter configuration for **{interaction.guild.name}**",
+                    color=COLORS['INFO'],
+                    timestamp=datetime.utcnow()
+                )
+                
+                status_emoji = "✅" if caps_enabled else "❌"
+                embed.add_field(
+                    name="📊 Current Status",
+                    value=f"**Status:** {status_emoji} {'Enabled' if caps_enabled else 'Disabled'}\n"
+                          f"**Threshold:** {caps_threshold}% caps required\n"
+                          f"**Action:** Delete message and warn user",
+                    inline=False
+                )
+                
+                if caps_enabled:
+                    embed.add_field(
+                        name="🔧 How it works",
+                        value="• Scans all messages for excessive caps\n"
+                              f"• Triggers when {caps_threshold}% or more text is in caps\n"
+                              "• Deletes message and warns the user\n"
+                              "• Bypassed for users with Manage Messages permission",
+                        inline=False
+                    )
+                else:
+                    embed.add_field(
+                        name="💡 Enable Protection",
+                        value="Use `/automod-caps enable` to activate caps lock filtering",
+                        inline=False
+                    )
+                
+                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            # Log command usage
+            parameters = {"action": action, "threshold": threshold}
+            await self.bot.log_command_usage(interaction, "automod-caps", parameters)
+                
+        except Exception as e:
+            logger.error(f"Error with automod caps: {e}")
+            await interaction.response.send_message("❌ Failed to configure caps lock filter. Please try again.", ephemeral=True)
+
+    @app_commands.command(name="automod-mentions", description="Configure mention limits")
+    @app_commands.describe(
+        action="Enable or disable mention limits",
+        limit="Maximum mentions allowed per message (default: 5)"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
+        app_commands.Choice(name="settings", value="settings")
+    ])
+    async def automod_mentions(self, interaction: discord.Interaction, action: str, limit: int = 5):
+        """Configure mention limits protection"""
+        if not await self.is_admin_or_moderator(interaction):
+            await interaction.response.send_message("❌ You need Manage Server or Manage Messages permissions to use this command.", ephemeral=True)
+            return
+        
+        if limit < 1 or limit > 20:
+            await interaction.response.send_message("❌ Mention limit must be between 1 and 20 mentions.", ephemeral=True)
+            return
+        
+        try:
+            guild_id = str(interaction.guild.id)
+            
+            if action == "enable":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        await conn.execute('''
+                            UPDATE guilds 
+                            SET automod_mentions_enabled = $1, automod_mentions_limit = $2
+                            WHERE id = $3
+                        ''', True, limit, guild_id)
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['MENTION']} Mention Limits Enabled",
+                    description=f"Mention limits are now **enabled** with a limit of {limit} mentions per message.",
+                    color=COLORS['SUCCESS'],
+                    timestamp=datetime.utcnow()
+                )
+                embed.add_field(
+                    name="📊 Settings",
+                    value=f"**Limit:** {limit} mentions per message\n"
+                          f"**Includes:** @user, @role, @everyone, @here\n"
+                          f"**Action:** Delete message and warn user\n"
+                          f"**Bypass:** Users with Manage Messages permission",
+                    inline=False
+                )
+                embed.set_footer(text=f"Configured by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+            elif action == "disable":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        await conn.execute('''
+                            UPDATE guilds SET automod_mentions_enabled = $1 WHERE id = $2
+                        ''', False, guild_id)
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['MENTION']} Mention Limits Disabled",
+                    description="Mention limits protection has been **disabled**.",
+                    color=COLORS['WARNING'],
+                    timestamp=datetime.utcnow()
+                )
+                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed)
+                
+            elif action == "settings":
+                if self.bot.db_pool:
+                    async with self.bot.db_pool.acquire() as conn:
+                        config = await conn.fetchrow('''
+                            SELECT automod_mentions_enabled, automod_mentions_limit 
+                            FROM guilds WHERE id = $1
+                        ''', guild_id)
+                        
+                        mentions_enabled = config['automod_mentions_enabled'] if config else False
+                        mentions_limit = config['automod_mentions_limit'] if config else 5
+                
+                embed = discord.Embed(
+                    title=f"{EMOJIS['MENTION']} Mention Limits Settings",
+                    description=f"Current mention limits configuration for **{interaction.guild.name}**",
+                    color=COLORS['INFO'],
+                    timestamp=datetime.utcnow()
+                )
+                
+                status_emoji = "✅" if mentions_enabled else "❌"
+                embed.add_field(
+                    name="📊 Current Status",
+                    value=f"**Status:** {status_emoji} {'Enabled' if mentions_enabled else 'Disabled'}\n"
+                          f"**Limit:** {mentions_limit} mentions per message\n"
+                          f"**Action:** Delete message and warn user",
+                    inline=False
+                )
+                
+                if mentions_enabled:
+                    embed.add_field(
+                        name="🔧 How it works",
+                        value="• Counts all mentions in each message\n"
+                              f"• Triggers when {mentions_limit}+ mentions detected\n"
+                              "• Includes @user, @role, @everyone, @here\n"
+                              "• Deletes message and warns the user\n"
+                              "• Bypassed for users with Manage Messages permission",
+                        inline=False
+                    )
+                else:
+                    embed.add_field(
+                        name="💡 Enable Protection",
+                        value="Use `/automod-mentions enable` to activate mention limits",
+                        inline=False
+                    )
+                
+                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            # Log command usage
+            parameters = {"action": action, "limit": limit}
+            await self.bot.log_command_usage(interaction, "automod-mentions", parameters)
+                
+        except Exception as e:
+            logger.error(f"Error with automod mentions: {e}")
+            await interaction.response.send_message("❌ Failed to configure mention limits. Please try again.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(AutoModCog(bot))

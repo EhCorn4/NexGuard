@@ -400,11 +400,27 @@ class AdminCommands(commands.Cog):
                 else:
                     automod_status.append("**Bad Words Filter:** ❌ Disabled")
             else:
-                # Check for basic automod_enabled column
-                automod_enabled = config.get('automod_enabled', False)
-                automod_status.append(f"**AutoMod:** {'✅ Enabled' if automod_enabled else '❌ Disabled'}")
-                if not automod_enabled:
-                    automod_status.append("Use `/automod-config` to configure protection")
+                # Check for new individual automod columns
+                if 'automod_caps_enabled' in config or 'automod_mentions_enabled' in config:
+                    # New individual features
+                    caps_enabled = config.get('automod_caps_enabled', False)
+                    mentions_enabled = config.get('automod_mentions_enabled', False)
+                    
+                    automod_status.append(f"**Caps Lock Filter:** {'✅ Enabled' if caps_enabled else '❌ Disabled'}")
+                    if caps_enabled:
+                        threshold = config.get('automod_caps_threshold', 70)
+                        automod_status.append(f"  └ Threshold: {threshold}% caps required")
+                    
+                    automod_status.append(f"**Mention Limits:** {'✅ Enabled' if mentions_enabled else '❌ Disabled'}")
+                    if mentions_enabled:
+                        limit = config.get('automod_mentions_limit', 5)
+                        automod_status.append(f"  └ Limit: {limit} mentions per message")
+                else:
+                    # Fallback to basic automod_enabled column
+                    automod_enabled = config.get('automod_enabled', False)
+                    automod_status.append(f"**AutoMod:** {'✅ Enabled' if automod_enabled else '❌ Disabled'}")
+                    if not automod_enabled:
+                        automod_status.append("Use `/automod-config` to configure protection")
             
             embed.add_field(
                 name="🛡️ AutoMod Protection",
