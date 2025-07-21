@@ -98,10 +98,29 @@ class TicketButton(discord.ui.Button):
             # Create ticket channel and store in database
             channel = await self.setup_ticket_channel(interaction, panel, ticket_id)
             
+            # Send notification embed in original channel with staff controls
+            notification_embed = discord.Embed(
+                description=f"🎫 **New Ticket Created**\n\n{interaction.user.mention} has created a new ticket in {channel.mention}",
+                color=0x5865F2
+            )
+            notification_embed.add_field(
+                name="Ticket Details",
+                value=f"**ID:** {ticket_id}\n**Category:** {panel['title']}\n**User:** {interaction.user.display_name}",
+                inline=False
+            )
+            notification_embed.set_footer(text="NexGuard | :nexguard: • Staff can claim or close tickets")
+            
+            # Create staff management view for the notification
+            staff_view = TicketStaffView(ticket_id, channel.id)
+            
+            # First send the ephemeral success message
             await interaction.response.send_message(
                 f"✅ Ticket created! Continue in {channel.mention}",
                 ephemeral=True
             )
+            
+            # Then send the public notification
+            await interaction.followup.send(embed=notification_embed, view=staff_view)
             
         except Exception as e:
             logger.error(f"Error creating direct ticket: {e}")
@@ -147,12 +166,13 @@ class TicketButton(discord.ui.Button):
             topic=f"Ticket {ticket_id} | {panel['title']} | {interaction.user.display_name}"
         )
         
-        # Store in database
+        # Store in database (remove category field due to null constraint)
         async with interaction.client.db_pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO tickets (
                     ticket_id, guild_id, channel_id, user_id, username,
-                    panel_id, subject, status, priority, form_responses, created_at
+                    panel_id, subject, status, priority, 
+                    form_responses, created_at
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             """, 
                 ticket_id, str(interaction.guild.id), str(channel.id),
@@ -258,7 +278,7 @@ class TicketFormModal(discord.ui.Modal):
                 
                 field = discord.ui.TextInput(
                     label=question.get('label', f'Question {i+1}')[:45],  # Discord limit  
-                    placeholder=placeholder_text[:100],
+                    placeholder=placeholder_text[:100] + " (Use Shift+Enter for new lines)",
                     required=question.get('required', True),
                     max_length=min(question.get('max_length', 2000), 4000),  # Discord limit
                     style=discord.TextStyle.paragraph  # Always multiline for Shift+Enter support
@@ -269,7 +289,7 @@ class TicketFormModal(discord.ui.Modal):
             # Fallback single question
             field = discord.ui.TextInput(
                 label="Please describe your issue",
-                placeholder="Tell us how we can help {user.mention}... (Shift+Enter for new line)",
+                placeholder="Tell us how we can help you... (Use Shift+Enter for new lines)",
                 required=True,
                 max_length=2000,
                 style=discord.TextStyle.paragraph
@@ -335,14 +355,96 @@ class TicketFormModal(discord.ui.Modal):
             ticket_id = f"ticket-{ticket_count + 1:04d}"
             channel = await button.setup_ticket_channel(interaction, self.panel, ticket_id, processed_form_data)
             
+            # Send notification embed in original channel with staff controls
+            notification_embed = discord.Embed(
+                description=f"🎫 **New Ticket Created**\n\n{interaction.user.mention} has created a new ticket in {channel.mention}",
+                color=0x5865F2
+            )
+            notification_embed.add_field(
+                name="Ticket Details",
+                value=f"**ID:** {ticket_id}\n**Category:** {self.panel['title']}\n**User:** {interaction.user.display_name}",
+                inline=False
+            )
+            notification_embed.set_footer(text="NexGuard | :nexguard: • Staff can claim or close tickets")
+            
+            # Create staff management view for the notification
+            staff_view = TicketStaffView(ticket_id, channel.id)
+            
+            # First send the ephemeral success message
             await interaction.response.send_message(
                 f"✅ Ticket created with your information! Continue in {channel.mention}",
                 ephemeral=True
             )
             
+            # Then send the public notification
+            await interaction.followup.send(embed=notification_embed, view=staff_view)
+            
         except Exception as e:
             logger.error(f"Error submitting form: {e}")
             await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+
+class TicketStaffView(discord.ui.View):
+    """Staff management buttons for ticket notifications"""
+    def __init__(self, ticket_id: str, channel_id: int):
+        super().__init__(timeout=None)
+        self.ticket_id = ticket_id
+        self.channel_id = channel_id
+    
+    @discord.ui.button(label="Claim 🙌", style=discord.ButtonStyle.primary)
+    async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check permissions
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ You need Manage Messages permissions to claim tickets.", ephemeral=True)
+            return
+        
+        # Get ticket channel
+        channel = interaction.guild.get_channel(self.channel_id)
+        if not channel:
+            await interaction.response.send_message("❌ Ticket channel not found.", ephemeral=True)
+            return
+        
+        # Update database
+        try:
+            async with interaction.client.db_pool.acquire() as conn:
+                await conn.execute("""
+                    UPDATE tickets SET 
+                        claimed_by = $1, 
+                        claimed_at = $2,
+                        status = 'claimed'
+                    WHERE ticket_id = $3 AND guild_id = $4
+                """, str(interaction.user.id), datetime.utcnow(), self.ticket_id, str(interaction.guild.id))
+            
+            # Update embed to show claimed status
+            if interaction.message.embeds:
+                embed = interaction.message.embeds[0]
+                embed.color = 0xffa500  # Orange for claimed
+                embed.description = embed.description.replace("🎫 **New Ticket Created**", "🙌 **Ticket Claimed**")
+                embed.add_field(name="Claimed by", value=interaction.user.mention, inline=True)
+            
+            # Disable claim button
+            self.claim_ticket.disabled = True
+            self.claim_ticket.label = f"Claimed by {interaction.user.display_name}"
+            
+            await interaction.response.edit_message(embed=embed, view=self)
+            
+            # Notify in ticket channel
+            await channel.send(f"🙌 This ticket has been claimed by {interaction.user.mention}")
+            
+        except Exception as e:
+            logger.error(f"Error claiming ticket: {e}")
+            await interaction.response.send_message("❌ Failed to claim ticket.", ephemeral=True)
+    
+    @discord.ui.button(label="Close 🔒", style=discord.ButtonStyle.danger)
+    async def close_ticket_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check permissions
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ You need Manage Messages permissions to close tickets.", ephemeral=True)
+            return
+        
+        # Show close modal
+        modal = CloseTicketModal(self.ticket_id)
+        await interaction.response.send_modal(modal)
+
 
 class TicketControlView(discord.ui.View):
     """Control buttons for managing tickets"""
@@ -502,7 +604,7 @@ class CloseTicketModal(discord.ui.Modal):
         
         self.reason = discord.ui.TextInput(
             label="Reason for closing (optional)",
-            placeholder="Why is this ticket being closed? (Shift+Enter for new line)",
+            placeholder="Why is this ticket being closed? (Use Shift+Enter for new lines)",
             required=False,
             max_length=2000,
             style=discord.TextStyle.paragraph
@@ -632,7 +734,7 @@ class FeedbackModal(discord.ui.Modal):
         
         self.comment = discord.ui.TextInput(
             label="Additional comments (optional)",
-            placeholder="Tell us about your support experience... (Shift+Enter for new line)",
+            placeholder="Tell us about your support experience... (Use Shift+Enter for new lines)",
             required=False,
             max_length=2000,
             style=discord.TextStyle.paragraph
@@ -766,12 +868,8 @@ class TicketCommands(commands.Cog):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
-        # Check if we should defer based on action
-        if action in ["create", "edit", "delete", "list", "deploy"]:
-            await interaction.response.defer()
-        else:
-            await interaction.response.send_message("❌ Unknown action.", ephemeral=True)
-            return
+        # Immediate response to prevent timeout
+        await interaction.response.send_message("⏳ Processing your request...", ephemeral=True)
         
         try:
             if action == "create":
@@ -787,11 +885,11 @@ class TicketCommands(commands.Cog):
                 
         except Exception as e:
             logger.error(f"Error in ticket panel command: {e}")
-            await interaction.followup.send("❌ An error occurred. Please try again.", ephemeral=True)
+            await interaction.edit_original_response(content="❌ An error occurred. Please try again.")
     
     async def create_panel(self, interaction, name, title, description, category, emoji, support_roles):
         if not name or not title:
-            await interaction.followup.send("❌ Panel name and title are required.", ephemeral=True)
+            await interaction.edit_original_response(content="❌ Panel name and title are required.")
             return
         
         # Parse support roles
@@ -846,11 +944,11 @@ class TicketCommands(commands.Cog):
                 inline=False
             )
             
-            await interaction.followup.send(embed=embed)
+            await interaction.edit_original_response(content="✅ Panel created! Use `/ticket-panel deploy` to deploy it.")
             
         except Exception as e:
             logger.error(f"Error creating panel: {e}")
-            await interaction.followup.send("❌ Failed to create panel.", ephemeral=True)
+            await interaction.edit_original_response(content="❌ Failed to create panel.")
     
     async def list_panels(self, interaction):
         try:
