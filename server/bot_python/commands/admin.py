@@ -281,44 +281,187 @@ class AdminCommands(commands.Cog):
                 except:
                     pass
     
-    @app_commands.command(name="settings", description="View server settings")
+    @app_commands.command(name="settings", description="View comprehensive server settings")
     async def settings(self, interaction: discord.Interaction):
-        """View server settings"""
+        """View comprehensive server settings"""
         if not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
             return
         
         try:
-            config = await self.bot.get_guild_config(str(interaction.guild.id))
+            # Defer the response to prevent timeout issues
+            await interaction.response.defer(ephemeral=True)
+            
+            guild_id = str(interaction.guild.id)
+            
+            # Get basic guild config
+            config = await self.bot.get_guild_config(guild_id)
+            
+            # Get automod settings from database
+            automod_settings = {}
+            if self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    # Get automod settings
+                    automod_result = await conn.fetchrow('''
+                        SELECT automod_spam_enabled, automod_spam_limit, automod_spam_window,
+                               automod_links_enabled, automod_badwords_enabled, automod_badwords_strict
+                        FROM guilds WHERE id = $1
+                    ''', guild_id)
+                    
+                    if automod_result:
+                        automod_settings = dict(automod_result)
+                    
+                    # Get role settings
+                    role_result = await conn.fetchrow('''
+                        SELECT moderator_role_id, admin_role_id
+                        FROM guilds WHERE id = $1
+                    ''', guild_id)
+                    
+                    if role_result:
+                        config.update(dict(role_result))
             
             embed = discord.Embed(
-                title=f"Server Settings - {interaction.guild.name}",
+                title=f"🛠️ Server Settings - {interaction.guild.name}",
+                description="Complete overview of your server configuration",
                 color=0x00FFFF,
                 timestamp=datetime.utcnow()
             )
             
-            embed.add_field(name="Prefix", value=config.get('prefix', '!'), inline=True)
-            embed.add_field(name="Moderation", value="✅ Enabled" if config.get('moderation_enabled', True) else "❌ Disabled", inline=True)
-            embed.add_field(name="Automod", value="✅ Enabled" if config.get('automod_enabled', False) else "❌ Disabled", inline=True)
+            # Basic Settings
+            basic_settings = []
+            basic_settings.append(f"**Prefix:** `{config.get('prefix', '!')}`")
+            basic_settings.append(f"**Moderation:** {'✅ Enabled' if config.get('moderation_enabled', True) else '❌ Disabled'}")
             
-            welcome_channel = f"<#{config.get('welcome_channel_id')}>" if config.get('welcome_channel_id') else "Not set"
-            embed.add_field(name="Welcome Channel", value=welcome_channel, inline=True)
+            embed.add_field(
+                name="⚙️ Basic Settings",
+                value="\n".join(basic_settings),
+                inline=False
+            )
             
-            log_channel = f"<#{config.get('log_channel_id')}>" if config.get('log_channel_id') else "Not set"
-            embed.add_field(name="Log Channel", value=log_channel, inline=True)
+            # Channels Configuration
+            channels_config = []
+            welcome_channel = f"<#{config.get('welcome_channel_id')}>" if config.get('welcome_channel_id') else "❌ Not set"
+            log_channel = f"<#{config.get('log_channel_id')}>" if config.get('log_channel_id') else "❌ Not set"
+            error_log_channel = f"<#{config.get('error_log_channel_id')}>" if config.get('error_log_channel_id') else "❌ Not set"
             
-            mod_role = f"<@&{config.get('mod_role_id')}>" if config.get('mod_role_id') else "Not set"
-            embed.add_field(name="Mod Role", value=mod_role, inline=True)
+            channels_config.append(f"**Welcome Channel:** {welcome_channel}")
+            channels_config.append(f"**Log Channel:** {log_channel}")
+            channels_config.append(f"**Error Log Channel:** {error_log_channel}")
             
-            autorole_role = f"<@&{config.get('auto_role_id')}>" if config.get('auto_role_id') else "Not set"
+            embed.add_field(
+                name="📋 Channel Configuration",
+                value="\n".join(channels_config),
+                inline=False
+            )
+            
+            # Role Configuration (including new hierarchical roles)
+            roles_config = []
+            
+            # Mod role (basic moderation)
+            if config.get('moderator_role_id'):
+                mod_role = interaction.guild.get_role(int(config.get('moderator_role_id')))
+                roles_config.append(f"**Moderation Role:** {mod_role.mention if mod_role else '⚠️ Role not found'}")
+            else:
+                roles_config.append("**Moderation Role:** ❌ Not set (using Discord defaults)")
+            
+            # Admin role (advanced moderation)
+            if config.get('admin_role_id'):
+                admin_role = interaction.guild.get_role(int(config.get('admin_role_id')))
+                roles_config.append(f"**Admin Role:** {admin_role.mention if admin_role else '⚠️ Role not found'}")
+            else:
+                roles_config.append("**Admin Role:** ❌ Not set (using Discord defaults)")
+            
+            # Auto-role
+            autorole_role = f"<@&{config.get('auto_role_id')}>" if config.get('auto_role_id') else "❌ Not set"
             autorole_status = "✅ Enabled" if config.get('auto_role_enabled', False) else "❌ Disabled"
-            embed.add_field(name="Auto-Role", value=f"{autorole_role}\n{autorole_status}", inline=True)
+            roles_config.append(f"**Auto-Role:** {autorole_role} ({autorole_status})")
             
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            embed.add_field(
+                name="👥 Role Configuration",
+                value="\n".join(roles_config),
+                inline=False
+            )
+            
+            # AutoMod Settings (detailed status)
+            automod_status = []
+            
+            # Spam Protection
+            spam_enabled = automod_settings.get('automod_spam_enabled', False)
+            if spam_enabled:
+                spam_limit = automod_settings.get('automod_spam_limit', 5)
+                spam_window = automod_settings.get('automod_spam_window', 10)
+                automod_status.append(f"**Spam Protection:** ✅ Enabled")
+                automod_status.append(f"  └ Limit: {spam_limit} messages per {spam_window} seconds")
+            else:
+                automod_status.append("**Spam Protection:** ❌ Disabled")
+            
+            # Link Blocking
+            links_enabled = automod_settings.get('automod_links_enabled', False)
+            automod_status.append(f"**Link Blocking:** {'✅ Enabled' if links_enabled else '❌ Disabled'}")
+            
+            # Bad Words Filter
+            badwords_enabled = automod_settings.get('automod_badwords_enabled', False)
+            if badwords_enabled:
+                strict_mode = automod_settings.get('automod_badwords_strict', False)
+                automod_status.append(f"**Bad Words Filter:** ✅ Enabled")
+                automod_status.append(f"  └ Strict Mode: {'✅ On' if strict_mode else '❌ Off'}")
+            else:
+                automod_status.append("**Bad Words Filter:** ❌ Disabled")
+            
+            embed.add_field(
+                name="🛡️ AutoMod Protection",
+                value="\n".join(automod_status),
+                inline=False
+            )
+            
+            # Welcome System
+            welcome_config = []
+            welcome_enabled = config.get('welcome_enabled', False)
+            welcome_embed_mode = config.get('welcome_embed_mode', True)
+            
+            welcome_config.append(f"**Status:** {'✅ Enabled' if welcome_enabled else '❌ Disabled'}")
+            if welcome_enabled:
+                welcome_config.append(f"**Format:** {'Rich Embed' if welcome_embed_mode else 'Simple Message'}")
+            
+            embed.add_field(
+                name="👋 Welcome System",
+                value="\n".join(welcome_config),
+                inline=True
+            )
+            
+            # Command Permissions Summary
+            permissions_summary = []
+            permissions_summary.append("**Basic Moderation:** Mod Role + Admin Role")
+            permissions_summary.append("  └ `/mute`, `/timeout`, `/warn`, `/untimeout`")
+            permissions_summary.append("**Advanced Admin:** Admin Role Only")
+            permissions_summary.append("  └ `/ban`, `/unban`, `/lock`, `/unlock`, `/slowmode`")
+            
+            embed.add_field(
+                name="🔐 Permission Structure",
+                value="\n".join(permissions_summary),
+                inline=True
+            )
+            
+            embed.set_footer(
+                text=f"Requested by {interaction.user.name} • Server ID: {interaction.guild.id}",
+                icon_url=interaction.user.display_avatar.url
+            )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+            # Log command usage
+            parameters = {"guild": interaction.guild.name}
+            await self.bot.log_command_usage(interaction, "settings", parameters)
             
         except Exception as e:
             logger.error(f"Error viewing settings: {e}")
-            await interaction.response.send_message("❌ Failed to load settings. Please try again.", ephemeral=True)
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to load settings. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to load settings. Please try again.", ephemeral=True)
+            except:
+                pass
     
     @app_commands.command(name="autorole", description="Configure automatic role assignment for new members")
     @app_commands.describe(
