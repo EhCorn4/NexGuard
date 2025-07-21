@@ -1,41 +1,44 @@
-🛡️ **NexGuard Critical Update v2.3.4 - Auto-Reply System Perfected** 🛡️
+🛡️ **MAJOR AUTOMOD EXPANSION** 🛡️
 
-🚀 **Major System Optimization Complete**
+**NEW AutoMod Protection Features Now Live!**
 
-We've just completed a comprehensive optimization of NexGuard's auto-reply system with critical fixes and enhancements!
+🔤 **Caps Lock Filter**
+• Configurable threshold (10-100%)
+• Default 70% caps detection
+• Automatic message deletion
+• Professional logging
 
-🎯 **Auto-Reply System Perfected**
-• **Duplicate Response Elimination** - Fixed all duplicate message issues for clean, single responses
-• **Enhanced Cooldown System** - 30-second per-user per-rule cooldowns to prevent spam and abuse
-• **Rule Name Organization** - Clean rule naming with enhanced footer display showing rule names instead of triggers
-• **Interaction Timeout Fixes** - All auto-reply commands now respond instantly without Discord timeouts
-• **Advanced Error Logging** - Comprehensive error tracking with real-time Discord notifications
+📢 **Mention Limits Protection**  
+• Configurable limits (1-20 mentions)
+• Blocks @user, @role, @everyone, @here spam
+• Real-time enforcement
+• Detailed violation reports
 
-🔧 **Technical Improvements**
-• **Duplicate Keyword Removal** - Cleaned up trigger lists to prevent multiple matches from same rule
-• **Rule Tracking System** - Added prevention system to ensure only one response per matching message
-• **Database Optimization** - Enhanced rule_name column integration for better organization
-• **Command Reliability** - Fixed `/autoreply-list`, `/autoreply-create`, and all management commands
+**Enhanced Command Suite - 51+ Commands!**
+• **Admin (5)** - Settings, logging, welcome system
+• **Moderation (12)** - Bans, kicks, warnings, channel management
+• **AutoMod (8)** - Complete protection suite including new features
+• **Auto-Reply (5)** - Smart response system
+• **Role Management (5)** - Hierarchical permissions
+• **Utility (12)** - Server insights and tools
+• **Tickets (3)** - Multi-category support system
 
-✅ **What's Fixed**
-• **No More Duplicate Replies** - Each trigger now sends exactly ONE response
-• **Instant Command Response** - All auto-reply commands work without timeouts
-• **Professional Logging** - Enhanced rule names displayed in footers and logs
-• **Spam Prevention** - Intelligent cooldown system prevents abuse while maintaining functionality
+**Key Features:**
+✅ Moderators bypass all automod (Manage Messages permission)
+✅ Professional logging to configured channels
+✅ Real-time protection across 9+ servers
+✅ Universal command logging for all 51 commands
+✅ Advanced settings display with complete automod status
 
-📊 **Current Status**
-• **48+ Commands** across all categories with universal logging
-• **9+ Servers** protected with **174+ users**  
-• **24/7 Uptime** with real-time error monitoring and reporting
+**Get Started:**
+• `/automod-caps` - Configure caps lock protection
+• `/automod-mentions` - Set mention limits
+• `/settings` - View complete automod status
+• `/commands` - Browse all 51+ commands
 
-🚀 **What's Next?**
-With the auto-reply system now perfected, we're focusing on expanding our analytics dashboard and enhancing the moderation suite with additional automation features!
+**Currently Protecting 174+ Users Across 9+ Servers!**
 
-💬 **Perfect Auto-Reply Experience**
-NexGuard's auto-reply system now provides the cleanest, most reliable automated response experience available for Discord servers. Create custom rules with confidence knowing they'll work perfectly every time.
+*Experience the most advanced Discord moderation available.*
 
-───────────────────────────────
-
-*Having issues or questions? Use `/support` for assistance or join our support community!*
-
-**NexGuard Team** 🛡️
+---
+*NexGuard v2.3.2 | Advanced Discord Moderation & Management*

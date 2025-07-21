@@ -96,10 +96,20 @@ export class MemStorage implements IStorage {
     // Initialize news updates spanning past 2 months
     this.newsUpdates.set(1, {
       id: 1,
-      title: "🚀 Universal Command Logging System",
-      content: "Comprehensive logging system now tracks all 44+ commands with professional embeds. Every moderation action, admin command, and utility usage is beautifully logged with detailed context and user information.",
-      category: "NEW FEATURE",
-      publishedAt: new Date('2025-07-19T10:00:00Z'),
+      title: "🛡️ Advanced AutoMod Protection: Caps Lock & Mention Limits",
+      content: "Revolutionary automod expansion with caps lock filtering and mention spam protection! Configure thresholds from 10-100% for caps detection and limits from 1-20 mentions per message. Enhanced protection against spam with professional logging and moderator bypass functionality.",
+      category: "NEW FEATURE", 
+      publishedAt: new Date('2025-07-21T10:00:00Z'),
+      likes: 156,
+      comments: 34,
+    });
+
+    this.newsUpdates.set(26, {
+      id: 26,
+      title: "📋 Command System Expansion: 51+ Commands",
+      content: "Complete command suite expansion to 51+ slash commands! Enhanced /commands display with organized categories: Admin (5), Moderation (12), Utility (12), AutoMod (8), Auto-Reply (5), Role Management (5), Tickets (3). Comprehensive server management at your fingertips.",
+      category: "UPDATE",
+      publishedAt: new Date('2025-07-21T09:30:00Z'),
       likes: 89,
       comments: 23,
     });
@@ -246,15 +256,15 @@ export class MemStorage implements IStorage {
 
     this.newsUpdates.set(25, {
       id: 25,
-      title: "📊 Bot Statistics Update: 171+ Users Protected",
-      content: "NexGuard is now actively protecting 171+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their moderation and management needs.",
+      title: "📊 Bot Statistics Update: 174+ Users Protected",
+      content: "NexGuard is now actively protecting 174+ users across 9+ Discord servers! Our community continues to grow as more servers trust us with their comprehensive moderation and management capabilities.",
       category: "COMMUNITY",
       publishedAt: new Date('2025-05-22T19:00:00Z'),
       likes: 127,
       comments: 34,
     });
 
-    this.currentNewsId = 26;
+    this.currentNewsId = 27;
 
     // Initialize developers
     this.developers.set(1, {
@@ -280,9 +290,9 @@ export class MemStorage implements IStorage {
     this.features.set(1, {
       id: 1,
       title: "Advanced Moderation Suite",
-      description: "Enterprise-grade moderation tools with 17+ commands including temporary bans, channel management, intelligent automod with logging, and comprehensive tracking systems.",
+      description: "Enterprise-grade moderation tools with 17+ commands including temporary bans, channel management, intelligent automod with caps lock filtering, mention limits, and comprehensive tracking systems.",
       icon: "shield",
-      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Channel lock/unlock with permission management", "Smart automod with professional logging to channels", "Universal command logging for all 44 commands", "Comprehensive warning system with severity tracking", "Custom moderator role management and permissions"],
+      benefits: ["Temporary ban system with duration parsing (7d, 2h, 30m, 1w)", "Channel lock/unlock with permission management", "Smart automod with caps lock filter (10-100% threshold)", "Mention limits protection (1-20 mentions per message)", "Professional automod logging to channels", "Universal command logging for all 51+ commands", "Comprehensive warning system with severity tracking", "Custom moderator role management and permissions"],
     });
 
     this.features.set(2, {
@@ -312,9 +322,9 @@ export class MemStorage implements IStorage {
     this.features.set(5, {
       id: 5,
       title: "Comprehensive Command Suite",
-      description: "Complete server administration suite with 44+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
+      description: "Complete server administration suite with 51+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
       icon: "cog",
-      benefits: ["44+ slash commands across all categories", "Advanced admin tools with logging configuration", "AI assistant with intelligent responses", "Utility commands for server insights", "Real-time monitoring and analytics"],
+      benefits: ["51+ slash commands across all categories", "Advanced admin tools with error logging", "AI assistant with intelligent responses", "8 comprehensive automod commands", "Role management with hierarchical permissions", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
@@ -322,7 +332,7 @@ export class MemStorage implements IStorage {
       title: "Real-time Analytics Dashboard", 
       description: "Professional analytics dashboard with live bot status monitoring, server statistics, command usage tracking, and comprehensive performance insights.",
       icon: "chart-line",
-      benefits: ["Live bot status with real-time updates (9+ servers, 168+ users)", "Interactive server statistics and charts", "Universal command logging with professional embeds", "Performance monitoring and uptime tracking", "Professional dashboard with data visualization"],
+      benefits: ["Live bot status with real-time updates (9+ servers, 174+ users)", "Interactive server statistics and charts", "Universal command logging with professional embeds", "Error tracking and logging system", "Professional dashboard with data visualization"],
     });
 
     this.features.set(7, {
