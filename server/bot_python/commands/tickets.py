@@ -205,7 +205,7 @@ class TicketButton(discord.ui.Button):
         if form_display_text:
             embed.description += form_display_text
         
-        embed.set_footer(text=f"NexGuard | nexguard.bot • Ticket ID: {ticket_id}")
+        embed.set_footer(text=f"NexGuard | :nexguard: • Ticket ID: {ticket_id}")
         
         # Add ticket control buttons
         view = TicketControlView(ticket_id)
@@ -405,7 +405,7 @@ class TicketControlView(discord.ui.View):
                     description=f"🙌 **Ticket Claimed**\n\n{interaction.user.mention} has claimed this ticket and will provide dedicated support.",
                     color=0x5865F2
                 )
-                embed.set_footer(text="NexGuard | You now have dedicated support!")
+                embed.set_footer(text="NexGuard | :nexguard: • You now have dedicated support!")
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -442,7 +442,7 @@ class TicketControlView(discord.ui.View):
                     info_text += f"\n**Claimed by:** {claimer.mention if claimer else 'Unknown User'}"
                 
                 embed.description += info_text
-                embed.set_footer(text="NexGuard | Ticket Information")
+                embed.set_footer(text="NexGuard | :nexguard: • Ticket Information")
                 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 
@@ -549,7 +549,7 @@ class CloseTicketModal(discord.ui.Modal):
             )
             if self.reason.value:
                 embed.description += f"\n\n**Reason:** {self.reason.value}"
-            embed.set_footer(text="NexGuard | This channel will be deleted in 30 seconds.")
+            embed.set_footer(text="NexGuard | :nexguard: • This channel will be deleted in 30 seconds.")
             
             await interaction.followup.send(embed=embed)
             
@@ -937,7 +937,7 @@ class TicketCommands(commands.Cog):
                     inline=True
                 )
             
-            embed.set_footer(text="✨ Powered by NexGuard Advanced Ticket System")
+            embed.set_footer(text="NexGuard | :nexguard: • Advanced Ticket System")
             
             view = TicketPanelView(panel_data)
             await interaction.followup.send(embed=embed, view=view)
@@ -1033,7 +1033,7 @@ class TicketCommands(commands.Cog):
                         questions_text += f"\n**{i}.** {question}"
                     
                     embed.description += f"\n\n**Questions:{questions_text}"
-                    embed.set_footer(text="NexGuard | Form will be shown when users create tickets from this panel")
+                    embed.set_footer(text="NexGuard | :nexguard: • Form will be shown when users create tickets from this panel")
                     
                     await interaction.followup.send(embed=embed)
                 else:
