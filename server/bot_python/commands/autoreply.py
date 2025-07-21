@@ -9,6 +9,7 @@ from discord import app_commands
 import json
 import asyncio
 import logging
+import time
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,8 @@ class AutoReply(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.setup_database()
+        # Cooldown tracking: {guild_id: {rule_id: {user_id: last_trigger_time}}}
+        self.cooldowns = {}
     
     def setup_database(self):
         """Initialize auto-reply database tables"""
@@ -115,8 +118,8 @@ class AutoReply(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute('''
                     INSERT INTO auto_replies 
-                    (guild_id, trigger, response_title, response_description, response_color, trigger_type, is_active, created_by_id, created_by_name)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    (guild_id, trigger, response_title, response_description, response_color, trigger_type, is_active, created_by_id, created_by_name, rule_name)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 ''', 
                     str(interaction.guild.id),
                     keywords.lower(),
@@ -126,7 +129,8 @@ class AutoReply(commands.Cog):
                     match_type,
                     True,   # is_active
                     str(interaction.user.id),
-                    interaction.user.display_name
+                    interaction.user.display_name,
+                    name
                 )
             
             embed = discord.Embed(
@@ -434,64 +438,7 @@ class AutoReply(commands.Cog):
         
         return False
     
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """Handle incoming messages for auto-reply triggers"""
-        # Ignore messages from bots
-        if message.author.bot:
-            return
-        
-        # Ignore messages without guild
-        if not message.guild:
-            return
-        
-        # Ignore if no database connection
-        if not self.bot.db_pool:
-            return
-        
-        try:
-            async with self.bot.db_pool.acquire() as conn:
-                # Get all active auto-reply rules for this guild
-                rules = await conn.fetch('''
-                    SELECT id, trigger, response_title, response_description, response_color, trigger_type
-                    FROM auto_replies 
-                    WHERE guild_id = $1 AND is_active = true
-                    ORDER BY created_at ASC
-                ''', str(message.guild.id))
-                
-                for rule in rules:
-                    # Check if message matches this rule
-                    if self.check_message_for_keywords(message.content, rule['trigger'], rule['trigger_type']):
-                        try:
-                            # Create embed from database columns
-                            embed_color = int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
-                            
-                            embed = discord.Embed(
-                                title=rule['response_title'] or 'Auto-Reply',
-                                description=rule['response_description'] or 'No description provided',
-                                color=embed_color,
-                                timestamp=datetime.utcnow()
-                            )
-                            
-                            embed.set_footer(
-                                text=f'Auto-reply triggered by: {rule["trigger"]}',
-                                icon_url=str(message.guild.icon) if message.guild.icon else None
-                            )
-                            
-                            # Send the auto-reply
-                            await message.channel.send(embed=embed)
-                            
-                            logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
-                            
-                            # Only trigger the first matching rule
-                            break
-                            
-                        except Exception as e:
-                            logger.error(f"Error sending auto-reply: {e}")
-                            
-        except Exception as e:
-            logger.error(f"Error processing auto-reply: {e}")
-            await self.bot.log_error(message.guild.id, "Auto-Reply Message Processing Error", str(e), "on_message autoreply handler")
+    # Removed duplicate on_message listener - using process_auto_replies called from main bot instead
 
     async def process_auto_replies(self, message):
         """Process messages for auto-reply triggers"""
@@ -505,27 +452,33 @@ class AutoReply(commands.Cog):
             async with self.bot.db_pool.acquire() as conn:
                 # Get active auto-reply rules for this guild
                 rules = await conn.fetch('''
-                    SELECT id, trigger, response_title, response_description, response_color, trigger_type
+                    SELECT id, trigger, response_title, response_description, response_color, trigger_type, rule_name
                     FROM auto_replies 
                     WHERE guild_id = $1 AND is_active = true
                 ''', str(message.guild.id))
                 
                 for rule in rules:
-                    # Check if message matches trigger
-                    content = message.content.lower()
-                    trigger = rule['trigger'].lower()
-                    
-                    match_found = False
-                    if rule['trigger_type'] == 'contains':
-                        match_found = trigger in content
-                    elif rule['trigger_type'] == 'exact':
-                        match_found = content == trigger
-                    elif rule['trigger_type'] == 'starts_with':
-                        match_found = content.startswith(trigger)
-                    elif rule['trigger_type'] == 'ends_with':
-                        match_found = content.endswith(trigger)
-                    
-                    if match_found:
+                    # Check if message matches trigger using the existing method
+                    if self.check_message_for_keywords(message.content, rule['trigger'], rule['trigger_type']):
+                        # Check cooldown (default 30 seconds)
+                        cooldown_seconds = 30
+                        current_time = time.time()
+                        guild_id = str(message.guild.id)
+                        rule_id = rule['id']
+                        user_id = str(message.author.id)
+                        
+                        # Initialize cooldown tracking if needed
+                        if guild_id not in self.cooldowns:
+                            self.cooldowns[guild_id] = {}
+                        if rule_id not in self.cooldowns[guild_id]:
+                            self.cooldowns[guild_id][rule_id] = {}
+                        
+                        # Check if user is in cooldown for this rule
+                        last_trigger = self.cooldowns[guild_id][rule_id].get(user_id, 0)
+                        if current_time - last_trigger < cooldown_seconds:
+                            # User is in cooldown, skip this rule
+                            continue
+                        
                         try:
                             # Create embed from database columns
                             embed_color = int(rule['response_color']) if rule['response_color'] else COLORS['INFO']
@@ -538,11 +491,15 @@ class AutoReply(commands.Cog):
                             )
                             
                             embed.set_footer(
-                                text=f'Auto-reply triggered by: {rule["trigger"]}',
+                                text=f'Auto-reply triggered by "{rule["rule_name"] or "Unnamed Rule"}"',
                                 icon_url=str(message.guild.icon) if message.guild.icon else None
                             )
                             
                             await message.reply(embed=embed)
+                            
+                            # Update cooldown tracking
+                            self.cooldowns[guild_id][rule_id][user_id] = current_time
+                            
                             logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
                             break  # Only trigger first matching rule
                             
