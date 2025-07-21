@@ -457,14 +457,22 @@ class AutoReply(commands.Cog):
                     WHERE guild_id = $1 AND is_active = true
                 ''', str(message.guild.id))
                 
+                # Track which rules have been triggered to prevent duplicates
+                triggered_rules = set()
+                
                 for rule in rules:
+                    rule_id = rule['id']
+                    
+                    # Skip if this rule was already triggered for this message
+                    if rule_id in triggered_rules:
+                        continue
+                    
                     # Check if message matches trigger using the existing method
                     if self.check_message_for_keywords(message.content, rule['trigger'], rule['trigger_type']):
                         # Check cooldown (default 30 seconds)
                         cooldown_seconds = 30
                         current_time = time.time()
                         guild_id = str(message.guild.id)
-                        rule_id = rule['id']
                         user_id = str(message.author.id)
                         
                         # Initialize cooldown tracking if needed
@@ -497,17 +505,21 @@ class AutoReply(commands.Cog):
                             
                             await message.reply(embed=embed)
                             
-                            # Update cooldown tracking
+                            # Mark this rule as triggered and update cooldown
+                            triggered_rules.add(rule_id)
                             self.cooldowns[guild_id][rule_id][user_id] = current_time
                             
-                            logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' in {message.guild.name}")
-                            break  # Only trigger first matching rule
+                            logger.info(f"Auto-reply triggered: '{rule['trigger'][:20]}...' ({rule['rule_name']}) in {message.guild.name}")
+                            
+                            # Only trigger the FIRST matching rule per message
+                            break
                             
                         except Exception as e:
                             logger.error(f"Error sending auto-reply: {e}")
                             await self.bot.log_error(message.guild.id, "Auto-Reply Error", str(e), f"Processing rule: {rule['trigger']}")
                         
-                        break  # Only trigger one rule per message
+                        # Exit after first successful match
+                        break
                         
         except Exception as e:
             logger.error(f"Error processing auto-reply: {e}")
