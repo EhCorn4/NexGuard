@@ -152,7 +152,14 @@ class ModerationCommands(commands.Cog):
     )
     async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided", duration: str = None, delete_days: int = 0):
         """Ban a user from the server"""
-        if not interaction.user.guild_permissions.ban_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.ban_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to ban members.", ephemeral=True)
             return
         
@@ -323,7 +330,14 @@ class ModerationCommands(commands.Cog):
     ])
     async def warn(self, interaction: discord.Interaction, user: discord.Member, reason: str, severity: str = "medium"):
         """Warn a user"""
-        if not interaction.user.guild_permissions.moderate_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_mod_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.moderate_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to warn members.", ephemeral=True)
             return
         
@@ -383,7 +397,14 @@ class ModerationCommands(commands.Cog):
     )
     async def timeout(self, interaction: discord.Interaction, user: discord.Member, duration: int, reason: str = "No reason provided"):
         """Timeout a user"""
-        if not interaction.user.guild_permissions.moderate_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_mod_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.moderate_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to timeout members.", ephemeral=True)
             return
         
@@ -448,7 +469,14 @@ class ModerationCommands(commands.Cog):
     )
     async def untimeout(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
         """Remove timeout from a user"""
-        if not interaction.user.guild_permissions.moderate_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_mod_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.moderate_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to manage member timeouts.", ephemeral=True)
             return
         
@@ -511,7 +539,14 @@ class ModerationCommands(commands.Cog):
     )
     async def unban(self, interaction: discord.Interaction, user_id: str, reason: str = "No reason provided"):
         """Unban a user"""
-        if not interaction.user.guild_permissions.ban_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.ban_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to unban members.", ephemeral=True)
             return
         
@@ -617,7 +652,14 @@ class ModerationCommands(commands.Cog):
     )
     async def mute(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
         """Mute a user by adding the configured mute role"""
-        if not interaction.user.guild_permissions.moderate_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_mod_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.moderate_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to mute members.", ephemeral=True)
             return
         
@@ -724,7 +766,14 @@ class ModerationCommands(commands.Cog):
     )
     async def unmute(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided"):
         """Unmute a user by removing the configured mute role"""
-        if not interaction.user.guild_permissions.moderate_members:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_mod_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.moderate_members
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to unmute members.", ephemeral=True)
             return
         
@@ -799,7 +848,14 @@ class ModerationCommands(commands.Cog):
     )
     async def lock(self, interaction: discord.Interaction, channel: discord.TextChannel = None, reason: str = "No reason provided"):
         """Lock a channel"""
-        if not interaction.user.guild_permissions.manage_channels:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.manage_channels
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to manage channels.", ephemeral=True)
             return
         
@@ -863,7 +919,14 @@ class ModerationCommands(commands.Cog):
     )
     async def unlock(self, interaction: discord.Interaction, channel: discord.TextChannel = None, reason: str = "No reason provided"):
         """Unlock a channel"""
-        if not interaction.user.guild_permissions.manage_channels:
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.manage_channels
+        
+        if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to manage channels.", ephemeral=True)
             return
         
@@ -919,6 +982,72 @@ class ModerationCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Error unlocking channel: {e}")
             await interaction.response.send_message("❌ Failed to unlock channel. Please try again.", ephemeral=True)
+    
+    @app_commands.command(name="slowmode", description="Set slowmode for a channel")
+    @app_commands.describe(
+        channel="The channel to set slowmode for (defaults to current channel)",
+        seconds="Slowmode delay in seconds (0-21600, 0 to disable)",
+        reason="Reason for setting slowmode"
+    )
+    async def slowmode(self, interaction: discord.Interaction, channel: discord.TextChannel = None, seconds: int = 0, reason: str = "No reason provided"):
+        """Set slowmode for a channel"""
+        # Check permissions using custom role system
+        modrole_cog = self.bot.get_cog('ModRoleCog')
+        if modrole_cog:
+            has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
+        else:
+            has_permission = interaction.user.guild_permissions.manage_channels
+        
+        if not has_permission:
+            await interaction.response.send_message("❌ You don't have permission to manage channels.", ephemeral=True)
+            return
+        
+        if channel is None:
+            channel = interaction.channel
+        
+        # Validate seconds (Discord limit is 21600 seconds = 6 hours)
+        if seconds < 0 or seconds > 21600:
+            await interaction.response.send_message("❌ Slowmode delay must be between 0 and 21600 seconds (6 hours).", ephemeral=True)
+            return
+        
+        try:
+            # Set the slowmode
+            await channel.edit(slowmode_delay=seconds, reason=f"Slowmode set by {interaction.user}: {reason}")
+            
+            # Log the action
+            await self.log_moderation_action(
+                str(interaction.guild.id), str(channel.id), str(interaction.user.id), 
+                "slowmode", f"Set slowmode to {seconds}s in #{channel.name}: {reason}"
+            )
+            
+            # Create response embed
+            if seconds == 0:
+                embed = discord.Embed(
+                    title="⏱️ Slowmode Disabled",
+                    description=f"**{channel.mention}** slowmode has been disabled.",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+            else:
+                embed = discord.Embed(
+                    title="⏱️ Slowmode Set",
+                    description=f"**{channel.mention}** slowmode set to **{seconds} seconds**.",
+                    color=0xFF6600,
+                    timestamp=datetime.utcnow()
+                )
+            
+            embed.add_field(name="Reason", value=reason, inline=False)
+            embed.add_field(name="Moderator", value=interaction.user.mention, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+            
+            # Log command usage
+            parameters = {"channel": channel.mention, "seconds": seconds, "reason": reason}
+            await self.bot.log_command_usage(interaction, "slowmode", parameters)
+            
+        except Exception as e:
+            logger.error(f"Error setting slowmode: {e}")
+            await interaction.response.send_message("❌ Failed to set slowmode. Please try again.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(ModerationCommands(bot))

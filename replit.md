@@ -344,11 +344,21 @@ The system is a complete Discord bot with integrated website that:
 - July 21, 2025: Added 30-second cooldown system per user per rule to prevent spam and abuse
 - July 21, 2025: Enhanced footer display to show rule names instead of trigger keywords for better user experience
 - July 21, 2025: Added rule_name column to database for improved organization and display
-- July 21, 2025: Bot now has 48+ commands including comprehensive error tracking and fully functional auto-reply system
+- July 21, 2025: Bot now has 49+ commands including comprehensive error tracking, fully functional auto-reply system, and hierarchical role-based permissions
 - July 21, 2025: **AUTO-REPLY SYSTEM PERFECTED** - Fixed remaining duplicate issues by removing duplicate keywords from triggers
 - July 21, 2025: Added duplicate rule prevention tracking to ensure only one response per matching message
 - July 21, 2025: Fixed autoreply-list command interaction timeouts with proper defer() handling
 - July 21, 2025: Auto-reply system now fully optimized: single responses, 30-second cooldowns, enhanced logging with rule names
+- July 21, 2025: **MAJOR ENHANCEMENT** - Hierarchical Role-Based Permission System Implementation
+- July 21, 2025: Implemented advanced role hierarchy with `/modrole` (basic moderation) and `/adminrole` (advanced admin) command separation
+- July 21, 2025: Created custom permission checking system allowing precise control over who can use specific moderation commands
+- July 21, 2025: Basic moderation commands (mute, unmute, timeout, untimeout, warn) now use `/modrole` permission level
+- July 21, 2025: Advanced admin commands (ban, unban, slowmode, lock, unlock) now use `/adminrole` permission level
+- July 21, 2025: Admin role users inherit all moderation permissions plus advanced admin capabilities
+- July 21, 2025: Added `/resetmodrole` command to reset both custom roles to default Discord permissions
+- July 21, 2025: Enhanced permission validation with role hierarchy checking and proper error handling
+- July 21, 2025: Added missing `/slowmode` command with comprehensive channel management and admin permission requirements
+- July 21, 2025: Bot now has 49+ commands with complete hierarchical permission system across all moderation features
 
 ## User Preferences
 

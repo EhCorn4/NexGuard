@@ -43,12 +43,28 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 result = await conn.fetchrow('''
-                    SELECT mod_role_id FROM guilds WHERE id = $1
+                    SELECT moderator_role_id FROM guilds WHERE id = $1
                 ''', guild_id)
                 
-                return int(result['mod_role_id']) if result and result['mod_role_id'] else None
+                return int(result['moderator_role_id']) if result and result['moderator_role_id'] else None
         except Exception as e:
             logger.error(f"Error getting mod role ID: {e}")
+            return None
+    
+    async def get_admin_role_id(self, guild_id: str) -> int:
+        """Get the admin role ID for a guild"""
+        if not self.bot.db_pool:
+            return None
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                result = await conn.fetchrow('''
+                    SELECT admin_role_id FROM guilds WHERE id = $1
+                ''', guild_id)
+                
+                return int(result['admin_role_id']) if result and result['admin_role_id'] else None
+        except Exception as e:
+            logger.error(f"Error getting admin role ID: {e}")
             return None
     
     async def set_mod_role_id(self, guild_id: str, role_id: int = None):
@@ -59,20 +75,73 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute('''
-                    INSERT INTO guilds (id, name, mod_role_id, joined_at, updated_at)
+                    INSERT INTO guilds (id, name, moderator_role_id, joined_at, updated_at)
                     VALUES ($1, 'Unknown', $2, NOW(), NOW())
                     ON CONFLICT (id) 
-                    DO UPDATE SET mod_role_id = $2, updated_at = NOW()
+                    DO UPDATE SET moderator_role_id = $2, updated_at = NOW()
                 ''', guild_id, str(role_id) if role_id else None)
         except Exception as e:
             logger.error(f"Error setting mod role ID: {e}")
     
-    @app_commands.command(name='modrole', description='Set the minimum role required for moderation commands')
+    async def set_admin_role_id(self, guild_id: str, role_id: int = None):
+        """Set the admin role ID for a guild"""
+        if not self.bot.db_pool:
+            return
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                await conn.execute('''
+                    INSERT INTO guilds (id, name, admin_role_id, joined_at, updated_at)
+                    VALUES ($1, 'Unknown', $2, NOW(), NOW())
+                    ON CONFLICT (id) 
+                    DO UPDATE SET admin_role_id = $2, updated_at = NOW()
+                ''', guild_id, str(role_id) if role_id else None)
+        except Exception as e:
+            logger.error(f"Error setting admin role ID: {e}")
+    
+    async def has_mod_permissions(self, user: discord.Member, guild_id: str) -> bool:
+        """Check if user has moderator permissions (for mute, unmute, timeout, warn)"""
+        # Check Discord permissions first
+        if user.guild_permissions.administrator or user.guild_permissions.moderate_members:
+            return True
+        
+        # Check custom mod role
+        mod_role_id = await self.get_mod_role_id(guild_id)
+        admin_role_id = await self.get_admin_role_id(guild_id)
+        
+        user_role_ids = [role.id for role in user.roles]
+        
+        # Check if user has mod role or admin role (admin can do everything mod can)
+        if mod_role_id and mod_role_id in user_role_ids:
+            return True
+        if admin_role_id and admin_role_id in user_role_ids:
+            return True
+        
+        return False
+    
+    async def has_admin_permissions(self, user: discord.Member, guild_id: str) -> bool:
+        """Check if user has admin permissions (for ban, unban, slowmode, lock, unlock)"""
+        # Check Discord permissions first
+        if user.guild_permissions.administrator or user.guild_permissions.ban_members or user.guild_permissions.manage_channels:
+            return True
+        
+        # Check custom admin role
+        admin_role_id = await self.get_admin_role_id(guild_id)
+        
+        user_role_ids = [role.id for role in user.roles]
+        
+        # Check if user has admin role
+        if admin_role_id and admin_role_id in user_role_ids:
+            return True
+        
+        return False
+    
+    @app_commands.command(name='modrole', description='Set the role for basic moderation commands (mute, timeout, warn)')
     @app_commands.describe(
-        role="The role that will be able to use moderation commands (and roles above it)"
+        role="The role that will be able to use basic moderation commands"
     )
     async def modrole(self, interaction: discord.Interaction, role: discord.Role = None):
-        """Set or view the minimum role required for moderation commands"""
+        """Set or view the role required for basic moderation commands"""
         
         # Check if user is administrator
         if not interaction.user.guild_permissions.administrator:
@@ -103,12 +172,12 @@ class ModRoleCog(commands.Cog):
                     )
                     embed.add_field(
                         name=f"{EMOJIS['INFO']} How It Works",
-                        value="Users with this role or any role above it can use moderation commands.",
+                        value="Users with this role or admin role can use basic moderation commands.",
                         inline=False
                     )
                     embed.add_field(
-                        name="🛠️ Affected Commands",
-                        value="`/ban`, `/kick`, `/mute`, `/unmute`, `/timeout`, `/warn`, `/purge`, `/slowmode`, `/lock`, `/unlock`",
+                        name="🛠️ Moderation Commands",
+                        value="`/mute`, `/unmute`, `/timeout`, `/untimeout`, `/warn`",
                         inline=False
                     )
                 else:
@@ -155,53 +224,153 @@ class ModRoleCog(commands.Cog):
         # Validate role hierarchy - user's role position (except server owner)
         if role.position >= interaction.user.top_role.position and interaction.user != interaction.guild.owner:
             embed = discord.Embed(
-                title=f"{EMOJIS['ERROR']} Role Hierarchy Error", 
-                description="You cannot set a moderation role that is higher than or equal to your highest role.",
+                title=f"{EMOJIS['ERROR']} Role Hierarchy Error",
+                description="You cannot set a role that is higher than or equal to your highest role.",
+                color=COLORS['ERROR']
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Set the mod role
+        await self.set_mod_role_id(str(interaction.guild.id), role.id)
+        
+        embed = discord.Embed(
+            title=f"{EMOJIS['SUCCESS']} Moderation Role Set",
+            description=f"Moderation role has been set to {role.mention}",
+            color=COLORS['SUCCESS']
+        )
+        embed.add_field(
+            name="🛠️ Moderation Commands",
+            value="`/mute`, `/unmute`, `/timeout`, `/untimeout`, `/warn`",
+            inline=False
+        )
+        embed.add_field(
+            name="💡 Note",
+            value="Users with this role or admin role can use basic moderation commands.",
+            inline=False
+        )
+        
+        await interaction.response.send_message(embed=embed)
+        logger.info(f"Moderation role set to {role.name} by {interaction.user.name} in {interaction.guild.name}")
+    
+    @app_commands.command(name='adminrole', description='Set the role for advanced admin commands (ban, lock, slowmode)')
+    @app_commands.describe(
+        role="The role that will be able to use advanced admin commands"
+    )
+    async def adminrole(self, interaction: discord.Interaction, role: discord.Role = None):
+        """Set or view the role required for advanced admin commands"""
+        
+        # Check if user is administrator
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title=f"{EMOJIS['ERROR']} Permission Denied",
+                description="You need Administrator permission to use this command.",
+                color=COLORS['ERROR']
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        if role is None:
+            # Show current admin role
+            current_role_id = await self.get_admin_role_id(str(interaction.guild.id))
+            
+            if current_role_id:
+                current_role = interaction.guild.get_role(current_role_id)
+                if current_role:
+                    embed = discord.Embed(
+                        title=f"{EMOJIS['SHIELD']} Current Admin Role",
+                        description=f"The current admin role is {current_role.mention}",
+                        color=COLORS['BLUE']
+                    )
+                    embed.add_field(
+                        name=f"{EMOJIS['STATS']} Role Information",
+                        value=f"**Role:** {current_role.name}\n**Members:** {len(current_role.members)}\n**Position:** {current_role.position}",
+                        inline=False
+                    )
+                    embed.add_field(
+                        name=f"{EMOJIS['INFO']} How It Works",
+                        value="Users with this role can use all moderation commands including advanced admin commands.",
+                        inline=False
+                    )
+                    embed.add_field(
+                        name="🛠️ Admin Commands",
+                        value="`/ban`, `/unban`, `/slowmode`, `/lock`, `/unlock`\n**Plus all moderation commands**",
+                        inline=False
+                    )
+                else:
+                    embed = discord.Embed(
+                        title=f"{EMOJIS['WARNING']} Admin Role Not Found",
+                        description="The configured admin role no longer exists.\nUse `/adminrole <role>` to set a new one.",
+                        color=COLORS['WARNING']
+                    )
+            else:
+                embed = discord.Embed(
+                    title=f"{EMOJIS['ERROR']} No Admin Role Set",
+                    description="No admin role has been configured.\nUse `/adminrole <role>` to set one.",
+                    color=COLORS['ERROR']
+                )
+                embed.add_field(
+                    name="📝 Default Behavior",
+                    value="Currently, users with 'Ban Members' or 'Manage Channels' permissions can use admin commands.",
+                    inline=False
+                )
+                embed.add_field(
+                    name="💡 Tip",
+                    value="Setting a custom admin role gives you more precise control over who can use advanced commands.",
+                    inline=False
+                )
+            
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Validate role hierarchy - bot's role position
+        if role.position >= interaction.guild.me.top_role.position:
+            embed = discord.Embed(
+                title=f"{EMOJIS['ERROR']} Role Hierarchy Error",
+                description="I cannot manage roles that are higher than or equal to my highest role.",
                 color=COLORS['ERROR']
             )
             embed.add_field(
                 name="💡 Solution",
-                value="Choose a role that is below your highest role in the hierarchy.",
+                value="Move my role higher in the server settings or choose a lower role.",
                 inline=False
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Save the mod role
-        await self.set_mod_role_id(str(interaction.guild.id), role.id)
+        # Validate role hierarchy - user's role position (except server owner)
+        if role.position >= interaction.user.top_role.position and interaction.user != interaction.guild.owner:
+            embed = discord.Embed(
+                title=f"{EMOJIS['ERROR']} Role Hierarchy Error",
+                description="You cannot set a role that is higher than or equal to your highest role.",
+                color=COLORS['ERROR']
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
         
-        # Create success embed
+        # Set the admin role
+        await self.set_admin_role_id(str(interaction.guild.id), role.id)
+        
         embed = discord.Embed(
-            title=f"{EMOJIS['SUCCESS']} Moderation Role Set",
-            description=f"Successfully set {role.mention} as the moderation role!",
+            title=f"{EMOJIS['SUCCESS']} Admin Role Set",
+            description=f"Admin role has been set to {role.mention}",
             color=COLORS['SUCCESS']
         )
-        
         embed.add_field(
-            name=f"{EMOJIS['STATS']} Role Information",
-            value=f"**Role:** {role.name}\n**Members:** {len(role.members)}\n**Position:** {role.position}",
+            name="🛠️ Admin Commands",
+            value="`/ban`, `/unban`, `/slowmode`, `/lock`, `/unlock`",
+            inline=False
+        )
+        embed.add_field(
+            name="🔧 Additional Access",
+            value="This role can also use all moderation commands: `/mute`, `/unmute`, `/timeout`, `/untimeout`, `/warn`",
             inline=False
         )
         
-        embed.add_field(
-            name="🛠️ Affected Commands",
-            value="`/ban`, `/kick`, `/mute`, `/unmute`, `/timeout`, `/warn`, `/purge`, `/slowmode`, `/lock`, `/unlock`",
-            inline=False
-        )
-        
-        embed.add_field(
-            name=f"{EMOJIS['INFO']} How It Works",
-            value="Users with this role or any role above it can now use moderation commands.",
-            inline=False
-        )
-        
-        embed.set_footer(text="Use /modrole with no arguments to view the current setting")
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        
-        logger.info(f"Moderation role set to {role.name} by {interaction.user} in {interaction.guild.name}")
+        await interaction.response.send_message(embed=embed)
+        logger.info(f"Admin role set to {role.name} by {interaction.user.name} in {interaction.guild.name}")
     
-    @app_commands.command(name='resetmodrole', description='Reset moderation role to default (Moderate Members permission)')
+    @app_commands.command(name='resetmodrole', description='Reset moderation role to default Discord permissions')
     async def resetmodrole(self, interaction: discord.Interaction):
         """Reset moderation role to default Discord permissions"""
         
@@ -215,129 +384,23 @@ class ModRoleCog(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Remove the mod role setting
+        # Reset both roles to None
         await self.set_mod_role_id(str(interaction.guild.id), None)
+        await self.set_admin_role_id(str(interaction.guild.id), None)
         
         embed = discord.Embed(
-            title=f"{EMOJIS['SUCCESS']} Moderation Role Reset",
-            description="Successfully reset the moderation role to default!",
+            title=f"{EMOJIS['SUCCESS']} Roles Reset",
+            description="Both moderation and admin roles have been reset to default Discord permissions.",
             color=COLORS['SUCCESS']
         )
-        
         embed.add_field(
-            name="📝 Default Behavior",
-            value="Users with 'Moderate Members' permission can now use moderation commands.",
+            name="📝 Default Permissions",
+            value="**Moderation Commands:** Users with 'Moderate Members' permission\n**Admin Commands:** Users with 'Ban Members', 'Manage Channels', or 'Administrator' permissions",
             inline=False
         )
         
-        embed.add_field(
-            name="🛠️ Affected Commands",
-            value="`/ban`, `/kick`, `/mute`, `/unmute`, `/timeout`, `/warn`, `/purge`, `/slowmode`, `/lock`, `/unlock`",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="💡 Next Steps",
-            value="To set a custom moderation role again, use `/modrole <role>`.",
-            inline=False
-        )
-        
-        embed.set_footer(text="Moderation commands now use Discord's default permissions")
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        
-        logger.info(f"Moderation role reset by {interaction.user} in {interaction.guild.name}")
-    
-    @app_commands.command(name='modpermissions', description='Check moderation permissions for a user')
-    @app_commands.describe(
-        user="The user to check moderation permissions for"
-    )
-    async def modpermissions(self, interaction: discord.Interaction, user: discord.Member = None):
-        """Check if a user has moderation permissions"""
-        
-        # Default to the command user if no user specified
-        if user is None:
-            user = interaction.user
-        
-        # Check if command user has permissions to view this
-        if not (interaction.user.guild_permissions.administrator or 
-                interaction.user.guild_permissions.manage_guild or
-                user == interaction.user):
-            embed = discord.Embed(
-                title=f"{EMOJIS['ERROR']} Permission Denied",
-                description="You can only check your own permissions unless you have Administrator or Manage Server permission.",
-                color=COLORS['ERROR']
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-        
-        # Check moderation permissions
-        has_default_perms = user.guild_permissions.moderate_members
-        has_admin_perms = user.guild_permissions.administrator
-        
-        # Check custom mod role
-        current_role_id = await self.get_mod_role_id(str(interaction.guild.id))
-        has_custom_role = False
-        custom_role_name = None
-        
-        if current_role_id:
-            custom_role = interaction.guild.get_role(current_role_id)
-            if custom_role:
-                custom_role_name = custom_role.name
-                # Check if user has the mod role or a higher role
-                user_top_role_position = user.top_role.position
-                has_custom_role = (custom_role in user.roles or 
-                                 user_top_role_position >= custom_role.position)
-        
-        # Determine overall permission status
-        can_moderate = has_admin_perms or has_default_perms or has_custom_role
-        
-        embed = discord.Embed(
-            title=f"{EMOJIS['SHIELD']} Moderation Permissions",
-            description=f"Permission check for {user.mention}",
-            color=COLORS['SUCCESS'] if can_moderate else COLORS['ERROR']
-        )
-        
-        # Permission breakdown
-        permissions_text = ""
-        if has_admin_perms:
-            permissions_text += f"{EMOJIS['SUCCESS']} Administrator\n"
-        else:
-            permissions_text += f"{EMOJIS['ERROR']} Administrator\n"
-        
-        if has_default_perms:
-            permissions_text += f"{EMOJIS['SUCCESS']} Moderate Members\n"
-        else:
-            permissions_text += f"{EMOJIS['ERROR']} Moderate Members\n"
-        
-        if current_role_id and custom_role_name:
-            if has_custom_role:
-                permissions_text += f"{EMOJIS['SUCCESS']} Custom Mod Role ({custom_role_name})\n"
-            else:
-                permissions_text += f"{EMOJIS['ERROR']} Custom Mod Role ({custom_role_name})\n"
-        else:
-            permissions_text += f"{EMOJIS['INFO']} No custom mod role set\n"
-        
-        embed.add_field(
-            name="Permission Sources",
-            value=permissions_text,
-            inline=False
-        )
-        
-        embed.add_field(
-            name="Overall Status",
-            value=f"{'✅ Can use moderation commands' if can_moderate else '❌ Cannot use moderation commands'}",
-            inline=False
-        )
-        
-        if user.top_role:
-            embed.add_field(
-                name="User Information",
-                value=f"**Highest Role:** {user.top_role.mention}\n**Role Position:** {user.top_role.position}",
-                inline=False
-            )
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed)
+        logger.info(f"Mod and admin roles reset by {interaction.user.name} in {interaction.guild.name}")
 
 async def setup(bot):
     await bot.add_cog(ModRoleCog(bot))
