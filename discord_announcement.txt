@@ -1,44 +1,31 @@
-🛡️ **MAJOR AUTOMOD EXPANSION** 🛡️
+🎫 **MAJOR UPDATE: Professional Ticket System**
 
-**NEW AutoMod Protection Features Now Live!**
+NexGuard now features a **complete TicketsBot.net-style ticket system** that works entirely within Discord!
 
-🔤 **Caps Lock Filter**
-• Configurable threshold (10-100%)
-• Default 70% caps detection
-• Automatic message deletion
-• Professional logging
+## ✨ New Features:
+• **Custom Ticket Panels** - Create branded button panels for different support categories
+• **Advanced Forms** - Collect user information before ticket creation with custom questions  
+• **Professional Design** - Clean Discord blue embeds matching professional ticket bots
+• **Staff Management** - Claim tickets, assign support teams, and track performance
+• **Smart Placeholders** - Use variables like {user.mention}, {guild.name} in messages
+• **Multiline Support** - Shift+Enter for detailed responses in all text fields
+• **Auto Transcripts** - Full conversation history saved when tickets close
+• **User Feedback** - 5-star rating system with detailed comments
+• **Analytics Dashboard** - Resolution rates, satisfaction scores, and performance metrics
 
-📢 **Mention Limits Protection**  
-• Configurable limits (1-20 mentions)
-• Blocks @user, @role, @everyone, @here spam
-• Real-time enforcement
-• Detailed violation reports
+## 🚀 Getting Started:
+```
+/ticket-panel create name:"general-support" title:"General Support" description:"Get help with any questions"
+/ticket-form panel_name:"general-support" form_title:"Support Application" questions:"Issue Type;Description;Priority Level"
+/ticket-panel deploy
+```
 
-**Enhanced Command Suite - 51+ Commands!**
-• **Admin (5)** - Settings, logging, welcome system
-• **Moderation (12)** - Bans, kicks, warnings, channel management
-• **AutoMod (8)** - Complete protection suite including new features
-• **Auto-Reply (5)** - Smart response system
-• **Role Management (5)** - Hierarchical permissions
-• **Utility (12)** - Server insights and tools
-• **Tickets (3)** - Multi-category support system
+## 🎯 Perfect For:
+✓ Gaming communities & RP servers  
+✓ Business servers requiring professional support
+✓ Any community needing organized ticket management
+✓ Servers wanting to replace paid ticket bots
 
-**Key Features:**
-✅ Moderators bypass all automod (Manage Messages permission)
-✅ Professional logging to configured channels
-✅ Real-time protection across 9+ servers
-✅ Universal command logging for all 51 commands
-✅ Advanced settings display with complete automod status
+**No web dashboard needed - everything works in Discord!**
 
-**Get Started:**
-• `/automod-caps` - Configure caps lock protection
-• `/automod-mentions` - Set mention limits
-• `/settings` - View complete automod status
-• `/commands` - Browse all 51+ commands
-
-**Currently Protecting 174+ Users Across 9+ Servers!**
-
-*Experience the most advanced Discord moderation available.*
-
----
-*NexGuard v2.3.2 | Advanced Discord Moderation & Management*
+*Powered by NexGuard Advanced Moderation • 48 total commands*

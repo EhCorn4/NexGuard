@@ -182,31 +182,30 @@ class TicketButton(discord.ui.Button):
         
         processed_welcome = self.process_placeholders(welcome_msg, welcome_context)
         
-        # Send welcome embed with controls
+        # Send welcome embed with controls - styled like the reference image  
         embed = discord.Embed(
-            title=f"🎫 {panel['title']}",
             description=processed_welcome,
-            color=0x00ff00
+            color=0x5865F2  # Discord blue color like in the image
         )
-        embed.add_field(name="Created by", value=interaction.user.mention, inline=True)
-        embed.add_field(name="Ticket ID", value=ticket_id, inline=True)
-        embed.add_field(name="Created", value=f"<t:{int(datetime.utcnow().timestamp())}:R>", inline=True)
         
-        # Add form responses if any
+        # Add form responses in a clean format like the reference
+        form_display_text = ""
+        
+        # Add form responses in a clean list format like the reference
         if form_data:
             try:
                 questions = json.loads(panel['form_questions'])
+                form_display_text += "\n\n**Please list the following:**\n"
                 for i, question in enumerate(questions):
                     if f'question_{i}' in form_data:
-                        embed.add_field(
-                            name=question.get('label', f'Question {i+1}'),
-                            value=form_data[f'question_{i}'][:1000],
-                            inline=False
-                        )
+                        form_display_text += f"\n**{question.get('label', f'Question {i+1}')}**\n{form_data[f'question_{i}']}\n"
             except (json.JSONDecodeError, KeyError):
                 pass
         
-        embed.set_footer(text=f"Ticket ID: {ticket_id}")
+        if form_display_text:
+            embed.description += form_display_text
+        
+        embed.set_footer(text=f"NexGuard | nexguard.bot • Ticket ID: {ticket_id}")
         
         # Add ticket control buttons
         view = TicketControlView(ticket_id)
@@ -351,7 +350,7 @@ class TicketControlView(discord.ui.View):
         super().__init__(timeout=None)
         self.ticket_id = ticket_id
     
-    @discord.ui.button(label="🔒 Close", style=discord.ButtonStyle.danger, custom_id="close_ticket")
+    @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.secondary, custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Close ticket with feedback collection"""
         try:
@@ -369,7 +368,7 @@ class TicketControlView(discord.ui.View):
             logger.error(f"Error closing ticket: {e}")
             await interaction.response.send_message("❌ Failed to close ticket.", ephemeral=True)
     
-    @discord.ui.button(label="🎯 Claim", style=discord.ButtonStyle.secondary, custom_id="claim_ticket")
+    @discord.ui.button(label="Claim", emoji="🙌", style=discord.ButtonStyle.secondary, custom_id="claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Claim ticket for dedicated support"""
         try:
@@ -403,11 +402,10 @@ class TicketControlView(discord.ui.View):
                 """, str(interaction.user.id), datetime.utcnow(), self.ticket_id)
                 
                 embed = discord.Embed(
-                    title="🎯 Ticket Claimed",
-                    description=f"{interaction.user.mention} has claimed this ticket.",
-                    color=0xff9900
+                    description=f"🙌 **Ticket Claimed**\n\n{interaction.user.mention} has claimed this ticket and will provide dedicated support.",
+                    color=0x5865F2
                 )
-                embed.set_footer(text="You now have dedicated support!")
+                embed.set_footer(text="NexGuard | You now have dedicated support!")
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -415,7 +413,7 @@ class TicketControlView(discord.ui.View):
             logger.error(f"Error claiming ticket: {e}")
             await interaction.response.send_message("❌ Failed to claim ticket.", ephemeral=True)
     
-    @discord.ui.button(label="📋 Info", style=discord.ButtonStyle.secondary, custom_id="ticket_info")
+    @discord.ui.button(label="Info", emoji="📋", style=discord.ButtonStyle.secondary, custom_id="ticket_info")
     async def ticket_info(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show ticket information"""
         try:
@@ -430,22 +428,21 @@ class TicketControlView(discord.ui.View):
                     return
                 
                 embed = discord.Embed(
-                    title=f"🎫 Ticket {self.ticket_id}",
-                    color=0x00ff00 if ticket['status'] == 'open' else 0xff9900
+                    description=f"📋 **Ticket Information**\n\n**Ticket ID:** {self.ticket_id}",
+                    color=0x5865F2
                 )
                 
-                embed.add_field(name="Subject", value=ticket['subject'], inline=False)
-                embed.add_field(name="Status", value=ticket['status'].title(), inline=True)
-                embed.add_field(name="Priority", value=ticket['priority'].title(), inline=True)
-                embed.add_field(name="Created", value=f"<t:{int(ticket['created_at'].timestamp())}:F>", inline=True)
+                info_text = f"\n**Subject:** {ticket['subject']}"
+                info_text += f"\n**Status:** {ticket['status'].title()}"
+                info_text += f"\n**Priority:** {ticket['priority'].title()}" 
+                info_text += f"\n**Created:** <t:{int(ticket['created_at'].timestamp())}:F>"
                 
                 if ticket['claimed_by']:
                     claimer = interaction.guild.get_member(int(ticket['claimed_by']))
-                    embed.add_field(
-                        name="Claimed by", 
-                        value=claimer.mention if claimer else "Unknown User", 
-                        inline=True
-                    )
+                    info_text += f"\n**Claimed by:** {claimer.mention if claimer else 'Unknown User'}"
+                
+                embed.description += info_text
+                embed.set_footer(text="NexGuard | Ticket Information")
                 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 
@@ -547,12 +544,12 @@ class CloseTicketModal(discord.ui.Modal):
             
             # Send closing message
             embed = discord.Embed(
-                title="🔒 Ticket Closed",
-                description=f"This ticket has been closed by {interaction.user.mention}",
-                color=0xff0000
+                description=f"🔒 **Ticket Closed**\n\nThis ticket has been closed by {interaction.user.mention}",
+                color=0x5865F2
             )
-            embed.add_field(name="Reason", value=self.reason.value or "No reason provided", inline=False)
-            embed.set_footer(text="This channel will be deleted in 30 seconds.")
+            if self.reason.value:
+                embed.description += f"\n\n**Reason:** {self.reason.value}"
+            embed.set_footer(text="NexGuard | This channel will be deleted in 30 seconds.")
             
             await interaction.followup.send(embed=embed)
             
@@ -976,6 +973,75 @@ class TicketCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Error deleting panel: {e}")
             await interaction.followup.send("❌ Failed to delete panel.", ephemeral=True)
+    
+    @app_commands.command(name="ticket-form", description="Create custom forms for ticket panels")
+    @app_commands.describe(
+        panel_name="Name of the panel to add the form to",
+        form_title="Title shown to users when filling the form",
+        questions="Questions separated by semicolons (e.g., 'RP Name;Age;Experience')"
+    )
+    async def ticket_form(
+        self,
+        interaction: discord.Interaction,
+        panel_name: str,
+        form_title: str,
+        questions: str
+    ):
+        if not interaction.user.guild_permissions.manage_guild:
+            await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
+            return
+            
+        await interaction.response.defer()
+        
+        try:
+            # Parse questions
+            question_list = [q.strip() for q in questions.split(';') if q.strip()]
+            
+            if not question_list:
+                await interaction.followup.send("❌ Please provide at least one question.", ephemeral=True)
+                return
+            
+            # Format questions for database storage
+            form_questions = []
+            for question in question_list:
+                form_questions.append({
+                    'label': question,
+                    'placeholder': f'Please provide your {question.lower()}... (Shift+Enter for new line)',
+                    'required': True,
+                    'multiline': True,
+                    'max_length': 1000
+                })
+            
+            async with self.bot.db_pool.acquire() as conn:
+                # Update panel with form
+                result = await conn.execute("""
+                    UPDATE ticket_panels 
+                    SET has_form = TRUE, 
+                        form_questions = $1,
+                        updated_at = NOW()
+                    WHERE guild_id = $2 AND panel_id = $3 AND is_active = TRUE
+                """, json.dumps(form_questions), str(interaction.guild.id), panel_name.lower().replace(' ', '_'))
+                
+                if result == "UPDATE 1":
+                    embed = discord.Embed(
+                        description=f"✅ **Form Created Successfully**\n\nForm has been added to panel `{panel_name}` with {len(question_list)} questions.",
+                        color=0x5865F2
+                    )
+                    
+                    questions_text = ""
+                    for i, question in enumerate(question_list, 1):
+                        questions_text += f"\n**{i}.** {question}"
+                    
+                    embed.description += f"\n\n**Questions:{questions_text}"
+                    embed.set_footer(text="NexGuard | Form will be shown when users create tickets from this panel")
+                    
+                    await interaction.followup.send(embed=embed)
+                else:
+                    await interaction.followup.send(f"❌ Panel `{panel_name}` not found.", ephemeral=True)
+                    
+        except Exception as e:
+            logger.error(f"Error creating ticket form: {e}")
+            await interaction.followup.send("❌ Failed to create form.", ephemeral=True)
     
     @app_commands.command(name="ticket-stats", description="View ticket statistics and analytics")
     @app_commands.describe(
