@@ -161,10 +161,31 @@ class TicketButton(discord.ui.Button):
                 json.dumps(form_data) if form_data else None, datetime.utcnow()
             )
         
+        # Process welcome message placeholders
+        welcome_msg = panel.get('welcome_message', "Thank you for creating a ticket, {user.mention}. Our team will assist you shortly.")
+        welcome_context = {
+            'user': {
+                'mention': interaction.user.mention,
+                'name': interaction.user.name,
+                'display_name': interaction.user.display_name,
+                'id': interaction.user.id
+            },
+            'guild': {
+                'name': interaction.guild.name,
+                'member_count': interaction.guild.member_count
+            },
+            'ticket': {
+                'id': ticket_id,
+                'category': panel['title']
+            }
+        }
+        
+        processed_welcome = self.process_placeholders(welcome_msg, welcome_context)
+        
         # Send welcome embed with controls
         embed = discord.Embed(
             title=f"🎫 {panel['title']}",
-            description=panel.get('welcome_message', "Thank you for creating a ticket. Our team will assist you shortly."),
+            description=processed_welcome,
             color=0x00ff00
         )
         embed.add_field(name="Created by", value=interaction.user.mention, inline=True)
@@ -230,12 +251,18 @@ class TicketFormModal(discord.ui.Modal):
             questions = json.loads(panel['form_questions']) if panel['form_questions'] else []
             
             for i, question in enumerate(questions[:5]):  # Discord limit
+                # Process placeholder text
+                placeholder_text = self.process_placeholders(
+                    question.get('placeholder', 'Your answer here... (Shift+Enter for new line)'),
+                    {'user': {'mention': 'you'}}  # Sample for placeholder display
+                )
+                
                 field = discord.ui.TextInput(
-                    label=question.get('label', f'Question {i+1}')[:45],  # Discord limit
-                    placeholder=question.get('placeholder', 'Your answer...')[:100],
+                    label=question.get('label', f'Question {i+1}')[:45],  # Discord limit  
+                    placeholder=placeholder_text[:100],
                     required=question.get('required', True),
-                    max_length=min(question.get('max_length', 1000), 4000),  # Discord limit
-                    style=discord.TextStyle.paragraph if question.get('multiline', True) else discord.TextStyle.short
+                    max_length=min(question.get('max_length', 2000), 4000),  # Discord limit
+                    style=discord.TextStyle.paragraph  # Always multiline for Shift+Enter support
                 )
                 self.add_item(field)
                 
@@ -243,12 +270,43 @@ class TicketFormModal(discord.ui.Modal):
             # Fallback single question
             field = discord.ui.TextInput(
                 label="Please describe your issue",
-                placeholder="Tell us how we can help you...",
+                placeholder="Tell us how we can help {user.mention}... (Shift+Enter for new line)",
                 required=True,
-                max_length=1000,
+                max_length=2000,
                 style=discord.TextStyle.paragraph
             )
             self.add_item(field)
+    
+    def process_placeholders(self, text: str, context: dict) -> str:
+        """Process placeholder variables like {user.mention}"""
+        if not text or not isinstance(text, str):
+            return text or ""
+            
+        try:
+            # Replace user placeholders
+            if 'user' in context:
+                user = context['user']
+                text = text.replace('{user.mention}', user.get('mention', '@user'))
+                text = text.replace('{user.name}', user.get('name', 'User'))
+                text = text.replace('{user.display_name}', user.get('display_name', 'User'))
+                text = text.replace('{user.id}', str(user.get('id', '000000')))
+            
+            # Replace guild placeholders
+            if 'guild' in context:
+                guild = context['guild']
+                text = text.replace('{guild.name}', guild.get('name', 'Server'))
+                text = text.replace('{guild.member_count}', str(guild.get('member_count', '0')))
+            
+            # Replace ticket placeholders
+            if 'ticket' in context:
+                ticket = context['ticket']
+                text = text.replace('{ticket.id}', ticket.get('id', 'ticket-0000'))
+                text = text.replace('{ticket.category}', ticket.get('category', 'General'))
+                
+        except Exception as e:
+            logger.error(f"Error processing placeholders: {e}")
+            
+        return text
     
     async def on_submit(self, interaction: discord.Interaction):
         try:
@@ -258,13 +316,28 @@ class TicketFormModal(discord.ui.Modal):
                 if isinstance(item, discord.ui.TextInput):
                     form_data[f'question_{i}'] = item.value
             
-            # Create ticket with form data
+            # Process form data placeholders
+            processed_form_data = {}
+            user_context = {
+                'user': {
+                    'mention': interaction.user.mention,
+                    'name': interaction.user.name,
+                    'display_name': interaction.user.display_name,
+                    'id': interaction.user.id
+                }
+            }
+            
+            for key, value in form_data.items():
+                processed_form_data[key] = self.process_placeholders(str(value), user_context)
+            
+            # Create ticket with processed form data
             button = TicketButton(self.panel_id, self.panel['title'])
-            await button.setup_ticket_channel(interaction, self.panel, 
-                await button.get_ticket_count(interaction, interaction.client.db_pool) + 1, form_data)
+            ticket_count = await button.get_ticket_count(interaction, interaction.client.db_pool)
+            ticket_id = f"ticket-{ticket_count + 1:04d}"
+            channel = await button.setup_ticket_channel(interaction, self.panel, ticket_id, processed_form_data)
             
             await interaction.response.send_message(
-                f"✅ Ticket created with your information!",
+                f"✅ Ticket created with your information! Continue in {channel.mention}",
                 ephemeral=True
             )
             
@@ -432,9 +505,9 @@ class CloseTicketModal(discord.ui.Modal):
         
         self.reason = discord.ui.TextInput(
             label="Reason for closing (optional)",
-            placeholder="Why is this ticket being closed?",
+            placeholder="Why is this ticket being closed? (Shift+Enter for new line)",
             required=False,
-            max_length=1000,
+            max_length=2000,
             style=discord.TextStyle.paragraph
         )
         self.add_item(self.reason)
@@ -562,9 +635,9 @@ class FeedbackModal(discord.ui.Modal):
         
         self.comment = discord.ui.TextInput(
             label="Additional comments (optional)",
-            placeholder="Tell us about your support experience...",
+            placeholder="Tell us about your support experience... (Shift+Enter for new line)",
             required=False,
-            max_length=1000,
+            max_length=2000,
             style=discord.TextStyle.paragraph
         )
         self.add_item(self.comment)
@@ -696,7 +769,12 @@ class TicketCommands(commands.Cog):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
-        await interaction.response.defer()
+        # Check if we should defer based on action
+        if action in ["create", "edit", "delete", "list", "deploy"]:
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ Unknown action.", ephemeral=True)
+            return
         
         try:
             if action == "create":
