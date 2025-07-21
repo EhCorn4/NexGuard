@@ -357,6 +357,12 @@ The system is a complete Discord bot with integrated website that:
 - July 21, 2025: Updated `/automod-config` and `/settings` commands to display new caps and mention limit protection status
 - July 21, 2025: Bot now has 51+ commands including comprehensive caps lock and mention spam protection across all automod features
 - July 21, 2025: All automod features bypass users with Manage Messages permission for moderator flexibility
+- July 21, 2025: **COMMANDS LIST UPDATED** - Enhanced `/commands` to display all 51+ commands across organized categories
+- July 21, 2025: Added complete AutoMod command suite including new caps lock and mention limits commands
+- July 21, 2025: Added Auto-Reply command category with all 5 auto-reply management commands
+- July 21, 2025: Added Role Management category showing hierarchical permission system commands
+- July 21, 2025: Updated command categories to reflect current bot capabilities: Admin (5), Moderation (12), Utility (12), AutoMod (8), Auto-Reply (5), Role Management (5), Tickets (3)
+- July 21, 2025: Enhanced command descriptions to show advanced features like temporary bans, channel locking, caps filtering, and mention limits
 - July 21, 2025: **AUTO-REPLY SYSTEM PERFECTED** - Fixed remaining duplicate issues by removing duplicate keywords from triggers
 - July 21, 2025: Added duplicate rule prevention tracking to ensure only one response per matching message
 - July 21, 2025: Fixed autoreply-list command interaction timeouts with proper defer() handling

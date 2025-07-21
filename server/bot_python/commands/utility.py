@@ -334,23 +334,30 @@ class UtilityCommands(commands.Cog):
         
         # Admin Commands
         admin_commands = [
-            "`/setprefix` - Set command prefix",
-            "`/configure` - Configure server settings",
+            "`/settings` - View server settings",
             "`/welcome` - Manage welcome messages",
-            "`/settings` - View server settings"
+            "`/botlogging` - Configure bot logging",
+            "`/errorlog` - Configure error logging",
+            "`/changelog` - Manage bot changelog"
         ]
-        embed.add_field(name="🔧 Admin Commands", value="\n".join(admin_commands), inline=False)
+        embed.add_field(name="⚙️ Admin Commands", value="\n".join(admin_commands), inline=False)
         
         # Moderation Commands
         mod_commands = [
-            "`/ban` - Ban a user",
+            "`/ban` - Ban a user (with temp duration)",
             "`/kick` - Kick a user",
             "`/warn` - Warn a user",
             "`/timeout` - Timeout a user",
+            "`/untimeout` - Remove timeout from user",
             "`/unban` - Unban a user",
+            "`/mute` - Mute a user",
+            "`/unmute` - Unmute a user",
+            "`/lock` - Lock a channel",
+            "`/unlock` - Unlock a channel",
+            "`/slowmode` - Set channel slowmode",
             "`/purge` - Delete multiple messages"
         ]
-        embed.add_field(name="🛡️ Moderation Commands", value="\n".join(mod_commands), inline=False)
+        embed.add_field(name="⚖️ Moderation Commands", value="\n".join(mod_commands), inline=False)
         
         # Utility Commands
         util_commands = [
@@ -372,8 +379,8 @@ class UtilityCommands(commands.Cog):
         # Ticket Commands
         ticket_commands = [
             "`/ticket` - Create support ticket",
-            "`/ticketinfo` - Get ticket information",
-            "`/ticketmanage` - Manage tickets (staff only)"
+            "`/tickets` - List and manage tickets",
+            "`/ticketcategory` - Manage ticket categories"
         ]
         embed.add_field(name="🎫 Ticket Commands", value="\n".join(ticket_commands), inline=False)
         
@@ -383,7 +390,40 @@ class UtilityCommands(commands.Cog):
             inline=False
         )
         
-        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 27", icon_url=interaction.user.display_avatar.url)
+        # AutoMod Commands
+        automod_commands = [
+            "`/automod-config` - View AutoMod configuration",
+            "`/automod-spam` - Configure spam protection",
+            "`/automod-links` - Configure link filtering",
+            "`/automod-badwords` - Configure bad words filter",
+            "`/automod-caps` - Configure caps lock filter",
+            "`/automod-mentions` - Configure mention limits",
+            "`/automod-words` - Manage custom bad words",
+            "`/automod-reset` - Reset all AutoMod settings"
+        ]
+        embed.add_field(name="🛡️ AutoMod Commands", value="\n".join(automod_commands), inline=False)
+        
+        # Auto-Reply Commands
+        autoreply_commands = [
+            "`/autoreply-create` - Create auto-reply rules",
+            "`/autoreply-list` - List all auto-reply rules",
+            "`/autoreply-toggle` - Enable/disable auto-reply rules",
+            "`/autoreply-delete` - Delete auto-reply rules",
+            "`/autoreply-stats` - View auto-reply statistics"
+        ]
+        embed.add_field(name="🤖 Auto-Reply Commands", value="\n".join(autoreply_commands), inline=False)
+        
+        # Role Management Commands
+        role_commands = [
+            "`/modrole` - Set custom moderation role",
+            "`/adminrole` - Set custom admin role",
+            "`/resetmodrole` - Reset custom roles",
+            "`/modpermissions` - View mod permissions",
+            "`/autorole` - Configure auto-role assignment"
+        ]
+        embed.add_field(name="👥 Role Management", value="\n".join(role_commands), inline=False)
+        
+        embed.set_footer(text=f"NexGuard v2.3.2 | Total Commands: 51+", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
     

@@ -98,7 +98,19 @@ class AutoModCog(commands.Cog):
             return
         
         try:
+            # Get both JSON settings and individual database columns
             settings = await self.get_automod_settings(str(interaction.guild.id))
+            
+            # Get individual database settings too
+            if self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    db_config = await conn.fetchrow('''
+                        SELECT automod_caps_enabled, automod_caps_threshold, 
+                               automod_mentions_enabled, automod_mentions_limit
+                        FROM guilds WHERE id = $1
+                    ''', str(interaction.guild.id))
+            else:
+                db_config = {}
             
             embed = discord.Embed(
                 title=f"{EMOJIS['CONFIG']} AutoMod Configuration",
@@ -107,16 +119,14 @@ class AutoModCog(commands.Cog):
                 timestamp=datetime.utcnow()
             )
             
-            # Add current settings for each module
-            modules = {
+            # Traditional JSON-based modules
+            json_modules = {
                 'spam': {'emoji': EMOJIS['SPAM'], 'name': 'Spam Protection'},
                 'links': {'emoji': EMOJIS['LINK'], 'name': 'Link Filtering'},
-                'badwords': {'emoji': EMOJIS['WORDS'], 'name': 'Bad Words Filter'},
-                'caps': {'emoji': EMOJIS['CAPS'], 'name': 'Caps Lock Filter'},
-                'mentions': {'emoji': EMOJIS['MENTION'], 'name': 'Mention Limits'}
+                'badwords': {'emoji': EMOJIS['WORDS'], 'name': 'Bad Words Filter'}
             }
             
-            for module_name, module_info in modules.items():
+            for module_name, module_info in json_modules.items():
                 module_settings = settings.get(module_name, {})
                 enabled = module_settings.get('enabled', False)
                 status_emoji = EMOJIS['SUCCESS'] if enabled else EMOJIS['ERROR']
@@ -125,6 +135,43 @@ class AutoModCog(commands.Cog):
                 embed.add_field(
                     name=f"{status_emoji} {module_info['name']}",
                     value=f"Status: {'Enabled' if enabled else 'Disabled'}\nAction: {action.title()}",
+                    inline=True
+                )
+            
+            # Database-based modules
+            if db_config:
+                # Caps Lock Filter
+                caps_enabled = db_config.get('automod_caps_enabled', False)
+                caps_threshold = db_config.get('automod_caps_threshold', 70)
+                caps_emoji = EMOJIS['SUCCESS'] if caps_enabled else EMOJIS['ERROR']
+                
+                embed.add_field(
+                    name=f"{caps_emoji} Caps Lock Filter",
+                    value=f"Status: {'Enabled' if caps_enabled else 'Disabled'}\nThreshold: {caps_threshold}%",
+                    inline=True
+                )
+                
+                # Mention Limits
+                mentions_enabled = db_config.get('automod_mentions_enabled', False)
+                mentions_limit = db_config.get('automod_mentions_limit', 5)
+                mentions_emoji = EMOJIS['SUCCESS'] if mentions_enabled else EMOJIS['ERROR']
+                
+                embed.add_field(
+                    name=f"{mentions_emoji} Mention Limits",
+                    value=f"Status: {'Enabled' if mentions_enabled else 'Disabled'}\nLimit: {mentions_limit} mentions",
+                    inline=True
+                )
+            else:
+                # Fallback display if no database config
+                embed.add_field(
+                    name=f"{EMOJIS['ERROR']} Caps Lock Filter",
+                    value="Status: Disabled\nThreshold: 70%",
+                    inline=True
+                )
+                
+                embed.add_field(
+                    name=f"{EMOJIS['ERROR']} Mention Limits", 
+                    value="Status: Disabled\nLimit: 5 mentions",
                     inline=True
                 )
             
