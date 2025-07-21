@@ -117,7 +117,7 @@ class AutoReply(commands.Cog):
                     INSERT INTO auto_replies 
                     (guild_id, trigger, response_title, response_description, response_color, trigger_type, is_active, created_by_id, created_by_name)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ''', (
+                ''', 
                     str(interaction.guild.id),
                     keywords.lower(),
                     title,
@@ -127,7 +127,7 @@ class AutoReply(commands.Cog):
                     True,   # is_active
                     str(interaction.user.id),
                     interaction.user.display_name
-                ))
+                )
             
             embed = discord.Embed(
                 title=f"{EMOJIS['SUCCESS']} Auto-Reply Rule Created",
@@ -146,10 +146,16 @@ class AutoReply(commands.Cog):
         except Exception as e:
             logger.error(f"Error creating auto-reply rule: {e}")
             await self.bot.log_error(interaction.guild.id, "Auto-Reply Creation Error", str(e), "autoreply-create command")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to create auto-reply rule: {str(e)}", 
-                ephemeral=True
-            )
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Failed to create auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"{EMOJIS['ERROR']} Failed to create auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
     
     @app_commands.command(name="autoreply-list", description="List all auto-reply rules")
     async def autoreply_list(self, interaction: discord.Interaction):
@@ -202,10 +208,17 @@ class AutoReply(commands.Cog):
             
         except Exception as e:
             logger.error(f"Error listing auto-reply rules: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
-                ephemeral=True
-            )
+            await self.bot.log_error(interaction.guild.id, "Auto-Reply List Error", str(e), "autoreply-list command")
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"{EMOJIS['ERROR']} Failed to list auto-reply rules: {str(e)}", 
+                    ephemeral=True
+                )
     
     @app_commands.command(name="autoreply-toggle", description="Enable or disable an auto-reply rule")
     @app_commands.describe(rule_id="ID of the auto-reply rule to toggle")
@@ -259,10 +272,17 @@ class AutoReply(commands.Cog):
             
         except Exception as e:
             logger.error(f"Error toggling auto-reply rule: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to toggle auto-reply rule: {str(e)}", 
-                ephemeral=True
-            )
+            await self.bot.log_error(interaction.guild.id, "Auto-Reply Toggle Error", str(e), "autoreply-toggle command")
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Failed to toggle auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"{EMOJIS['ERROR']} Failed to toggle auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
     
     @app_commands.command(name="autoreply-delete", description="Delete an auto-reply rule")
     @app_commands.describe(rule_id="ID of the auto-reply rule to delete")
@@ -311,10 +331,17 @@ class AutoReply(commands.Cog):
             
         except Exception as e:
             logger.error(f"Error deleting auto-reply rule: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to delete auto-reply rule: {str(e)}", 
-                ephemeral=True
-            )
+            await self.bot.log_error(interaction.guild.id, "Auto-Reply Delete Error", str(e), "autoreply-delete command")
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Failed to delete auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"{EMOJIS['ERROR']} Failed to delete auto-reply rule: {str(e)}", 
+                    ephemeral=True
+                )
     
     @app_commands.command(name="autoreply-stats", description="View auto-reply statistics")
     async def autoreply_stats(self, interaction: discord.Interaction):
@@ -370,10 +397,17 @@ class AutoReply(commands.Cog):
             
         except Exception as e:
             logger.error(f"Error getting auto-reply stats: {e}")
-            await interaction.response.send_message(
-                f"{EMOJIS['ERROR']} Failed to get auto-reply stats: {str(e)}", 
-                ephemeral=True
-            )
+            await self.bot.log_error(interaction.guild.id, "Auto-Reply Stats Error", str(e), "autoreply-stats command")
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"{EMOJIS['ERROR']} Failed to get auto-reply stats: {str(e)}", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.followup.send(
+                    f"{EMOJIS['ERROR']} Failed to get auto-reply stats: {str(e)}", 
+                    ephemeral=True
+                )
     
     def check_message_for_keywords(self, message_content: str, keywords: str, match_type: str) -> bool:
         """Check if a message matches the keywords based on match type"""
