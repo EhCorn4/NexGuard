@@ -373,54 +373,54 @@ class AdminCommands(commands.Cog):
                 inline=False
             )
             
-            # AutoMod Settings (check if columns exist)
+            # AutoMod Settings - Show ALL automod features
             automod_status = []
             
-            if 'automod_spam_enabled' in config:
-                # Spam Protection
-                spam_enabled = config.get('automod_spam_enabled', False)
-                if spam_enabled:
-                    spam_limit = config.get('automod_spam_limit', 5)
-                    spam_window = config.get('automod_spam_window', 10)
-                    automod_status.append(f"**Spam Protection:** ✅ Enabled")
-                    automod_status.append(f"  └ Limit: {spam_limit} messages per {spam_window} seconds")
-                else:
-                    automod_status.append("**Spam Protection:** ❌ Disabled")
-                
-                # Link Blocking
-                links_enabled = config.get('automod_links_enabled', False)
-                automod_status.append(f"**Link Blocking:** {'✅ Enabled' if links_enabled else '❌ Disabled'}")
-                
-                # Bad Words Filter
-                badwords_enabled = config.get('automod_badwords_enabled', False)
-                if badwords_enabled:
-                    strict_mode = config.get('automod_badwords_strict', False)
-                    automod_status.append(f"**Bad Words Filter:** ✅ Enabled")
-                    automod_status.append(f"  └ Strict Mode: {'✅ On' if strict_mode else '❌ Off'}")
-                else:
-                    automod_status.append("**Bad Words Filter:** ❌ Disabled")
-            else:
-                # Check for new individual automod columns
-                if 'automod_caps_enabled' in config or 'automod_mentions_enabled' in config:
-                    # New individual features
-                    caps_enabled = config.get('automod_caps_enabled', False)
-                    mentions_enabled = config.get('automod_mentions_enabled', False)
-                    
-                    automod_status.append(f"**Caps Lock Filter:** {'✅ Enabled' if caps_enabled else '❌ Disabled'}")
-                    if caps_enabled:
-                        threshold = config.get('automod_caps_threshold', 70)
-                        automod_status.append(f"  └ Threshold: {threshold}% caps required")
-                    
-                    automod_status.append(f"**Mention Limits:** {'✅ Enabled' if mentions_enabled else '❌ Disabled'}")
-                    if mentions_enabled:
-                        limit = config.get('automod_mentions_limit', 5)
-                        automod_status.append(f"  └ Limit: {limit} mentions per message")
-                else:
-                    # Fallback to basic automod_enabled column
-                    automod_enabled = config.get('automod_enabled', False)
-                    automod_status.append(f"**AutoMod:** {'✅ Enabled' if automod_enabled else '❌ Disabled'}")
-                    if not automod_enabled:
-                        automod_status.append("Use `/automod-config` to configure protection")
+            # Get JSON-based automod config
+            automod_config = {}
+            if config.get('automod_config'):
+                try:
+                    automod_config = json.loads(config.get('automod_config', '{}'))
+                except json.JSONDecodeError:
+                    pass
+            
+            # Check JSON-based modules
+            spam_enabled = automod_config.get('spam', {}).get('enabled', False)
+            links_enabled = automod_config.get('links', {}).get('enabled', False)
+            badwords_enabled = automod_config.get('badwords', {}).get('enabled', False)
+            
+            # Check database column-based modules
+            caps_enabled = config.get('automod_caps_enabled', False)
+            mentions_enabled = config.get('automod_mentions_enabled', False)
+            
+            # Display all automod modules
+            automod_status.append(f"**Spam Protection:** {'✅ Enabled' if spam_enabled else '❌ Disabled'}")
+            if spam_enabled:
+                max_msg = automod_config.get('spam', {}).get('max_messages', 5)
+                time_window = automod_config.get('spam', {}).get('time_window', 5)
+                automod_status.append(f"  └ Limit: {max_msg} messages per {time_window}s")
+            
+            automod_status.append(f"**Link Filtering:** {'✅ Enabled' if links_enabled else '❌ Disabled'}")
+            if links_enabled:
+                block_invites = automod_config.get('links', {}).get('block_invites', True)
+                block_urls = automod_config.get('links', {}).get('block_urls', True)
+                automod_status.append(f"  └ Invites: {'✅ Blocked' if block_invites else '❌ Allowed'}, URLs: {'✅ Blocked' if block_urls else '❌ Allowed'}")
+            
+            automod_status.append(f"**Bad Words Filter:** {'✅ Enabled' if badwords_enabled else '❌ Disabled'}")
+            if badwords_enabled:
+                strict_mode = automod_config.get('badwords', {}).get('strict', False)
+                custom_words_count = len(automod_config.get('badwords', {}).get('custom_words', []))
+                automod_status.append(f"  └ Strict Mode: {'✅ On' if strict_mode else '❌ Off'}, Custom Words: {custom_words_count}")
+            
+            automod_status.append(f"**Caps Lock Filter:** {'✅ Enabled' if caps_enabled else '❌ Disabled'}")
+            if caps_enabled:
+                threshold = config.get('automod_caps_threshold', 70)
+                automod_status.append(f"  └ Threshold: {threshold}% caps required")
+            
+            automod_status.append(f"**Mention Limits:** {'✅ Enabled' if mentions_enabled else '❌ Disabled'}")
+            if mentions_enabled:
+                limit = config.get('automod_mentions_limit', 5)
+                automod_status.append(f"  └ Limit: {limit} mentions per message")
             
             embed.add_field(
                 name="🛡️ AutoMod Protection",
