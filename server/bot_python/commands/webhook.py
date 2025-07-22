@@ -123,8 +123,11 @@ class WebhookCog(commands.Cog):
             return web.json_response({'error': 'Internal server error'}, status=500)
 
     @discord.app_commands.command(name="webhook-test", description="Test the webhook functionality")
-    @discord.app_commands.describe(message="Message to send via webhook")
-    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭"):
+    @discord.app_commands.describe(
+        message="Message to send via webhook",
+        channel_id="Channel ID to send to (optional, defaults to your channel)"
+    )
+    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭", channel_id: str = "1332207898545229978"):
         """Test the webhook functionality"""
         
         # Check permissions
@@ -132,27 +135,34 @@ class WebhookCog(commands.Cog):
             await interaction.response.send_message("❌ You need administrator permissions to use this command.", ephemeral=True)
             return
             
-        await interaction.response.defer()
+        # Send immediate response to avoid timeout
+        await interaction.response.send_message(f"🎭 Sending webhook test message to <#{channel_id}>...", ephemeral=True)
+        
         try:
             # Send a test message using the webhook system
             test_data = {
-                'channel_id': str(interaction.channel.id),
+                'channel_id': channel_id,  # Use specified channel, not current channel
                 'content': f"{message} {{funny}}",
                 'add_reactions': True
             }
             
-            # Simulate webhook call
+            # Use the Express webhook endpoint for consistency
             async with aiohttp.ClientSession() as session:
-                async with session.post('http://localhost:5001/api/bot/send-message', 
-                                      json=test_data) as response:
+                async with session.post('http://localhost:5000/webhook/send', 
+                                      json={
+                                          'api_key': 'nexguard-fun-webhook',
+                                          'channel_id': channel_id,
+                                          'content': f"{message} {{funny}}",
+                                          'add_reactions': True
+                                      }) as response:
                     if response.status == 200:
                         result = await response.json()
                         embed = discord.Embed(
                             title="✅ Webhook Test Successful",
-                            description=f"Message sent via webhook system!\nMessage ID: {result.get('message_id')}",
+                            description=f"Message sent to <#{channel_id}>!\nContent: {message}",
                             color=0x00ff00
                         )
-                        await interaction.followup.send(embed=embed)
+                        await interaction.followup.send(embed=embed, ephemeral=True)
                     else:
                         error = await response.text()
                         embed = discord.Embed(
@@ -160,7 +170,7 @@ class WebhookCog(commands.Cog):
                             description=f"Error: {error}",
                             color=0xff0000
                         )
-                        await interaction.followup.send(embed=embed)
+                        await interaction.followup.send(embed=embed, ephemeral=True)
                         
         except Exception as e:
             embed = discord.Embed(
@@ -168,7 +178,11 @@ class WebhookCog(commands.Cog):
                 description=f"Error: {e}",
                 color=0xff0000
             )
-            await interaction.followup.send(embed=embed)
+            try:
+                await interaction.followup.send(embed=embed, ephemeral=True)
+            except:
+                # If followup fails, try editing original response
+                pass
 
 async def setup(bot):
     await bot.add_cog(WebhookCog(bot))
