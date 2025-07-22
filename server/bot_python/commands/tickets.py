@@ -158,12 +158,17 @@ class TicketButton(discord.ui.Button):
             )
         }
         
-        # Add support team permissions
+        # Add support team permissions - enhanced debugging
+        logger.info(f"🔍 Checking support team IDs for panel: {panel.get('support_team_ids')}")
+        
         if panel.get('support_team_ids'):
             try:
                 team_ids = json.loads(panel['support_team_ids'])
+                logger.info(f"🔍 Parsed support team IDs: {team_ids}")
                 support_roles_added = []
+                
                 for role_id in team_ids:
+                    logger.info(f"🔍 Looking for role ID: {role_id}")
                     role = interaction.guild.get_role(int(role_id))
                     if role:
                         overwrites[role] = discord.PermissionOverwrite(
@@ -172,12 +177,18 @@ class TicketButton(discord.ui.Button):
                         )
                         support_roles_added.append(role.name)
                         logger.info(f"✅ Added channel access for support role: {role.name} (ID: {role.id})")
+                    else:
+                        logger.warning(f"❌ Could not find role with ID: {role_id}")
                 
                 if support_roles_added:
                     logger.info(f"🎫 Support team with access: {', '.join(support_roles_added)}")
+                else:
+                    logger.warning(f"❌ No support roles were added to channel permissions")
                     
             except (json.JSONDecodeError, ValueError) as e:
                 logger.error(f"❌ Error parsing support team IDs: {e}")
+        else:
+            logger.info(f"ℹ️ No support team configured for this panel")
         
         # Create channel
         channel = await interaction.guild.create_text_channel(
@@ -961,9 +972,11 @@ class TicketCommands(commands.Cog):
                 
                 if role:
                     support_role_ids.append(str(role.id))
-                    logger.info(f"Added support role: {role.name} (ID: {role.id})")
+                    logger.info(f"✅ Added support role to panel: {role.name} (ID: {role.id})")
                 else:
-                    logger.warning(f"Could not find role: {role_ref}")
+                    logger.warning(f"❌ Could not find role: {role_ref}")
+        
+        logger.info(f"🔍 Final support role IDs for panel: {support_role_ids}")
         
         try:
             async with self.bot.db_pool.acquire() as conn:
