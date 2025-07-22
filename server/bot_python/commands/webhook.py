@@ -123,11 +123,8 @@ class WebhookCog(commands.Cog):
             return web.json_response({'error': 'Internal server error'}, status=500)
 
     @discord.app_commands.command(name="webhook-test", description="Test the webhook functionality")
-    @discord.app_commands.describe(
-        message="Message to send via webhook",
-        channel_id="Channel ID to send to (optional, defaults to your channel)"
-    )
-    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭", channel_id: str = "1332207898545229978"):
+    @discord.app_commands.describe(message="Message to send via webhook")
+    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭"):
         """Test the webhook functionality"""
         
         # Check permissions
@@ -135,23 +132,19 @@ class WebhookCog(commands.Cog):
             await interaction.response.send_message("❌ You need administrator permissions to use this command.", ephemeral=True)
             return
             
+        # Always use your specific channel
+        target_channel_id = "1332207898545229978"
+        
         # Send immediate response to avoid timeout
-        await interaction.response.send_message(f"🎭 Sending webhook test message to <#{channel_id}>...", ephemeral=True)
+        await interaction.response.send_message(f"🎭 Sending webhook test message to <#{target_channel_id}>...", ephemeral=True)
         
         try:
-            # Send a test message using the webhook system
-            test_data = {
-                'channel_id': channel_id,  # Use specified channel, not current channel
-                'content': f"{message} {{funny}}",
-                'add_reactions': True
-            }
-            
             # Use the Express webhook endpoint for consistency
             async with aiohttp.ClientSession() as session:
                 async with session.post('http://localhost:5000/webhook/send', 
                                       json={
                                           'api_key': 'nexguard-fun-webhook',
-                                          'channel_id': channel_id,
+                                          'channel_id': target_channel_id,
                                           'content': f"{message} {{funny}}",
                                           'add_reactions': True
                                       }) as response:
@@ -159,7 +152,7 @@ class WebhookCog(commands.Cog):
                         result = await response.json()
                         embed = discord.Embed(
                             title="✅ Webhook Test Successful",
-                            description=f"Message sent to <#{channel_id}>!\nContent: {message}",
+                            description=f"Message sent to <#{target_channel_id}>!\nContent: {message}",
                             color=0x00ff00
                         )
                         await interaction.followup.send(embed=embed, ephemeral=True)
