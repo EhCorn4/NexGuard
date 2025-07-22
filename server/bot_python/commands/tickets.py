@@ -166,19 +166,20 @@ class TicketButton(discord.ui.Button):
             topic=f"Ticket {ticket_id} | {panel['title']} | {interaction.user.display_name}"
         )
         
-        # Store in database (remove category field due to null constraint)
+        # Store in database with category field populated
         async with interaction.client.db_pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO tickets (
                     ticket_id, guild_id, channel_id, user_id, username,
-                    panel_id, subject, status, priority, 
+                    category, panel_id, subject, status, priority, 
                     form_responses, created_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             """, 
                 ticket_id, str(interaction.guild.id), str(channel.id),
                 str(interaction.user.id), interaction.user.display_name,
-                self.panel_id, panel['title'], 'open', 'medium',
-                json.dumps(form_data) if form_data else None, datetime.utcnow()
+                panel.get('title', 'General'), self.panel_id, panel['title'], 
+                'open', 'medium', json.dumps(form_data) if form_data else None, 
+                datetime.utcnow()
             )
         
         # Process welcome message placeholders
@@ -229,7 +230,13 @@ class TicketButton(discord.ui.Button):
         
         # Add ticket control buttons
         view = TicketControlView(ticket_id)
-        await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
+        welcome_msg = await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
+        
+        # Pin the welcome message for easy access
+        try:
+            await welcome_msg.pin()
+        except:
+            pass  # Ignore if bot can't pin messages
         
         # Ping support team if configured
         if panel['support_team_ids']:
@@ -1155,7 +1162,7 @@ class TicketCommands(commands.Cog):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
-        await interaction.response.defer()
+        await interaction.response.send_message("⏳ Generating ticket statistics...", ephemeral=True)
         
         try:
             async with self.bot.db_pool.acquire() as conn:
@@ -1216,11 +1223,11 @@ class TicketCommands(commands.Cog):
                 embed.set_footer(text="NexGuard | :nexguard: • Ticket Analytics")
                 embed.timestamp = datetime.utcnow()
                 
-                await interaction.followup.send(embed=embed)
+                await interaction.edit_original_response(content="📊 **Ticket Statistics**", embed=embed)
                 
         except Exception as e:
             logger.error(f"Error getting ticket stats: {e}")
-            await interaction.followup.send("❌ Failed to get ticket statistics.", ephemeral=True)
+            await interaction.edit_original_response(content="❌ Failed to get ticket statistics.")
 
 async def setup(bot):
     await bot.add_cog(TicketCommands(bot))
