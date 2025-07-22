@@ -77,29 +77,11 @@ class TicketButton(discord.ui.Button):
             # Create ticket channel and store in database
             channel = await self.setup_ticket_channel(interaction, panel, ticket_id)
             
-            # Send notification embed in original channel with staff controls
-            notification_embed = discord.Embed(
-                description=f"🎫 **New Ticket Created**\n\n{interaction.user.mention} has created a new ticket in {channel.mention}",
-                color=0x5865F2
-            )
-            notification_embed.add_field(
-                name="Ticket Details",
-                value=f"**ID:** {ticket_id}\n**Category:** {panel['title']}\n**User:** {interaction.user.display_name}",
-                inline=False
-            )
-            notification_embed.set_footer(text="NexGuard | :nexguard: • Staff can claim or close tickets")
-            
-            # Create staff management view for the notification
-            staff_view = TicketStaffView(ticket_id, channel.id)
-            
-            # First send the ephemeral success message
+            # Send only ephemeral success message (no public notification in panel channel)
             await interaction.response.send_message(
                 f"✅ Ticket created! Continue in {channel.mention}",
                 ephemeral=True
             )
-            
-            # Then send the public notification
-            await interaction.followup.send(embed=notification_embed, view=staff_view)
             
         except Exception as e:
             logger.error(f"Error creating direct ticket: {e}")
@@ -406,29 +388,11 @@ class TicketFormModal(discord.ui.Modal):
             ticket_id = f"ticket-{ticket_count + 1:04d}"
             channel = await button.setup_ticket_channel(interaction, self.panel, ticket_id, processed_form_data)
             
-            # Send notification embed in original channel with staff controls
-            notification_embed = discord.Embed(
-                description=f"🎫 **New Ticket Created**\n\n{interaction.user.mention} has created a new ticket in {channel.mention}",
-                color=0x5865F2
-            )
-            notification_embed.add_field(
-                name="Ticket Details",
-                value=f"**ID:** {ticket_id}\n**Category:** {self.panel['title']}\n**User:** {interaction.user.display_name}",
-                inline=False
-            )
-            notification_embed.set_footer(text="NexGuard | :nexguard: • Staff can claim or close tickets")
-            
-            # Create staff management view for the notification
-            staff_view = TicketStaffView(ticket_id, channel.id)
-            
-            # First send the ephemeral success message
+            # Send only ephemeral success message (no public notification in panel channel)
             await interaction.response.send_message(
                 f"✅ Ticket created with your information! Continue in {channel.mention}",
                 ephemeral=True
             )
-            
-            # Then send the public notification
-            await interaction.followup.send(embed=notification_embed, view=staff_view)
             
         except Exception as e:
             logger.error(f"Error submitting form: {e}")
@@ -1031,6 +995,95 @@ class TicketCommands(commands.Cog):
         except Exception as e:
             logger.error(f"Error creating panel: {e}")
             await interaction.edit_original_response(content="❌ Failed to create panel.")
+    
+    async def edit_panel(self, interaction, name, title, description, category, emoji, support_roles):
+        if not name:
+            await interaction.edit_original_response(content="❌ Panel name is required for editing.")
+            return
+        
+        # Parse support roles - accept both names and mentions
+        support_role_ids = []
+        if support_roles:
+            for role_ref in support_roles.split(','):
+                role_ref = role_ref.strip()
+                role = None
+                
+                # Check if it's a role mention (like <@&1234567890>)
+                if role_ref.startswith('<@&') and role_ref.endswith('>'):
+                    role_id = role_ref[3:-1]
+                    try:
+                        role = interaction.guild.get_role(int(role_id))
+                    except ValueError:
+                        pass
+                # Check if it's a raw ID
+                elif role_ref.isdigit():
+                    try:
+                        role = interaction.guild.get_role(int(role_ref))
+                    except ValueError:
+                        pass
+                # Otherwise treat as role name
+                else:
+                    role = discord.utils.get(interaction.guild.roles, name=role_ref)
+                
+                if role:
+                    support_role_ids.append(str(role.id))
+                    logger.info(f"✅ Added support role to panel: {role.name} (ID: {role.id})")
+                else:
+                    logger.warning(f"❌ Could not find role: {role_ref}")
+        
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Check if panel exists
+                existing = await conn.fetchrow("""
+                    SELECT * FROM ticket_panels 
+                    WHERE guild_id = $1 AND panel_id = $2 AND is_active = TRUE
+                """, str(interaction.guild.id), name.lower().replace(' ', '_'))
+                
+                if not existing:
+                    await interaction.edit_original_response(content=f"❌ Panel `{name}` not found.")
+                    return
+                
+                # Update panel
+                await conn.execute("""
+                    UPDATE ticket_panels SET
+                        title = COALESCE($3, title),
+                        description = COALESCE($4, description),
+                        category_id = COALESCE($5, category_id),
+                        emoji = COALESCE($6, emoji),
+                        support_team_ids = COALESCE($7, support_team_ids),
+                        updated_at = NOW()
+                    WHERE guild_id = $1 AND panel_id = $2
+                """,
+                    str(interaction.guild.id), name.lower().replace(' ', '_'),
+                    title, description, str(category.id) if category else None,
+                    emoji, json.dumps(support_role_ids) if support_role_ids else None
+                )
+            
+            embed = discord.Embed(
+                title="✅ Ticket Panel Updated",
+                description=f"Panel `{name}` has been updated successfully!",
+                color=0x00ff00
+            )
+            if title:
+                embed.add_field(name="New Title", value=title, inline=False)
+            if description:
+                embed.add_field(name="New Description", value=description[:1000], inline=False)
+            if category:
+                embed.add_field(name="New Category", value=category.mention, inline=True)
+            if support_role_ids:
+                role_names = []
+                for rid in support_role_ids:
+                    role = interaction.guild.get_role(int(rid))
+                    if role:
+                        role_names.append(role.name)
+                if role_names:
+                    embed.add_field(name="Support Team", value=", ".join(role_names), inline=True)
+            
+            await interaction.edit_original_response(content="✅ Panel updated!", embed=embed)
+            
+        except Exception as e:
+            logger.error(f"Error editing panel: {e}")
+            await interaction.edit_original_response(content="❌ Failed to edit panel.")
     
     async def list_panels(self, interaction):
         try:
