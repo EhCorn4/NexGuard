@@ -31,6 +31,11 @@ class NexGuardBot(commands.Bot):
         self.db_pool = None
         self.bot_start_time = datetime.utcnow()
         
+        # Set up OpenAI if API key is available
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
+        if self.openai_api_key:
+            logger.info("🤖 OpenAI API key found - AI chatbot features enabled")
+        
     async def setup_hook(self):
         """Called when the bot is starting up"""
         await self.setup_database()
@@ -71,7 +76,8 @@ class NexGuardBot(commands.Bot):
             'server.bot_python.commands.automod',
             'server.bot_python.commands.modrole',
             'server.bot_python.commands.analytics',
-            'server.bot_python.commands.webhook'
+            'server.bot_python.commands.webhook',
+            'server.bot_python.commands.chatbot'  # AI Chatbot system
         ]
         
         for extension in extensions:

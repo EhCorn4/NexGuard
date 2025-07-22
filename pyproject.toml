@@ -9,6 +9,7 @@ dependencies = [
     "asyncio-mqtt>=0.16.2",
     "asyncpg>=0.30.0",
     "discord-py>=2.5.2",
+    "openai>=1.97.1",
     "psutil>=7.0.0",
     "python-dotenv>=1.1.1",
 ]
