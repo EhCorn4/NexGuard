@@ -47,7 +47,6 @@ class WebhookCog(commands.Cog):
             channel_id = data.get('channel_id')
             content = data.get('content')
             embed_data = data.get('embed')
-            add_reactions = data.get('add_reactions', False)
             
             # Get the Discord channel
             channel = self.bot.get_channel(int(channel_id))
@@ -91,19 +90,7 @@ class WebhookCog(commands.Cog):
             
             # Send the message
             message = await channel.send(**message_kwargs)
-            logger.info(f"🎭 Webhook message sent to #{channel.name} in {channel.guild.name}")
-            
-            # Add reactions if requested
-            if add_reactions:
-                fun_reactions = ['😂', '🎉', '✨', '🔥', '💀', '😎', '🤡', '🎪', '🎭', '🚀']
-                # Add 1-3 random reactions
-                for _ in range(random.randint(1, 3)):
-                    reaction = random.choice(fun_reactions)
-                    try:
-                        await message.add_reaction(reaction)
-                        await asyncio.sleep(0.5)  # Small delay between reactions
-                    except discord.HTTPException:
-                        pass  # Ignore reaction errors
+            logger.info(f"Webhook message sent to #{channel.name} in {channel.guild.name}")
             
             return web.json_response({
                 'success': True,
@@ -124,7 +111,7 @@ class WebhookCog(commands.Cog):
 
     @discord.app_commands.command(name="webhook-test", description="Test the webhook functionality")
     @discord.app_commands.describe(message="Message to send via webhook")
-    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭"):
+    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message"):
         """Test the webhook functionality"""
         
         # Check permissions
@@ -136,7 +123,7 @@ class WebhookCog(commands.Cog):
         target_channel_id = "1332207898545229978"
         
         # Send immediate response to avoid timeout
-        await interaction.response.send_message(f"🎭 Sending webhook test message to <#{target_channel_id}>...", ephemeral=True)
+        await interaction.response.send_message(f"Sending webhook test message to <#{target_channel_id}>...", ephemeral=True)
         
         try:
             # Use the Express webhook endpoint for consistency
@@ -145,21 +132,20 @@ class WebhookCog(commands.Cog):
                                       json={
                                           'api_key': 'nexguard-fun-webhook',
                                           'channel_id': target_channel_id,
-                                          'content': f"{message} {{funny}}",
-                                          'add_reactions': True
+                                          'content': message
                                       }) as response:
                     if response.status == 200:
                         result = await response.json()
                         embed = discord.Embed(
-                            title="✅ Webhook Test Successful",
-                            description=f"Message sent to <#{target_channel_id}>!\nContent: {message}",
+                            title="Webhook Test Successful",
+                            description=f"Message sent to <#{target_channel_id}>\nContent: {message}",
                             color=0x00ff00
                         )
                         await interaction.followup.send(embed=embed, ephemeral=True)
                     else:
                         error = await response.text()
                         embed = discord.Embed(
-                            title="❌ Webhook Test Failed",
+                            title="Webhook Test Failed",
                             description=f"Error: {error}",
                             color=0xff0000
                         )
@@ -167,7 +153,7 @@ class WebhookCog(commands.Cog):
                         
         except Exception as e:
             embed = discord.Embed(
-                title="❌ Webhook Test Error",
+                title="Webhook Test Error",
                 description=f"Error: {e}",
                 color=0xff0000
             )

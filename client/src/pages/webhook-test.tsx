@@ -10,8 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function WebhookTest() {
   const [channelId, setChannelId] = useState('1332207898545229978');
-  const [message, setMessage] = useState('Hello from my webhook! {{funny}}');
-  const [addReactions, setAddReactions] = useState(false);
+  const [message, setMessage] = useState('Hello from my webhook!');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -30,8 +29,7 @@ export default function WebhookTest() {
       const response = await apiRequest('POST', '/webhook/send', {
         api_key: 'nexguard-fun-webhook',
         channel_id: channelId.trim(),
-        content: message,
-        add_reactions: addReactions
+        content: message
       });
 
       if (response.ok) {
@@ -42,7 +40,7 @@ export default function WebhookTest() {
         });
         
         // Clear message after successful send
-        setMessage('Hello from my webhook! {{funny}}');
+        setMessage('Hello from my webhook!');
       } else {
         const error = await response.json();
         toast({
@@ -67,10 +65,10 @@ export default function WebhookTest() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            🎭 NexGuard Webhook Tester
+            NexGuard Webhook Tester
           </CardTitle>
           <CardDescription>
-            Send messages to your Discord channel easily! No coding required.
+            Send messages to your Discord channel easily. No coding required.
           </CardDescription>
         </CardHeader>
         
@@ -95,22 +93,10 @@ export default function WebhookTest() {
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Hello from my webhook! {{funny}}"
+              placeholder="Hello from my webhook!"
               rows={4}
               className="mt-1"
             />
-            <p className="text-sm text-muted-foreground mt-1">
-              Use {{funny}} to add random emojis to your message!
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="reactions"
-              checked={addReactions}
-              onCheckedChange={setAddReactions}
-            />
-            <Label htmlFor="reactions">Add random emoji reactions</Label>
           </div>
 
           <Button 
@@ -118,16 +104,15 @@ export default function WebhookTest() {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
           >
-            {isLoading ? "Sending..." : "Send Message 🚀"}
+            {isLoading ? "Sending..." : "Send Message"}
           </Button>
 
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Quick Tips:</h3>
             <ul className="text-sm space-y-1">
-              <li>• Use {{funny}} in your message for random emojis</li>
-              <li>• Enable reactions to get fun emoji reactions</li>
               <li>• Make sure NexGuard has permission to send messages in the channel</li>
               <li>• Your channel ID is already filled in from what you provided</li>
+              <li>• Messages will be sent directly to your Discord channel</li>
             </ul>
           </div>
         </CardContent>

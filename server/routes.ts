@@ -282,7 +282,7 @@ export function registerRoutes(app: Express): Server {
   // Webhook endpoint for sending messages through the bot
   app.post("/webhook/send", async (req, res) => {
     try {
-      const { channel_id, content, embed, api_key, add_reactions } = req.body;
+      const { channel_id, content, embed, api_key } = req.body;
 
       // Simple API key check (you can set WEBHOOK_API_KEY in your environment)
       const validApiKey = process.env.WEBHOOK_API_KEY || "nexguard-fun-webhook";
@@ -298,20 +298,11 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "Either content or embed is required" });
       }
 
-      // Add some fun random elements if requested
-      let finalContent = content;
-      if (content && content.includes("{{funny}}")) {
-        const funnyElements = ["😂", "🎉", "✨", "🔥", "💀", "😎", "🤡", "🎪", "🎭", "🚀"];
-        const randomElement = funnyElements[Math.floor(Math.random() * funnyElements.length)];
-        finalContent = content.replace("{{funny}}", randomElement);
-      }
-
       // Send message data to bot
       const messageData = {
         channel_id: channel_id,
-        content: finalContent,
-        embed: embed,
-        add_reactions: add_reactions
+        content: content,
+        embed: embed
       };
 
       try {
@@ -328,7 +319,7 @@ export function registerRoutes(app: Express): Server {
           const result = await botResponse.json();
           res.json({
             success: true,
-            message: "Message sent successfully! 🎉",
+            message: "Message sent successfully",
             data: result
           });
         } else {
@@ -344,8 +335,8 @@ export function registerRoutes(app: Express): Server {
         console.log("🎭 Webhook message request (bot offline):", messageData);
         res.json({
           success: false,
-          message: "Message received but bot is offline! 🤖💤",
-          preview: finalContent || embed?.description || "Embed message",
+          message: "Message received but bot is offline",
+          preview: content || embed?.description || "Embed message",
           note: "Your message was processed but couldn't be delivered because NexGuard bot is not currently running"
         });
       }
