@@ -122,14 +122,21 @@ class WebhookCog(commands.Cog):
             logger.error(f"Webhook error: {e}")
             return web.json_response({'error': 'Internal server error'}, status=500)
 
-    @commands.command(name='webhook-test', hidden=True)
-    @commands.has_permissions(administrator=True)
-    async def webhook_test(self, ctx, *, message: str = "Test webhook message! 🎭"):
+    @discord.app_commands.command(name="webhook-test", description="Test the webhook functionality")
+    @discord.app_commands.describe(message="Message to send via webhook")
+    async def webhook_test(self, interaction: discord.Interaction, message: str = "Test webhook message! 🎭"):
         """Test the webhook functionality"""
+        
+        # Check permissions
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ You need administrator permissions to use this command.", ephemeral=True)
+            return
+            
+        await interaction.response.defer()
         try:
             # Send a test message using the webhook system
             test_data = {
-                'channel_id': str(ctx.channel.id),
+                'channel_id': str(interaction.channel.id),
                 'content': f"{message} {{funny}}",
                 'add_reactions': True
             }
@@ -145,7 +152,7 @@ class WebhookCog(commands.Cog):
                             description=f"Message sent via webhook system!\nMessage ID: {result.get('message_id')}",
                             color=0x00ff00
                         )
-                        await ctx.send(embed=embed)
+                        await interaction.followup.send(embed=embed)
                     else:
                         error = await response.text()
                         embed = discord.Embed(
@@ -153,7 +160,7 @@ class WebhookCog(commands.Cog):
                             description=f"Error: {error}",
                             color=0xff0000
                         )
-                        await ctx.send(embed=embed)
+                        await interaction.followup.send(embed=embed)
                         
         except Exception as e:
             embed = discord.Embed(
@@ -161,7 +168,7 @@ class WebhookCog(commands.Cog):
                 description=f"Error: {e}",
                 color=0xff0000
             )
-            await ctx.send(embed=embed)
+            await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(WebhookCog(bot))
