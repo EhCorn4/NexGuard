@@ -223,17 +223,22 @@ class TicketButton(discord.ui.Button):
             color=0x5865F2  # Discord blue color like in the image
         )
         
+        # Add panel description if it exists
+        if panel.get('description'):
+            embed.description += f"\n\n**Category Information:**\n{panel['description']}"
+        
         # Add form responses in a clean format like the reference
         form_display_text = ""
         
         # Add form responses in a clean list format like the reference
         if form_data:
             try:
-                questions = json.loads(panel['form_questions'])
-                form_display_text += "\n\n**Please list the following:**\n"
-                for i, question in enumerate(questions):
-                    if f'question_{i}' in form_data:
-                        form_display_text += f"\n**{question.get('label', f'Question {i+1}')}**\n{form_data[f'question_{i}']}\n"
+                questions = json.loads(panel['form_questions']) if panel.get('form_questions') else []
+                if questions:
+                    form_display_text += "\n\n**Please list the following:**\n"
+                    for i, question in enumerate(questions):
+                        if f'question_{i}' in form_data:
+                            form_display_text += f"\n**{question.get('label', f'Question {i+1}')}**\n{form_data[f'question_{i}']}\n"
             except (json.JSONDecodeError, KeyError):
                 pass
         
@@ -294,7 +299,17 @@ class TicketButton(discord.ui.Button):
 class TicketFormModal(discord.ui.Modal):
     """Modal for collecting pre-ticket information"""
     def __init__(self, panel, panel_id: str):
-        super().__init__(title=f"{panel['title']} - Information Required")
+        # Ensure modal title is under 45 characters
+        base_title = f"{panel['title']} - Info Required"
+        if len(base_title) > 45:
+            # Truncate panel title to fit
+            max_panel_title = 45 - len(" - Info Required")
+            truncated_panel = panel['title'][:max_panel_title-3] + "..."
+            modal_title = f"{truncated_panel} - Info Required"
+        else:
+            modal_title = base_title
+            
+        super().__init__(title=modal_title)
         self.panel = panel
         self.panel_id = panel_id
         
