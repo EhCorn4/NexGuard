@@ -279,6 +279,83 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Webhook endpoint for sending messages through the bot
+  app.post("/webhook/send", async (req, res) => {
+    try {
+      const { channel_id, content, embed, api_key, add_reactions } = req.body;
+
+      // Simple API key check (you can set WEBHOOK_API_KEY in your environment)
+      const validApiKey = process.env.WEBHOOK_API_KEY || "nexguard-fun-webhook";
+      if (!api_key || api_key !== validApiKey) {
+        return res.status(401).json({ error: "Invalid API key", hint: "Set api_key parameter" });
+      }
+
+      if (!channel_id) {
+        return res.status(400).json({ error: "channel_id is required" });
+      }
+
+      if (!content && !embed) {
+        return res.status(400).json({ error: "Either content or embed is required" });
+      }
+
+      // Add some fun random elements if requested
+      let finalContent = content;
+      if (content && content.includes("{{funny}}")) {
+        const funnyElements = ["😂", "🎉", "✨", "🔥", "💀", "😎", "🤡", "🎪", "🎭", "🚀"];
+        const randomElement = funnyElements[Math.floor(Math.random() * funnyElements.length)];
+        finalContent = content.replace("{{funny}}", randomElement);
+      }
+
+      // Send message data to bot
+      const messageData = {
+        channel_id: channel_id,
+        content: finalContent,
+        embed: embed,
+        add_reactions: add_reactions
+      };
+
+      try {
+        // Send to bot's internal webhook server
+        const botResponse = await fetch('http://localhost:5001/api/bot/send-message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(messageData)
+        });
+
+        if (botResponse.ok) {
+          const result = await botResponse.json();
+          res.json({
+            success: true,
+            message: "Message sent successfully! 🎉",
+            data: result
+          });
+        } else {
+          const error = await botResponse.text();
+          res.status(500).json({
+            error: "Bot delivery failed",
+            details: error,
+            message: "The webhook endpoint received your request but the bot couldn't deliver it"
+          });
+        }
+      } catch (botError: any) {
+        // Bot might not be running, return a helpful message
+        console.log("🎭 Webhook message request (bot offline):", messageData);
+        res.json({
+          success: false,
+          message: "Message received but bot is offline! 🤖💤",
+          preview: finalContent || embed?.description || "Embed message",
+          note: "Your message was processed but couldn't be delivered because NexGuard bot is not currently running"
+        });
+      }
+
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/bot/commands", async (req, res) => {
     try {
       const commands = await storage.getCommands();
