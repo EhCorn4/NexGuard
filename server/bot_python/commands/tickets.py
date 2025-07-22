@@ -303,15 +303,23 @@ class TicketFormModal(discord.ui.Modal):
             questions = json.loads(panel['form_questions']) if panel['form_questions'] else []
             
             for i, question in enumerate(questions[:5]):  # Discord limit
-                # Process placeholder text
-                placeholder_text = self.process_placeholders(
-                    question.get('placeholder', 'Your answer here... (Shift+Enter for new line)'),
+                # Process placeholder text and ensure it fits Discord's 100 char limit
+                base_placeholder = self.process_placeholders(
+                    question.get('placeholder', 'Your answer here...'),
                     {'user': {'mention': 'you'}}  # Sample for placeholder display
                 )
                 
+                # Reserve space for the suffix and ensure total doesn't exceed 100 chars
+                suffix = " (Shift+Enter for new lines)"
+                max_base_length = 100 - len(suffix)
+                if len(base_placeholder) > max_base_length:
+                    base_placeholder = base_placeholder[:max_base_length-3] + "..."
+                
+                final_placeholder = base_placeholder + suffix
+                
                 field = discord.ui.TextInput(
                     label=question.get('label', f'Question {i+1}')[:45],  # Discord limit  
-                    placeholder=placeholder_text[:100] + " (Use Shift+Enter for new lines)",
+                    placeholder=final_placeholder,
                     required=question.get('required', True),
                     max_length=min(question.get('max_length', 2000), 4000),  # Discord limit
                     style=discord.TextStyle.paragraph  # Always multiline for Shift+Enter support
@@ -322,7 +330,7 @@ class TicketFormModal(discord.ui.Modal):
             # Fallback single question
             field = discord.ui.TextInput(
                 label="Please describe your issue",
-                placeholder="Tell us how we can help you... (Use Shift+Enter for new lines)",
+                placeholder="Tell us how we can help you... (Shift+Enter for new lines)",
                 required=True,
                 max_length=2000,
                 style=discord.TextStyle.paragraph
