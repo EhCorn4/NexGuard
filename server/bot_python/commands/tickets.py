@@ -124,7 +124,10 @@ class TicketButton(discord.ui.Button):
             
         except Exception as e:
             logger.error(f"Error creating direct ticket: {e}")
-            await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+            try:
+                await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+            except:
+                logger.error("Could not send error response to user")
     
     async def setup_ticket_channel(self, interaction, panel, ticket_id, form_data=None):
         """Setup the ticket channel with proper permissions and embeds"""
@@ -228,15 +231,26 @@ class TicketButton(discord.ui.Button):
         
         embed.set_footer(text=f"NexGuard | :nexguard: • Ticket ID: {ticket_id}")
         
-        # Add ticket control buttons
+        # Add ticket control buttons and send welcome embed
         view = TicketControlView(ticket_id)
-        welcome_msg = await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
-        
-        # Pin the welcome message for easy access
         try:
-            await welcome_msg.pin()
-        except:
-            pass  # Ignore if bot can't pin messages
+            welcome_msg = await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
+            logger.info(f"✅ Welcome embed sent to ticket channel {channel.id}")
+            
+            # Pin the welcome message for easy access
+            try:
+                await welcome_msg.pin()
+                logger.info(f"📌 Pinned welcome message in ticket {ticket_id}")
+            except Exception as e:
+                logger.warning(f"Could not pin welcome message: {e}")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to send welcome embed to ticket channel: {e}")
+            # Send a simple fallback message if embed fails
+            try:
+                await channel.send(f"{interaction.user.mention} Welcome to your ticket! Our team will assist you shortly.")
+            except Exception as fallback_error:
+                logger.error(f"❌ Even fallback message failed: {fallback_error}")
         
         # Ping support team if configured
         if panel['support_team_ids']:
@@ -876,7 +890,10 @@ class TicketCommands(commands.Cog):
             return
             
         # Immediate response to prevent timeout
-        await interaction.response.send_message("⏳ Processing your request...", ephemeral=True)
+        try:
+            await interaction.response.send_message("⏳ Creating ticket panel...", ephemeral=True)
+        except:
+            return
         
         try:
             if action == "create":
