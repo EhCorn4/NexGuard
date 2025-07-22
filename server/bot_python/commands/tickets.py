@@ -129,6 +129,37 @@ class TicketButton(discord.ui.Button):
             except:
                 logger.error("Could not send error response to user")
     
+    def process_placeholders(self, text: str, context: dict) -> str:
+        """Process placeholder variables like {user.mention}"""
+        if not text or not isinstance(text, str):
+            return text or ""
+            
+        try:
+            # Replace user placeholders
+            if 'user' in context:
+                user = context['user']
+                text = text.replace('{user.mention}', str(user.get('mention', '')))
+                text = text.replace('{user.name}', str(user.get('name', '')))
+                text = text.replace('{user.display_name}', str(user.get('display_name', '')))
+                text = text.replace('{user.id}', str(user.get('id', '')))
+            
+            # Replace guild placeholders  
+            if 'guild' in context:
+                guild = context['guild']
+                text = text.replace('{guild.name}', str(guild.get('name', '')))
+                text = text.replace('{guild.member_count}', str(guild.get('member_count', '')))
+            
+            # Replace ticket placeholders
+            if 'ticket' in context:
+                ticket = context['ticket']
+                text = text.replace('{ticket.id}', str(ticket.get('id', '')))
+                text = text.replace('{ticket.category}', str(ticket.get('category', '')))
+            
+            return text
+        except Exception as e:
+            logger.error(f"Error processing placeholders: {e}")
+            return text
+    
     async def setup_ticket_channel(self, interaction, panel, ticket_id, form_data=None):
         """Setup the ticket channel with proper permissions and embeds"""
         # Get category if specified
