@@ -41,30 +41,9 @@ class TicketButton(discord.ui.Button):
         try:
             bot = interaction.client
             
-            # Check if user already has an open ticket
+            # Get panel configuration
             if bot.db_pool:
                 async with bot.db_pool.acquire() as conn:
-                    existing_ticket = await conn.fetchrow("""
-                        SELECT channel_id FROM tickets 
-                        WHERE guild_id = $1 AND user_id = $2 AND status IN ('open', 'claimed', 'in-progress')
-                        LIMIT 1
-                    """, str(interaction.guild.id), str(interaction.user.id))
-                    
-                    if existing_ticket:
-                        channel = interaction.guild.get_channel(int(existing_ticket['channel_id']))
-                        if channel:
-                            await interaction.response.send_message(
-                                f"❌ You already have an open ticket: {channel.mention}\nPlease close it before creating a new one.",
-                                ephemeral=True
-                            )
-                        else:
-                            await interaction.response.send_message(
-                                "❌ You already have an open ticket. Please close it before creating a new one.",
-                                ephemeral=True
-                            )
-                        return
-                    
-                    # Get panel configuration
                     panel = await conn.fetchrow("""
                         SELECT * FROM ticket_panels 
                         WHERE guild_id = $1 AND panel_id = $2 AND is_active = TRUE
