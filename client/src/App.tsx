@@ -22,6 +22,7 @@ const Community = lazy(() => import("@/pages/community"));
 const Testimonials = lazy(() => import("@/pages/testimonials"));
 const Feedback = lazy(() => import("@/pages/feedback"));
 const FAQ = lazy(() => import("@/pages/faq"));
+const WebhookTest = lazy(() => import("@/pages/webhook-test"));
 const Docs = lazy(() => import("@/pages/docs"));
 const Analytics = lazy(() => import("@/pages/analytics"));
 const Donate = lazy(() => import("@/pages/donate"));
@@ -97,6 +98,13 @@ function Router() {
                 <PageTransition key="faq">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={5}>
                     <FAQ />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/webhook-test" component={() => (
+                <PageTransition key="webhook-test">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={1}>
+                    <WebhookTest />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
