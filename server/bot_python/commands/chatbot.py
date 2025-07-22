@@ -146,17 +146,22 @@ class ChatBot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        """Listen for mentions and DMs to respond with AI"""
+        """Listen for mentions, DMs, and keywords to respond with AI"""
         
         # Ignore bot messages
         if message.author.bot:
             return
             
-        # Check if bot was mentioned or it's a DM
+        # Check if bot was mentioned, it's a DM, or contains trigger keywords
         bot_mentioned = self.bot.user in message.mentions
         is_dm = isinstance(message.channel, discord.DMChannel)
         
-        if bot_mentioned or is_dm:
+        # Check for trigger keywords (case insensitive)
+        trigger_keywords = ["nexguard", "nex"]
+        message_lower = message.content.lower()
+        contains_keyword = any(keyword in message_lower for keyword in trigger_keywords)
+        
+        if bot_mentioned or is_dm or contains_keyword:
             # Don't respond to commands
             if message.content.startswith(('/', '!', '?', '.')):
                 return
@@ -164,10 +169,18 @@ class ChatBot(commands.Cog):
             try:
                 # Show typing indicator
                 async with message.channel.typing():
+                    # Clean the message content for AI processing
+                    clean_content = message.content
+                    # Remove bot mentions
+                    clean_content = clean_content.replace(f'<@{self.bot.user.id}>', '').strip()
+                    # Remove trigger keywords if that's how they started the conversation
+                    for keyword in trigger_keywords:
+                        clean_content = clean_content.replace(keyword, '').strip()
+                    
                     # Get AI response
                     ai_response = await self.get_ai_response(
                         message.author.id,
-                        message.content.replace(f'<@{self.bot.user.id}>', '').strip(),
+                        clean_content,
                         message.author.display_name
                     )
                     
