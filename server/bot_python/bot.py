@@ -140,43 +140,7 @@ class NexGuardBot(commands.Bot):
         if message.author.bot:
             return
         
-        # Check if bot is mentioned
-        if self.user in message.mentions:
-            logger.info(f"🔥 Bot mentioned by {message.author.name} - showing enhanced bio")
-            latency = round(self.latency * 1000)
-            
-            embed = discord.Embed(
-                title="🛡️ NexGuard - Advanced Discord Moderation",
-                description=f"Hey {message.author.mention}! I'm **NexGuard**, your comprehensive server protection and management solution.\n\n🌐 **Currently protecting {len(self.guilds)} servers with {sum(guild.member_count for guild in self.guilds)} users**\n⚡ **Response time: {latency}ms**",
-                color=0x00FFFF,
-                timestamp=datetime.utcnow()
-            )
-            
-            embed.add_field(
-                name="🔧 Core Features",
-                value="• **Advanced Moderation** - Warn, mute, kick, ban with temporary options\n• **Smart AutoMod** - Spam detection, link filtering, bad word blocking\n• **Ticket System** - Multi-category support with priority management\n• **Auto-Reply** - Custom triggered responses with rich embeds",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="📊 Management Tools",
-                value="• **Analytics Dashboard** - Real-time server insights\n• **Welcome System** - Customizable member greetings\n• **Role Management** - Custom moderator permissions\n• **Logging** - Comprehensive action tracking",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="🚀 Get Started",
-                value="Use `/commands` to explore **41+ slash commands**\nVisit our website for full documentation and setup guides",
-                inline=False
-            )
-            
-            embed.set_footer(text=f"NexGuard v2.3.2 | Enterprise-grade Discord protection | Requested by {message.author.name}", icon_url=message.author.display_avatar.url)
-            embed.set_thumbnail(url=self.user.display_avatar.url)
-            
-            await message.reply(embed=embed)
-            return
-        
-        # Only process auto-replies and other commands if bot wasn't mentioned
+
         # Check AutoMod first (it may delete messages)
         automod_cog = self.get_cog('AutoModCog')
         if automod_cog:
