@@ -159,17 +159,25 @@ class TicketButton(discord.ui.Button):
         }
         
         # Add support team permissions
-        if panel['support_team_ids']:
+        if panel.get('support_team_ids'):
             try:
                 team_ids = json.loads(panel['support_team_ids'])
+                support_roles_added = []
                 for role_id in team_ids:
                     role = interaction.guild.get_role(int(role_id))
                     if role:
                         overwrites[role] = discord.PermissionOverwrite(
-                            view_channel=True, send_messages=True, read_message_history=True
+                            view_channel=True, send_messages=True, read_message_history=True, 
+                            manage_messages=True  # Allow support staff to manage messages
                         )
-            except (json.JSONDecodeError, ValueError):
-                pass
+                        support_roles_added.append(role.name)
+                        logger.info(f"✅ Added channel access for support role: {role.name} (ID: {role.id})")
+                
+                if support_roles_added:
+                    logger.info(f"🎫 Support team with access: {', '.join(support_roles_added)}")
+                    
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.error(f"❌ Error parsing support team IDs: {e}")
         
         # Create channel
         channel = await interaction.guild.create_text_channel(
@@ -263,7 +271,7 @@ class TicketButton(discord.ui.Button):
                 logger.error(f"❌ Even fallback message failed: {fallback_error}")
         
         # Ping support team if configured
-        if panel['support_team_ids']:
+        if panel.get('support_team_ids'):
             try:
                 team_ids = json.loads(panel['support_team_ids'])
                 mentions = []
@@ -273,8 +281,9 @@ class TicketButton(discord.ui.Button):
                         mentions.append(role.mention)
                 if mentions:
                     await channel.send(f"🔔 Support team: {' '.join(mentions)}", delete_after=5)
-            except:
-                pass
+                    logger.info(f"Pinged support team: {', '.join([role.name for role in [interaction.guild.get_role(int(rid)) for rid in team_ids] if role])}")
+            except Exception as e:
+                logger.error(f"Error pinging support team: {e}")
         
         return channel
     
@@ -926,14 +935,35 @@ class TicketCommands(commands.Cog):
             await interaction.edit_original_response(content="❌ Panel name and title are required.")
             return
         
-        # Parse support roles
+        # Parse support roles - accept both names and mentions
         support_role_ids = []
         if support_roles:
-            for role_name in support_roles.split(','):
-                role_name = role_name.strip()
-                role = discord.utils.get(interaction.guild.roles, name=role_name)
+            for role_ref in support_roles.split(','):
+                role_ref = role_ref.strip()
+                role = None
+                
+                # Check if it's a role mention (like <@&1234567890>)
+                if role_ref.startswith('<@&') and role_ref.endswith('>'):
+                    role_id = role_ref[3:-1]
+                    try:
+                        role = interaction.guild.get_role(int(role_id))
+                    except ValueError:
+                        pass
+                # Check if it's a raw ID
+                elif role_ref.isdigit():
+                    try:
+                        role = interaction.guild.get_role(int(role_ref))
+                    except ValueError:
+                        pass
+                # Otherwise treat as role name
+                else:
+                    role = discord.utils.get(interaction.guild.roles, name=role_ref)
+                
                 if role:
                     support_role_ids.append(str(role.id))
+                    logger.info(f"Added support role: {role.name} (ID: {role.id})")
+                else:
+                    logger.warning(f"Could not find role: {role_ref}")
         
         try:
             async with self.bot.db_pool.acquire() as conn:
@@ -970,8 +1000,13 @@ class TicketCommands(commands.Cog):
             if category:
                 embed.add_field(name="Category", value=category.mention, inline=True)
             if support_role_ids:
-                role_mentions = [f"<@&{role_id}>" for role_id in support_role_ids]
-                embed.add_field(name="Support Team", value=" ".join(role_mentions), inline=True)
+                role_names = []
+                for rid in support_role_ids:
+                    role = interaction.guild.get_role(int(rid))
+                    if role:
+                        role_names.append(role.name)
+                if role_names:
+                    embed.add_field(name="Support Team", value=", ".join(role_names), inline=True)
             embed.add_field(
                 name="Next Step", 
                 value="Use `/ticket-panel deploy` to deploy all panels to a channel", 
