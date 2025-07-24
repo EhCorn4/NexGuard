@@ -566,7 +566,7 @@ class TicketsCog(commands.Cog):
             
         try:
             async with self.bot.db_pool.acquire() as conn:
-                # Ensure ticket_panels table has required columns for separate embeds
+                # First, ensure the basic table exists
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS ticket_panels (
                         id SERIAL PRIMARY KEY,
@@ -575,16 +575,21 @@ class TicketsCog(commands.Cog):
                         title TEXT NOT NULL,
                         category_id TEXT,
                         support_team_ids TEXT,
-                        panel_embed_header TEXT,
-                        panel_embed_title TEXT, 
-                        panel_embed_description TEXT,
-                        ticket_embed_header TEXT,
-                        ticket_embed_title TEXT,
-                        ticket_embed_description TEXT,
                         created_at TIMESTAMP DEFAULT NOW(),
                         UNIQUE(guild_id, panel_id)
                     )
                 """)
+                
+                # Add new embed columns if they don't exist
+                try:
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS panel_embed_header TEXT")
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS panel_embed_title TEXT")
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS panel_embed_description TEXT")
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS ticket_embed_header TEXT")
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS ticket_embed_title TEXT")
+                    await conn.execute("ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS ticket_embed_description TEXT")
+                except Exception as e:
+                    logger.warning(f"Could not add embed columns (they may already exist): {e}")
                 
                 # Ensure tickets table exists
                 await conn.execute("""
