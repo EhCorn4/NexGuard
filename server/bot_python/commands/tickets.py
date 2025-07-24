@@ -347,20 +347,23 @@ class TicketsCog(commands.Cog):
     ):
         """Manage ticket panels"""
         
+        # Defer immediately to prevent timeouts
+        await interaction.response.defer(ephemeral=True)
+        
         # Check permissions
         if not interaction.user.guild_permissions.manage_channels:
-            await interaction.response.send_message("❌ You need Manage Channels permissions to manage ticket panels.", ephemeral=True)
+            await interaction.followup.send("❌ You need Manage Channels permissions to manage ticket panels.", ephemeral=True)
             return
         
         if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
-            await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+            await interaction.followup.send("❌ Database not available.", ephemeral=True)
             return
         
         try:
             async with interaction.client.db_pool.acquire() as conn:
                 if action == "create":
                     if not panel_id or not title:
-                        await interaction.response.send_message("❌ Panel ID and title are required for creation.", ephemeral=True)
+                        await interaction.followup.send("❌ Panel ID and title are required for creation.", ephemeral=True)
                         return
                     
                     # Parse role mentions and user mentions
@@ -429,11 +432,11 @@ class TicketsCog(commands.Cog):
                         if mentions:
                             embed.add_field(name="Support Team", value=" ".join(mentions), inline=True)
                     
-                    await interaction.response.send_message(embed=embed)
+                    await interaction.followup.send(embed=embed)
                 
                 elif action == "deploy":
                     if not panel_id:
-                        await interaction.response.send_message("❌ Panel ID required for deployment.", ephemeral=True)
+                        await interaction.followup.send("❌ Panel ID required for deployment.", ephemeral=True)
                         return
                     
                     # Get panel data
@@ -443,7 +446,7 @@ class TicketsCog(commands.Cog):
                     """, str(interaction.guild.id), panel_id)
                     
                     if not panel:
-                        await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
+                        await interaction.followup.send("❌ Panel not found.", ephemeral=True)
                         return
                     
                     # Create panel embed with separate customization
@@ -474,7 +477,7 @@ class TicketsCog(commands.Cog):
                     }])
                     
                     # Send panel message without pings (only ticket channels get pings)
-                    await interaction.response.send_message(embed=panel_embed, view=panel_view)
+                    await interaction.followup.send(embed=panel_embed, view=panel_view)
                 
                 elif action == "list":
                     panels = await conn.fetch("""
@@ -484,7 +487,7 @@ class TicketsCog(commands.Cog):
                     """, str(interaction.guild.id))
                     
                     if not panels:
-                        await interaction.response.send_message("❌ No ticket panels found.", ephemeral=True)
+                        await interaction.followup.send("❌ No ticket panels found.", ephemeral=True)
                         return
                     
                     embed = discord.Embed(
@@ -505,11 +508,11 @@ class TicketsCog(commands.Cog):
                             inline=True
                         )
                     
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    await interaction.followup.send(embed=embed, ephemeral=True)
                 
                 elif action == "delete":
                     if not panel_id:
-                        await interaction.response.send_message("❌ Panel ID required for deletion.", ephemeral=True)
+                        await interaction.followup.send("❌ Panel ID required for deletion.", ephemeral=True)
                         return
                     
                     # Check if panel exists
@@ -519,7 +522,7 @@ class TicketsCog(commands.Cog):
                     """, str(interaction.guild.id), panel_id)
                     
                     if not panel:
-                        await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
+                        await interaction.followup.send("❌ Panel not found.", ephemeral=True)
                         return
                     
                     # Delete the panel
@@ -535,14 +538,14 @@ class TicketsCog(commands.Cog):
                     )
                     embed.add_field(name="Panel Title", value=panel['title'], inline=True)
                     
-                    await interaction.response.send_message(embed=embed)
+                    await interaction.followup.send(embed=embed)
                 
                 else:
-                    await interaction.response.send_message("❌ Invalid action.", ephemeral=True)
+                    await interaction.followup.send("❌ Invalid action.", ephemeral=True)
                     
         except Exception as e:
             logger.error(f"Error managing ticket panel: {e}")
-            await interaction.response.send_message("❌ Failed to manage ticket panel.", ephemeral=True)
+            await interaction.followup.send("❌ Failed to manage ticket panel.", ephemeral=True)
     
     @commands.Cog.listener()
     async def on_ready(self):
