@@ -249,7 +249,7 @@ class TicketButton(discord.ui.Button):
         if form_display_text:
             embed.description += form_display_text
         
-        embed.set_footer(text=f"NexGuard | :nexguard: • Ticket ID: {ticket_id}")
+        embed.set_footer(text=f"NexGuard | :nexguard:")
         
         # Prepare support team mentions for main message
         support_mentions = ""
