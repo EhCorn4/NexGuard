@@ -173,9 +173,10 @@ class TicketButton(discord.ui.Button):
         else:
             logger.info(f"ℹ️ No support team configured for this panel")
         
-        # Create channel
+        # Create channel with panel name
+        panel_name = panel.get('title', 'general').lower().replace(' ', '-')
         channel = await interaction.guild.create_text_channel(
-            name=f"ticket-{interaction.user.name}".lower(),
+            name=f"{panel_name}-{interaction.user.name}".lower(),
             category=category,
             overwrites=overwrites,
             topic=f"Ticket {ticket_id} | {panel['title']} | {interaction.user.display_name}"
