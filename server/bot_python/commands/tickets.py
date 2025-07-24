@@ -79,14 +79,21 @@ class TicketButton(discord.ui.Button):
                 try:
                     team_ids = json.loads(panel['support_team_ids'])
                     pings = []
-                    for role_id in team_ids:
-                        role = interaction.guild.get_role(int(role_id))
-                        if role:
-                            pings.append(role.mention)
+                    for team_id in team_ids:
+                        if team_id.startswith('role:'):
+                            role_id = team_id[5:]  # Remove 'role:' prefix
+                            role = interaction.guild.get_role(int(role_id))
+                            if role:
+                                pings.append(role.mention)
+                        elif team_id.startswith('user:'):
+                            user_id = team_id[5:]  # Remove 'user:' prefix
+                            user = interaction.guild.get_member(int(user_id))
+                            if user:
+                                pings.append(user.mention)
                     if pings:
                         ping_content = " ".join(pings)
-                except:
-                    pass
+                except Exception as e:
+                    logger.error(f"Error parsing support team pings: {e}")
             
             # Create ticket channel embed with separate customization
             embed = discord.Embed(color=0x5865F2)
@@ -334,14 +341,21 @@ class TicketsCog(commands.Cog):
                         await interaction.response.send_message("❌ Panel ID and title are required for creation.", ephemeral=True)
                         return
                     
-                    # Parse role mentions
+                    # Parse role mentions and user mentions
                     support_team_ids = []
                     if roles:
-                        role_mentions = roles.split()
-                        for mention in role_mentions:
-                            if mention.startswith('<@&') and mention.endswith('>'):
-                                role_id = mention[3:-1]
-                                support_team_ids.append(role_id)
+                        # Handle both @role mentions and @user mentions
+                        import re
+                        # Find all role mentions <@&123456789>
+                        role_matches = re.findall(r'<@&(\d+)>', roles)
+                        # Find all user mentions <@123456789>
+                        user_matches = re.findall(r'<@!?(\d+)>', roles)
+                        
+                        # Store both with prefixes to distinguish
+                        for role_id in role_matches:
+                            support_team_ids.append(f"role:{role_id}")
+                        for user_id in user_matches:
+                            support_team_ids.append(f"user:{user_id}")
                     
                     # Insert panel with separate embed settings
                     await conn.execute("""
@@ -378,13 +392,20 @@ class TicketsCog(commands.Cog):
                     if category:
                         embed.add_field(name="Category", value=category.mention, inline=True)
                     if support_team_ids:
-                        role_mentions = []
-                        for role_id in support_team_ids:
-                            role = interaction.guild.get_role(int(role_id))
-                            if role:
-                                role_mentions.append(role.mention)
-                        if role_mentions:
-                            embed.add_field(name="Support Roles", value=" ".join(role_mentions), inline=True)
+                        mentions = []
+                        for team_id in support_team_ids:
+                            if team_id.startswith('role:'):
+                                role_id = team_id[5:]
+                                role = interaction.guild.get_role(int(role_id))
+                                if role:
+                                    mentions.append(role.mention)
+                            elif team_id.startswith('user:'):
+                                user_id = team_id[5:]
+                                user = interaction.guild.get_member(int(user_id))
+                                if user:
+                                    mentions.append(user.mention)
+                        if mentions:
+                            embed.add_field(name="Support Team", value=" ".join(mentions), inline=True)
                     
                     await interaction.response.send_message(embed=embed)
                 
@@ -430,14 +451,21 @@ class TicketsCog(commands.Cog):
                         try:
                             team_ids = json.loads(panel['support_team_ids'])
                             pings = []
-                            for role_id in team_ids:
-                                role = interaction.guild.get_role(int(role_id))
-                                if role:
-                                    pings.append(role.mention)
+                            for team_id in team_ids:
+                                if team_id.startswith('role:'):
+                                    role_id = team_id[5:]  # Remove 'role:' prefix
+                                    role = interaction.guild.get_role(int(role_id))
+                                    if role:
+                                        pings.append(role.mention)
+                                elif team_id.startswith('user:'):
+                                    user_id = team_id[5:]  # Remove 'user:' prefix
+                                    user = interaction.guild.get_member(int(user_id))
+                                    if user:
+                                        pings.append(user.mention)
                             if pings:
                                 ping_content = " ".join(pings)
-                        except:
-                            pass
+                        except Exception as e:
+                            logger.error(f"Error parsing panel support team pings: {e}")
                     
                     # Create panel view
                     panel_view = TicketPanelView([{
