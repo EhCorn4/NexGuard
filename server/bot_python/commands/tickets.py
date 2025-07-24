@@ -410,7 +410,7 @@ class TicketFormModal(discord.ui.Modal):
             
             # Create ticket with processed form data
             button = TicketButton(self.panel_id, self.panel['title'])
-            ticket_count = await button.get_ticket_count(interaction, interaction.client.db_pool)
+            ticket_count = await button.get_ticket_count(interaction)
             ticket_id = f"ticket-{ticket_count + 1:04d}"
             channel = await button.setup_ticket_channel(interaction, self.panel, ticket_id, processed_form_data)
             
