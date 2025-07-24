@@ -575,6 +575,82 @@ class TicketsCog(commands.Cog):
             logger.error(f"Error managing ticket panel: {e}")
             await interaction.followup.send("❌ Failed to manage ticket panel.", ephemeral=True)
     
+    @app_commands.command(name="ticket-panel-deploy", description="Deploy a ticket panel to a specific channel")
+    @app_commands.describe(
+        panel_id="ID of the panel to deploy",
+        channel="Channel to deploy the panel to"
+    )
+    async def ticket_panel_deploy(
+        self, 
+        interaction: discord.Interaction,
+        panel_id: str,
+        channel: discord.TextChannel
+    ):
+        """Deploy a ticket panel to a specific channel"""
+        
+        # Check permissions
+        if not interaction.user.guild_permissions.manage_channels:
+            await interaction.response.send_message("❌ You need Manage Channels permissions to deploy ticket panels.", ephemeral=True)
+            return
+        
+        if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+            await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+            return
+        
+        try:
+            await interaction.response.defer(ephemeral=True)
+            
+            async with interaction.client.db_pool.acquire() as conn:
+                # Get panel data
+                panel = await conn.fetchrow("""
+                    SELECT * FROM ticket_panels 
+                    WHERE guild_id = $1 AND panel_id = $2
+                """, str(interaction.guild.id), panel_id)
+                
+                if not panel:
+                    await interaction.followup.send("❌ Panel not found.", ephemeral=True)
+                    return
+                
+                # Create panel embed with separate customization
+                panel_embed = discord.Embed(color=0x5865F2)
+                
+                # Set panel embed header (author field)
+                if panel.get('panel_embed_header'):
+                    panel_embed.set_author(name=panel['panel_embed_header'])
+                
+                # Set panel embed title
+                if panel.get('panel_embed_title'):
+                    panel_embed.title = panel['panel_embed_title']
+                else:
+                    panel_embed.title = panel['title']
+                
+                # Set panel embed description
+                if panel.get('panel_embed_description'):
+                    panel_embed.description = panel['panel_embed_description']
+                else:
+                    panel_embed.description = "Click the button below to open a support ticket."
+                
+                panel_embed.set_footer(text="NexGuard |")
+                
+                # Create panel view
+                panel_view = TicketPanelView([{
+                    'panel_id': panel['panel_id'],
+                    'title': panel['title']
+                }])
+                
+                # Deploy panel to specified channel (visible to all users)
+                await channel.send(embed=panel_embed, view=panel_view)
+                
+                # Confirm deployment
+                await interaction.followup.send(
+                    f"✅ Panel `{panel_id}` successfully deployed to {channel.mention}", 
+                    ephemeral=True
+                )
+                
+        except Exception as e:
+            logger.error(f"Error deploying ticket panel: {e}")
+            await interaction.followup.send("❌ Failed to deploy panel. Please try again.", ephemeral=True)
+    
     @commands.Cog.listener()
     async def on_ready(self):
         """Register persistent views and ensure ticket tables"""
