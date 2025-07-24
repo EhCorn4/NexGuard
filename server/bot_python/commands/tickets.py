@@ -182,6 +182,9 @@ class TicketButton(discord.ui.Button):
         )
         
         # Store in database with category field populated
+        if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+            logger.error("Database not available for ticket storage")
+            return channel
         async with interaction.client.db_pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO tickets (
@@ -434,11 +437,14 @@ class TicketStaffView(discord.ui.View):
     @discord.ui.button(label="Claim 🙌", style=discord.ButtonStyle.primary)
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Check permissions
-        if not interaction.user.guild_permissions.manage_messages:
+        if not (hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_messages):
             await interaction.response.send_message("❌ You need Manage Messages permissions to claim tickets.", ephemeral=True)
             return
         
         # Get ticket channel
+        if not interaction.guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
         channel = interaction.guild.get_channel(self.channel_id)
         if not channel:
             await interaction.response.send_message("❌ Ticket channel not found.", ephemeral=True)
@@ -446,6 +452,9 @@ class TicketStaffView(discord.ui.View):
         
         # Update database
         try:
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                return
             async with interaction.client.db_pool.acquire() as conn:
                 await conn.execute("""
                     UPDATE tickets SET 
@@ -520,6 +529,9 @@ class TicketControlView(discord.ui.View):
                 await interaction.response.send_message("❌ Only support staff can claim tickets.", ephemeral=True)
                 return
             
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                return
             async with interaction.client.db_pool.acquire() as conn:
                 # Check current claim status
                 ticket = await conn.fetchrow("""
@@ -560,6 +572,9 @@ class TicketControlView(discord.ui.View):
     async def ticket_info(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show ticket information"""
         try:
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                return
             async with interaction.client.db_pool.acquire() as conn:
                 ticket = await conn.fetchrow("""
                     SELECT * FROM tickets 
@@ -596,6 +611,8 @@ class TicketControlView(discord.ui.View):
     async def is_ticket_owner(self, interaction: discord.Interaction) -> bool:
         """Check if user owns this ticket"""
         try:
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                return False
             async with interaction.client.db_pool.acquire() as conn:
                 result = await conn.fetchval("""
                     SELECT user_id FROM tickets 
@@ -607,10 +624,13 @@ class TicketControlView(discord.ui.View):
     
     async def is_support_staff(self, interaction: discord.Interaction) -> bool:
         """Check if user is support staff"""
-        if interaction.user.guild_permissions.manage_channels:
+        if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_channels:
             return True
         
         try:
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                return False
             async with interaction.client.db_pool.acquire() as conn:
                 # Get panel for this ticket
                 ticket = await conn.fetchrow("""
@@ -660,6 +680,9 @@ class CloseTicketModal(discord.ui.Modal):
             transcript_data = await self.generate_transcript(interaction.channel)
             
             # Get ticket info for user feedback
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                logger.error("Database not available for feedback")
+                return
             async with interaction.client.db_pool.acquire() as conn:
                 ticket = await conn.fetchrow("""
                     SELECT user_id FROM tickets 
