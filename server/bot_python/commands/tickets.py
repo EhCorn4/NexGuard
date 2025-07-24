@@ -306,7 +306,8 @@ class TicketsCog(commands.Cog):
         app_commands.Choice(name="create", value="create"),
         app_commands.Choice(name="edit", value="edit"),
         app_commands.Choice(name="deploy", value="deploy"),
-        app_commands.Choice(name="list", value="list")
+        app_commands.Choice(name="list", value="list"),
+        app_commands.Choice(name="delete", value="delete")
     ])
     async def ticket_panel(
         self, 
@@ -509,6 +510,36 @@ class TicketsCog(commands.Cog):
                         )
                     
                     await interaction.response.send_message(embed=embed, ephemeral=True)
+                
+                elif action == "delete":
+                    if not panel_id:
+                        await interaction.response.send_message("❌ Panel ID required for deletion.", ephemeral=True)
+                        return
+                    
+                    # Check if panel exists
+                    panel = await conn.fetchrow("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, str(interaction.guild.id), panel_id)
+                    
+                    if not panel:
+                        await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
+                        return
+                    
+                    # Delete the panel
+                    await conn.execute("""
+                        DELETE FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, str(interaction.guild.id), panel_id)
+                    
+                    embed = discord.Embed(
+                        title="🗑️ Panel Deleted",
+                        description=f"Panel `{panel_id}` has been successfully deleted.",
+                        color=0xff0000
+                    )
+                    embed.add_field(name="Panel Title", value=panel['title'], inline=True)
+                    
+                    await interaction.response.send_message(embed=embed)
                 
                 else:
                     await interaction.response.send_message("❌ Invalid action.", ephemeral=True)
