@@ -135,7 +135,7 @@ class TicketButton(discord.ui.Button):
             else:
                 embed.description = f"Hello {interaction.user.mention}! Please describe your issue and we'll help you."
             
-            embed.set_footer(text="NexGuard | :nexguard:")
+            embed.set_footer(text="NexGuard |")
             
             # Send message with pings and embed
             control_view = TicketControlView(channel.name)
@@ -496,7 +496,7 @@ class TicketsCog(commands.Cog):
                     else:
                         panel_embed.description = "Click the button below to open a support ticket."
                     
-                    panel_embed.set_footer(text="NexGuard | :nexguard:")
+                    panel_embed.set_footer(text="NexGuard |")
                     
                     # Create panel view
                     panel_view = TicketPanelView([{
