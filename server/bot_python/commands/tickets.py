@@ -201,7 +201,7 @@ class TicketButton(discord.ui.Button):
                 datetime.utcnow()
             )
         
-        # Process welcome message placeholders
+        # Process welcome message placeholders (fallback for description)
         welcome_msg = panel.get('welcome_message', "Thank you for creating a ticket, {user.mention}. Our team will assist you shortly.")
         welcome_context = {
             'user': {
@@ -222,11 +222,29 @@ class TicketButton(discord.ui.Button):
         
         processed_welcome = self.process_placeholders(welcome_msg, welcome_context)
         
-        # Send welcome embed with controls - styled like the reference image  
+        # Process custom welcome embed fields with placeholders
+        welcome_title = None
+        if panel.get('welcome_embed_title'):
+            welcome_title = self.process_placeholders(panel['welcome_embed_title'], welcome_context)
+            
+        welcome_description = processed_welcome  # Default fallback
+        if panel.get('welcome_embed_description'):
+            welcome_description = self.process_placeholders(panel['welcome_embed_description'], welcome_context)
+            
+        welcome_header = None
+        if panel.get('welcome_embed_header'):
+            welcome_header = self.process_placeholders(panel['welcome_embed_header'], welcome_context)
+        
+        # Create welcome embed with custom fields
         embed = discord.Embed(
-            description=processed_welcome,
+            title=welcome_title,
+            description=welcome_description,
             color=0x5865F2  # Discord blue color like in the image
         )
+        
+        # Add custom header if provided
+        if welcome_header:
+            embed.set_author(name=welcome_header)
         
         # Add panel description if it exists
         if panel.get('description'):
@@ -252,7 +270,7 @@ class TicketButton(discord.ui.Button):
         
         embed.set_footer(text=f"NexGuard | :nexguard:")
         
-        # Prepare support team mentions for main message
+        # Prepare support team mentions for main message (role/user pings)
         support_mentions = ""
         if panel.get('support_team_ids'):
             try:
@@ -262,17 +280,23 @@ class TicketButton(discord.ui.Button):
                     role = interaction.guild.get_role(int(role_id)) if interaction.guild else None
                     if role:
                         mentions.append(role.mention)
+                        logger.info(f"✅ Will ping support role: {role.name} ({role.mention})")
                 if mentions:
                     support_mentions = f" {' '.join(mentions)}"
-                    logger.info(f"Support team to ping: {', '.join([role.name for role in [interaction.guild.get_role(int(rid)) for rid in team_ids] if role])}")
+                    logger.info(f"🔔 Support team pings prepared: {support_mentions}")
             except Exception as e:
                 logger.error(f"Error preparing support team mentions: {e}")
         
-        # Add ticket control buttons and send welcome embed with support ping
+        # Send welcome embed with role/user pings and ticket controls
         view = TicketControlView(ticket_id)
         try:
-            # Include support team ping in the main message content
+            # Include user mention and support team pings in main message content  
             main_content = f"{interaction.user.mention}{support_mentions}"
+            if support_mentions:
+                logger.info(f"🎫 Sending ticket welcome with pings: {main_content}")
+            else:
+                logger.info(f"🎫 Sending ticket welcome for user: {interaction.user.mention}")
+                
             welcome_msg = await channel.send(main_content, embed=embed, view=view)
             logger.info(f"✅ Welcome embed sent to ticket channel {channel.id}")
             
@@ -287,7 +311,9 @@ class TicketButton(discord.ui.Button):
             logger.error(f"❌ Failed to send welcome embed to ticket channel: {e}")
             # Send a simple fallback message if embed fails
             try:
-                await channel.send(f"{interaction.user.mention}{support_mentions} Welcome to your ticket! Our team will assist you shortly.")
+                fallback_content = f"{interaction.user.mention}{support_mentions} Welcome to your ticket! Our team will assist you shortly."
+                await channel.send(fallback_content)
+                logger.info(f"📨 Sent fallback welcome message")
             except Exception as fallback_error:
                 logger.error(f"❌ Even fallback message failed: {fallback_error}")
         
@@ -899,7 +925,10 @@ class TicketCommands(commands.Cog):
                 panel_columns_to_add = [
                     "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS embed_title TEXT",
                     "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS embed_description TEXT", 
-                    "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS embed_header TEXT"
+                    "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS embed_header TEXT",
+                    "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS welcome_embed_title TEXT",
+                    "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS welcome_embed_description TEXT",
+                    "ALTER TABLE ticket_panels ADD COLUMN IF NOT EXISTS welcome_embed_header TEXT"
                 ]
                 
                 for column_query in columns_to_add:
@@ -930,7 +959,10 @@ class TicketCommands(commands.Cog):
         support_roles="Roles that handle tickets from this panel (comma-separated)",
         embed_title="Custom title for the panel embed",
         embed_description="Custom description for the panel embed",
-        embed_header="Custom header text for the panel embed"
+        embed_header="Custom header text for the panel embed",
+        welcome_embed_title="Custom title for ticket welcome message",
+        welcome_embed_description="Custom description for ticket welcome message", 
+        welcome_embed_header="Custom header for ticket welcome message"
     )
     @app_commands.choices(action=[
         app_commands.Choice(name="Create Panel", value="create"),
@@ -951,7 +983,10 @@ class TicketCommands(commands.Cog):
         support_roles: str = None,
         embed_title: str = None,
         embed_description: str = None,
-        embed_header: str = None
+        embed_header: str = None,
+        welcome_embed_title: str = None,
+        welcome_embed_description: str = None,
+        welcome_embed_header: str = None
     ):
         if not (hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_guild):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
@@ -965,9 +1000,9 @@ class TicketCommands(commands.Cog):
         
         try:
             if action == "create":
-                await self.create_panel(interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header)
+                await self.create_panel(interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header, welcome_embed_title, welcome_embed_description, welcome_embed_header)
             elif action == "edit":  
-                await self.edit_panel(interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header)
+                await self.edit_panel(interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header, welcome_embed_title, welcome_embed_description, welcome_embed_header)
             elif action == "delete":
                 await self.delete_panel(interaction, name)
             elif action == "list":
@@ -979,7 +1014,7 @@ class TicketCommands(commands.Cog):
             logger.error(f"Error in ticket panel command: {e}")
             await interaction.edit_original_response(content="❌ An error occurred. Please try again.")
     
-    async def create_panel(self, interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header):
+    async def create_panel(self, interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header, welcome_embed_title, welcome_embed_description, welcome_embed_header):
         if not name or not title:
             await interaction.edit_original_response(content="❌ Panel name and title are required.")
             return
@@ -1022,8 +1057,9 @@ class TicketCommands(commands.Cog):
                     INSERT INTO ticket_panels (
                         guild_id, panel_id, title, description, category_id,
                         emoji, support_team_ids, embed_title, embed_description, embed_header,
+                        welcome_embed_title, welcome_embed_description, welcome_embed_header,
                         is_active, created_at
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
                     ON CONFLICT (guild_id, panel_id) DO UPDATE SET
                         title = EXCLUDED.title,
                         description = EXCLUDED.description,
@@ -1033,6 +1069,9 @@ class TicketCommands(commands.Cog):
                         embed_title = EXCLUDED.embed_title,
                         embed_description = EXCLUDED.embed_description,
                         embed_header = EXCLUDED.embed_header,
+                        welcome_embed_title = EXCLUDED.welcome_embed_title,
+                        welcome_embed_description = EXCLUDED.welcome_embed_description,
+                        welcome_embed_header = EXCLUDED.welcome_embed_header,
                         is_active = TRUE,
                         updated_at = NOW()
                 """,
@@ -1041,6 +1080,7 @@ class TicketCommands(commands.Cog):
                     str(category.id) if category else None,
                     emoji, json.dumps(support_role_ids) if support_role_ids else None,
                     embed_title, embed_description, embed_header,
+                    welcome_embed_title, welcome_embed_description, welcome_embed_header,
                     True, datetime.utcnow()
                 )
             
@@ -1075,7 +1115,7 @@ class TicketCommands(commands.Cog):
             logger.error(f"Error creating panel: {e}")
             await interaction.edit_original_response(content="❌ Failed to create panel.")
     
-    async def edit_panel(self, interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header):
+    async def edit_panel(self, interaction, name, title, description, category, emoji, support_roles, embed_title, embed_description, embed_header, welcome_embed_title, welcome_embed_description, welcome_embed_header):
         if not name:
             await interaction.edit_original_response(content="❌ Panel name is required for editing.")
             return
@@ -1133,13 +1173,17 @@ class TicketCommands(commands.Cog):
                         embed_title = COALESCE($8, embed_title),
                         embed_description = COALESCE($9, embed_description),
                         embed_header = COALESCE($10, embed_header),
+                        welcome_embed_title = COALESCE($11, welcome_embed_title),
+                        welcome_embed_description = COALESCE($12, welcome_embed_description),
+                        welcome_embed_header = COALESCE($13, welcome_embed_header),
                         updated_at = NOW()
                     WHERE guild_id = $1 AND panel_id = $2
                 """,
                     str(interaction.guild.id), name.lower().replace(' ', '_'),
                     title, description, str(category.id) if category else None,
                     emoji, json.dumps(support_role_ids) if support_role_ids else None,
-                    embed_title, embed_description, embed_header
+                    embed_title, embed_description, embed_header,
+                    welcome_embed_title, welcome_embed_description, welcome_embed_header
                 )
             
             embed = discord.Embed(
@@ -1157,6 +1201,12 @@ class TicketCommands(commands.Cog):
                 embed.add_field(name="Embed Description", value=embed_description[:1000], inline=False)
             if embed_header:
                 embed.add_field(name="Embed Header", value=embed_header, inline=False)
+            if welcome_embed_title:
+                embed.add_field(name="Welcome Title", value=welcome_embed_title, inline=False)
+            if welcome_embed_description:
+                embed.add_field(name="Welcome Description", value=welcome_embed_description[:1000], inline=False)
+            if welcome_embed_header:
+                embed.add_field(name="Welcome Header", value=welcome_embed_header, inline=False)
             if category:
                 embed.add_field(name="New Category", value=category.mention, inline=True)
             if support_role_ids:
