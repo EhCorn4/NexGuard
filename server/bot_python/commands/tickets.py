@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 import logging
 import json
 import asyncio
@@ -279,6 +280,181 @@ class TicketsCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+    
+    @app_commands.command(name="ticket-panel", description="Create or manage a ticket panel")
+    @app_commands.describe(
+        action="Action to perform",
+        panel_id="Unique ID for the panel",
+        title="Panel title",
+        category="Category for ticket channels",
+        roles="Support roles to ping (mention them)",
+        embed_header="Embed header text",
+        embed_title="Embed title",
+        embed_description="Embed description"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="create", value="create"),
+        app_commands.Choice(name="edit", value="edit"),
+        app_commands.Choice(name="deploy", value="deploy"),
+        app_commands.Choice(name="list", value="list")
+    ])
+    async def ticket_panel(
+        self, 
+        interaction: discord.Interaction,
+        action: str,
+        panel_id: str = None,
+        title: str = None,
+        category: discord.CategoryChannel = None,
+        roles: str = None,
+        embed_header: str = None,
+        embed_title: str = None,
+        embed_description: str = None
+    ):
+        """Manage ticket panels"""
+        
+        # Check permissions
+        if not interaction.user.guild_permissions.manage_channels:
+            await interaction.response.send_message("❌ You need Manage Channels permissions to manage ticket panels.", ephemeral=True)
+            return
+        
+        if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+            await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+            return
+        
+        try:
+            async with interaction.client.db_pool.acquire() as conn:
+                if action == "create":
+                    if not panel_id or not title:
+                        await interaction.response.send_message("❌ Panel ID and title are required for creation.", ephemeral=True)
+                        return
+                    
+                    # Parse role mentions
+                    support_team_ids = []
+                    if roles:
+                        role_mentions = roles.split()
+                        for mention in role_mentions:
+                            if mention.startswith('<@&') and mention.endswith('>'):
+                                role_id = mention[3:-1]
+                                support_team_ids.append(role_id)
+                    
+                    # Insert panel
+                    await conn.execute("""
+                        INSERT INTO ticket_panels (
+                            guild_id, panel_id, title, category_id, 
+                            support_team_ids, embed_header, embed_title, embed_description
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        ON CONFLICT (guild_id, panel_id) 
+                        DO UPDATE SET 
+                            title = $3,
+                            category_id = $4,
+                            support_team_ids = $5,
+                            embed_header = $6,
+                            embed_title = $7,
+                            embed_description = $8
+                    """, 
+                        str(interaction.guild.id), panel_id, title,
+                        str(category.id) if category else None,
+                        json.dumps(support_team_ids) if support_team_ids else None,
+                        embed_header, embed_title, embed_description
+                    )
+                    
+                    embed = discord.Embed(
+                        title="✅ Ticket Panel Created",
+                        description=f"Panel `{panel_id}` has been created with title: **{title}**",
+                        color=0x00ff00
+                    )
+                    
+                    if category:
+                        embed.add_field(name="Category", value=category.mention, inline=True)
+                    if support_team_ids:
+                        role_mentions = []
+                        for role_id in support_team_ids:
+                            role = interaction.guild.get_role(int(role_id))
+                            if role:
+                                role_mentions.append(role.mention)
+                        if role_mentions:
+                            embed.add_field(name="Support Roles", value=" ".join(role_mentions), inline=True)
+                    
+                    await interaction.response.send_message(embed=embed)
+                
+                elif action == "deploy":
+                    if not panel_id:
+                        await interaction.response.send_message("❌ Panel ID required for deployment.", ephemeral=True)
+                        return
+                    
+                    # Get panel data
+                    panel = await conn.fetchrow("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, str(interaction.guild.id), panel_id)
+                    
+                    if not panel:
+                        await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
+                        return
+                    
+                    # Create panel embed
+                    panel_embed = discord.Embed(color=0x5865F2)
+                    
+                    if panel['embed_header']:
+                        panel_embed.set_author(name=panel['embed_header'])
+                    
+                    if panel['embed_title']:
+                        panel_embed.title = panel['embed_title']
+                    else:
+                        panel_embed.title = panel['title']
+                    
+                    if panel['embed_description']:
+                        panel_embed.description = panel['embed_description']
+                    else:
+                        panel_embed.description = "Click the button below to open a support ticket."
+                    
+                    panel_embed.set_footer(text="NexGuard | :nexguard:")
+                    
+                    # Create panel view
+                    panel_view = TicketPanelView([{
+                        'panel_id': panel['panel_id'],
+                        'title': panel['title']
+                    }])
+                    
+                    await interaction.response.send_message(embed=panel_embed, view=panel_view)
+                
+                elif action == "list":
+                    panels = await conn.fetch("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1
+                        ORDER BY created_at DESC
+                    """, str(interaction.guild.id))
+                    
+                    if not panels:
+                        await interaction.response.send_message("❌ No ticket panels found.", ephemeral=True)
+                        return
+                    
+                    embed = discord.Embed(
+                        title="📋 Ticket Panels",
+                        description=f"Found {len(panels)} panel(s)",
+                        color=0x5865F2
+                    )
+                    
+                    for panel in panels[:10]:  # Limit to 10 for embed limits
+                        value = f"**Title:** {panel['title']}\n"
+                        if panel['category_id']:
+                            category = interaction.guild.get_channel(int(panel['category_id']))
+                            value += f"**Category:** {category.mention if category else 'Deleted'}\n"
+                        
+                        embed.add_field(
+                            name=f"Panel: {panel['panel_id']}",
+                            value=value,
+                            inline=True
+                        )
+                    
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                
+                else:
+                    await interaction.response.send_message("❌ Invalid action.", ephemeral=True)
+                    
+        except Exception as e:
+            logger.error(f"Error managing ticket panel: {e}")
+            await interaction.response.send_message("❌ Failed to manage ticket panel.", ephemeral=True)
     
     @commands.Cog.listener()
     async def on_ready(self):
