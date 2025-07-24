@@ -416,6 +416,7 @@ The system is a complete Discord bot with integrated website that:
 - July 24, 2025: Improved database connection validation in ticket_panels.py for robust error handling
 - July 24, 2025: **TICKET SYSTEM FULLY OPERATIONAL** - All 8 ticket commands confirmed functional with zero diagnostic errors
 - July 24, 2025: Bot maintains 50 total commands with complete TicketsBot.net-style ticket system integration
+- July 24, 2025: **SUPPORT PING ENHANCEMENT** - Modified ticket system to include support role pings in main welcome message instead of separate disappearing message. Support teams now get permanent notifications in the pinned ticket message.
 
 ## User Preferences
 

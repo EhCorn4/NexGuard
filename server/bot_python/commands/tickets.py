@@ -251,10 +251,28 @@ class TicketButton(discord.ui.Button):
         
         embed.set_footer(text=f"NexGuard | :nexguard: • Ticket ID: {ticket_id}")
         
-        # Add ticket control buttons and send welcome embed
+        # Prepare support team mentions for main message
+        support_mentions = ""
+        if panel.get('support_team_ids'):
+            try:
+                team_ids = json.loads(panel['support_team_ids'])
+                mentions = []
+                for role_id in team_ids:
+                    role = interaction.guild.get_role(int(role_id)) if interaction.guild else None
+                    if role:
+                        mentions.append(role.mention)
+                if mentions:
+                    support_mentions = f" {' '.join(mentions)}"
+                    logger.info(f"Support team to ping: {', '.join([role.name for role in [interaction.guild.get_role(int(rid)) for rid in team_ids] if role])}")
+            except Exception as e:
+                logger.error(f"Error preparing support team mentions: {e}")
+        
+        # Add ticket control buttons and send welcome embed with support ping
         view = TicketControlView(ticket_id)
         try:
-            welcome_msg = await channel.send(f"{interaction.user.mention}", embed=embed, view=view)
+            # Include support team ping in the main message content
+            main_content = f"{interaction.user.mention}{support_mentions}"
+            welcome_msg = await channel.send(main_content, embed=embed, view=view)
             logger.info(f"✅ Welcome embed sent to ticket channel {channel.id}")
             
             # Pin the welcome message for easy access
@@ -268,24 +286,11 @@ class TicketButton(discord.ui.Button):
             logger.error(f"❌ Failed to send welcome embed to ticket channel: {e}")
             # Send a simple fallback message if embed fails
             try:
-                await channel.send(f"{interaction.user.mention} Welcome to your ticket! Our team will assist you shortly.")
+                await channel.send(f"{interaction.user.mention}{support_mentions} Welcome to your ticket! Our team will assist you shortly.")
             except Exception as fallback_error:
                 logger.error(f"❌ Even fallback message failed: {fallback_error}")
         
-        # Ping support team if configured
-        if panel.get('support_team_ids'):
-            try:
-                team_ids = json.loads(panel['support_team_ids'])
-                mentions = []
-                for role_id in team_ids:
-                    role = interaction.guild.get_role(int(role_id)) if interaction.guild else None
-                    if role:
-                        mentions.append(role.mention)
-                if mentions:
-                    await channel.send(f"🔔 Support team: {' '.join(mentions)}", delete_after=5)
-                    logger.info(f"Pinged support team: {', '.join([role.name for role in [interaction.guild.get_role(int(rid)) for rid in team_ids] if role])}")
-            except Exception as e:
-                logger.error(f"Error pinging support team: {e}")
+        # Support team ping is now included in the main message above
         
         return channel
     
