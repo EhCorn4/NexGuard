@@ -4,8 +4,9 @@ from discord import app_commands
 import logging
 import json
 import asyncio
+import uuid
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +43,12 @@ class TicketButton(discord.ui.Button):
             bot = interaction.client
             
             # Get panel configuration
-            if bot.db_pool:
+            if hasattr(bot, 'db_pool') and bot.db_pool:
                 async with bot.db_pool.acquire() as conn:
                     panel = await conn.fetchrow("""
                         SELECT * FROM ticket_panels 
                         WHERE guild_id = $1 AND panel_id = $2 AND is_active = TRUE
-                    """, str(interaction.guild.id), self.panel_id)
+                    """, str(interaction.guild.id if interaction.guild else ""), self.panel_id)
                     
                     if not panel:
                         await interaction.response.send_message("❌ This ticket panel is no longer active.", ephemeral=True)
@@ -71,7 +72,7 @@ class TicketButton(discord.ui.Button):
         """Create ticket without form"""
         try:
             # Generate unique ticket ID
-            ticket_count = await self.get_ticket_count(interaction, interaction.client.db_pool)
+            ticket_count = await self.get_ticket_count(interaction)
             ticket_id = f"ticket-{ticket_count + 1:04d}"
             
             # Create ticket channel and store in database
@@ -274,7 +275,7 @@ class TicketButton(discord.ui.Button):
                 team_ids = json.loads(panel['support_team_ids'])
                 mentions = []
                 for role_id in team_ids:
-                    role = interaction.guild.get_role(int(role_id))
+                    role = interaction.guild.get_role(int(role_id)) if interaction.guild else None
                     if role:
                         mentions.append(role.mention)
                 if mentions:
@@ -285,13 +286,15 @@ class TicketButton(discord.ui.Button):
         
         return channel
     
-    async def get_ticket_count(self, interaction, db_pool):
+    async def get_ticket_count(self, interaction):
         """Get current ticket count for ID generation"""
         try:
-            async with db_pool.acquire() as conn:
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                return 0
+            async with interaction.client.db_pool.acquire() as conn:
                 result = await conn.fetchval("""
                     SELECT COUNT(*) FROM tickets WHERE guild_id = $1
-                """, str(interaction.guild.id))
+                """, str(interaction.guild.id if interaction.guild else ""))
                 return result or 0
         except:
             return 0
@@ -902,7 +905,7 @@ class TicketCommands(commands.Cog):
         emoji: str = None,
         support_roles: str = None
     ):
-        if not interaction.user.guild_permissions.manage_guild:
+        if not (hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_guild):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
@@ -1243,7 +1246,7 @@ class TicketCommands(commands.Cog):
         form_title: str,
         questions: str
     ):
-        if not interaction.user.guild_permissions.manage_guild:
+        if not (hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_guild):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
@@ -1309,7 +1312,7 @@ class TicketCommands(commands.Cog):
         app_commands.Choice(name="All time", value="all")
     ])
     async def ticket_stats(self, interaction: discord.Interaction, timeframe: str = "30d"):
-        if not interaction.user.guild_permissions.manage_guild:
+        if not (hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions and interaction.user.guild_permissions.manage_guild):
             await interaction.response.send_message("❌ You need Manage Server permissions to use this command.", ephemeral=True)
             return
             
@@ -1447,13 +1450,17 @@ async def setup(bot):
             app_commands.Choice(name="Urgent", value="urgent")
         ]
     )
-    async def ticket(self, interaction: discord.Interaction, subject: str, description: str, category: str = "general", priority: str = "medium", ticket_category: discord.CategoryChannel = None):
+    async def ticket(self, interaction: discord.Interaction, subject: str, description: str, category: str = "general", priority: str = "medium", ticket_category: Optional[discord.CategoryChannel] = None):
         """Create a support ticket"""
         try:
             # Generate unique ticket ID
             ticket_id = str(uuid.uuid4())[:8]
             
             # Create ticket channel
+            if not interaction.guild:
+                await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+                return
+                
             overwrites = {
                 interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                 interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
@@ -1461,7 +1468,7 @@ async def setup(bot):
             }
             
             # Add staff role permissions if configured
-            config = await self.bot.get_guild_config(str(interaction.guild.id))
+            config = await self.bot.get_guild_config(str(interaction.guild.id)) if hasattr(self.bot, 'get_guild_config') else {}
             if config.get('mod_role_id'):
                 try:
                     mod_role = interaction.guild.get_role(int(config['mod_role_id']))
@@ -1495,13 +1502,13 @@ async def setup(bot):
             )
             
             # Store ticket in database
-            if self.bot.db_pool:
+            if hasattr(self.bot, 'db_pool') and self.bot.db_pool:
                 async with self.bot.db_pool.acquire() as conn:
                     await conn.execute("""
                         INSERT INTO tickets (ticket_id, guild_id, channel_id, discord_category_id, user_id, username, category, subject, description, priority, status)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                     """, ticket_id, str(interaction.guild.id), str(channel.id), str(target_category.id) if target_category else None,
-                    str(interaction.user.id), interaction.user.name, category, subject, description, priority, "open")
+                    str(interaction.user.id), str(interaction.user.name), category, subject, description, priority, "open")
             
             # Create ticket embed
             embed = discord.Embed(

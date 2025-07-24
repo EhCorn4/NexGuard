@@ -32,7 +32,7 @@ class TicketButton(discord.ui.Button):
     
     async def callback(self, interaction: discord.Interaction):
         # Check if user already has an open ticket
-        if not interaction.client.db_pool:
+        if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
             await interaction.response.send_message("❌ Database connection unavailable.", ephemeral=True)
             return
             
