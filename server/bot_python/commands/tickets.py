@@ -19,7 +19,9 @@ def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
         '{user.name}': interaction.user.name,
         '{user.display_name}': interaction.user.display_name,
         '{guild.name}': interaction.guild.name if interaction.guild else 'Unknown Server',
-        '{channel.name}': interaction.channel.name if hasattr(interaction.channel, 'name') else 'Unknown Channel'
+        '{channel.name}': interaction.channel.name if hasattr(interaction.channel, 'name') else 'Unknown Channel',
+        '{newline}': '\n',
+        '\\n': '\n'
     }
     
     result = text
@@ -317,9 +319,9 @@ class TicketsCog(commands.Cog):
         panel_embed_header="Panel message embed header",
         panel_embed_title="Panel message embed title", 
         panel_embed_description="Panel message embed description",
-        ticket_embed_header="Ticket channel embed header (supports {user.mention}, {user.name}, {guild.name})",
-        ticket_embed_title="Ticket channel embed title (supports {user.mention}, {user.name}, {guild.name})",
-        ticket_embed_description="Ticket channel embed description (supports {user.mention}, {user.name}, {guild.name})"
+        ticket_embed_header="Ticket channel embed header (supports {user.mention}, {user.name}, {guild.name}, \\n for new lines)",
+        ticket_embed_title="Ticket channel embed title (supports {user.mention}, {user.name}, {guild.name}, \\n for new lines)",
+        ticket_embed_description="Ticket channel embed description (supports {user.mention}, {user.name}, {guild.name}, \\n for new lines)"
     )
     @app_commands.choices(action=[
         app_commands.Choice(name="create", value="create"),
