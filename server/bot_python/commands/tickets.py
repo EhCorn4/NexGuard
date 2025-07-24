@@ -392,23 +392,41 @@ class TicketsCog(commands.Cog):
                         await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
                         return
                     
-                    # Create panel embed
+                    # Create panel embed using same customization as ticket channel
                     panel_embed = discord.Embed(color=0x5865F2)
                     
-                    if panel['embed_header']:
+                    # Set embed header (author field) - same as ticket channel
+                    if panel.get('embed_header'):
                         panel_embed.set_author(name=panel['embed_header'])
                     
-                    if panel['embed_title']:
+                    # Set embed title - same as ticket channel
+                    if panel.get('embed_title'):
                         panel_embed.title = panel['embed_title']
                     else:
                         panel_embed.title = panel['title']
                     
-                    if panel['embed_description']:
+                    # Set embed description - same as ticket channel
+                    if panel.get('embed_description'):
                         panel_embed.description = panel['embed_description']
                     else:
                         panel_embed.description = "Click the button below to open a support ticket."
                     
                     panel_embed.set_footer(text="NexGuard | :nexguard:")
+                    
+                    # Prepare role/user pings for panel message too
+                    ping_content = ""
+                    if panel.get('support_team_ids'):
+                        try:
+                            team_ids = json.loads(panel['support_team_ids'])
+                            pings = []
+                            for role_id in team_ids:
+                                role = interaction.guild.get_role(int(role_id))
+                                if role:
+                                    pings.append(role.mention)
+                            if pings:
+                                ping_content = " ".join(pings)
+                        except:
+                            pass
                     
                     # Create panel view
                     panel_view = TicketPanelView([{
@@ -416,7 +434,11 @@ class TicketsCog(commands.Cog):
                         'title': panel['title']
                     }])
                     
-                    await interaction.response.send_message(embed=panel_embed, view=panel_view)
+                    # Send panel message with same embed and pings as ticket channel
+                    if ping_content:
+                        await interaction.response.send_message(content=ping_content, embed=panel_embed, view=panel_view)
+                    else:
+                        await interaction.response.send_message(embed=panel_embed, view=panel_view)
                 
                 elif action == "list":
                     panels = await conn.fetch("""
