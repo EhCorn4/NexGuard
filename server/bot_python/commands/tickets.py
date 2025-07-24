@@ -446,39 +446,14 @@ class TicketsCog(commands.Cog):
                     
                     panel_embed.set_footer(text="NexGuard | :nexguard:")
                     
-                    # Prepare role/user pings for panel message too
-                    ping_content = ""
-                    if panel.get('support_team_ids'):
-                        try:
-                            team_ids = json.loads(panel['support_team_ids'])
-                            pings = []
-                            for team_id in team_ids:
-                                if team_id.startswith('role:'):
-                                    role_id = team_id[5:]  # Remove 'role:' prefix
-                                    role = interaction.guild.get_role(int(role_id))
-                                    if role:
-                                        pings.append(role.mention)
-                                elif team_id.startswith('user:'):
-                                    user_id = team_id[5:]  # Remove 'user:' prefix
-                                    user = interaction.guild.get_member(int(user_id))
-                                    if user:
-                                        pings.append(user.mention)
-                            if pings:
-                                ping_content = " ".join(pings)
-                        except Exception as e:
-                            logger.error(f"Error parsing panel support team pings: {e}")
-                    
                     # Create panel view
                     panel_view = TicketPanelView([{
                         'panel_id': panel['panel_id'],
                         'title': panel['title']
                     }])
                     
-                    # Send panel message with same embed and pings as ticket channel
-                    if ping_content:
-                        await interaction.response.send_message(content=ping_content, embed=panel_embed, view=panel_view)
-                    else:
-                        await interaction.response.send_message(embed=panel_embed, view=panel_view)
+                    # Send panel message without pings (only ticket channels get pings)
+                    await interaction.response.send_message(embed=panel_embed, view=panel_view)
                 
                 elif action == "list":
                     panels = await conn.fetch("""
