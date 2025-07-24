@@ -23,7 +23,7 @@ const Invite = memo(function Invite() {
         <div className="max-w-6xl mx-auto text-center">
           <PageHeader 
             title="Ready to Protect Your Server?"
-            description="Join 9+ servers already using NexGuard's 44+ commands with universal logging and advanced automod protection to maintain order and enhance their community experience."
+            description="Join 9+ servers already using NexGuard's 50+ commands with professional ticket system, universal logging, and advanced automod protection to maintain order and enhance their community experience."
           />
           
           {/* Bot Stats Section */}
@@ -37,7 +37,7 @@ const Invite = memo(function Invite() {
               <div className="text-gray-400 text-sm">Servers Protected</div>
             </div>
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">25+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">50+</div>
               <div className="text-gray-400 text-sm">Slash Commands</div>
             </div>
           </div>
@@ -80,12 +80,12 @@ const Invite = memo(function Invite() {
                   </ul>
                 </div>
                 <div className="text-left">
-                  <h4 className="text-lg font-semibold text-white mb-3">⚙️ Advanced Features</h4>
+                  <h4 className="text-lg font-semibold text-white mb-3">🎫 Professional Features</h4>
                   <ul className="text-gray-400 text-sm space-y-2">
-                    <li>• Multi-category ticket system</li>
-                    <li>• Smart auto-reply with analytics</li>
-                    <li>• AI assistant integration</li>
-                    <li>• Real-time dashboard monitoring</li>
+                    <li>• TicketsBot.net-style panel system with interactive buttons</li>
+                    <li>• Smart auto-reply with analytics and cooldowns</li>
+                    <li>• Automatic transcript delivery and channel management</li>
+                    <li>• Real-time dashboard monitoring and error logging</li>
                   </ul>
                 </div>
               </div>

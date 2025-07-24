@@ -98,15 +98,17 @@ const Docs = memo(function Docs() {
       ]
     },
     {
-      title: "5. Set Up Ticket System",
-      description: "Configure multi-category ticket system with Discord integration.",
+      title: "5. Set Up Professional Ticket System",
+      description: "Configure comprehensive TicketsBot.net-style ticket system with interactive panels.",
       content: [
-        "Create ticket categories: `/ticketcategory create technical 'Tech Support'`",
-        "List categories: `/ticketcategory list` to view all available categories",
-        "Users create tickets: `/ticket Need help technical` (with category)",
-        "Manage tickets: `/tickets open` to filter and view tickets",
-        "Close tickets: `/close-ticket Issue resolved` to archive tickets",
-        "Categories are automatically linked to Discord channel categories"
+        "Create ticket panel: `/ticket-panel action:create panel_id:support title:'General Support'`",
+        "Deploy to channel: `/ticket-panel action:deploy panel_id:support channel:#general`",
+        "Edit existing panels: `/ticket-panel action:edit panel_id:support`",
+        "List all panels: `/ticket-panel action:list`",
+        "Users click panel buttons to create tickets with {panel}-{username} naming",
+        "Staff use Close 🔒 and Claim 🙌 buttons for ticket management",
+        "Automatic transcript delivery when tickets are closed",
+        "Supports placeholder variables: {user.mention}, {user.name}, {guild.name}"
       ]
     },
     {
@@ -123,21 +125,13 @@ const Docs = memo(function Docs() {
     },
     {
       title: "7. Test Basic Commands",
-      description: "Customize your server's command prefix (default is !).",
-      content: [
-        "Use `/setprefix <new_prefix>` to change the command prefix",
-        "Choose a unique prefix to avoid conflicts with other bots",
-        "The prefix only affects legacy commands, slash commands work regardless"
-      ]
-    },
-    {
-      title: "4. Test Basic Commands",
       description: "Verify the bot is working correctly with basic commands.",
       content: [
         "Try `/ping` to check bot responsiveness",
-        "Use `/help` to see all available commands",
+        "Use `/commands` to see all available commands organized by category",
         "Test `/serverinfo` to view server statistics",
-        "Use `/serverstats` (admin only) for detailed server information"
+        "Use `/botinfo` to see bot statistics and uptime",
+        "Try `/avatar` to test user interaction commands"
       ]
     }
   ];

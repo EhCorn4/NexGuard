@@ -264,7 +264,17 @@ export class MemStorage implements IStorage {
       comments: 34,
     });
 
-    this.currentNewsId = 27;
+    this.newsUpdates.set(27, {
+      id: 27,
+      title: "🎫 Complete Ticket System Launch - We Have Tickets!!!",
+      content: "Professional ticket system now live! Interactive panel deployment to any channel, {panel}-{username} channel naming, Close/Claim buttons, automatic transcript delivery, custom embeds with placeholder variables, and reliable channel deletion. Complete replacement for dedicated ticket bots.",
+      category: "FEATURED",
+      publishedAt: new Date('2025-07-24T20:00:00Z'),
+      likes: 487,
+      comments: 112,
+    });
+
+    this.currentNewsId = 28;
 
     // Initialize developers
     this.developers.set(1, {
@@ -297,10 +307,10 @@ export class MemStorage implements IStorage {
 
     this.features.set(2, {
       id: 2,
-      title: "Multi-Category Ticket System",
-      description: "Advanced support ticket system with Discord category organization, custom categories, and comprehensive management tools.",
+      title: "Professional Ticket System",
+      description: "Complete TicketsBot.net-style ticket system with interactive panels, custom embeds, automatic transcripts, and comprehensive channel management - all built into Discord.",
       icon: "ticket",
-      benefits: ["Discord category integration", "Custom ticket categories", "Advanced filtering & search", "Automated ticket placement", "Staff assignment & tracking"],
+      benefits: ["Interactive panel buttons with custom embeds deployable to any channel", "Smart channel naming: {panel}-{username} format (support-john, billing-sarah)", "Professional Close and Claim buttons for staff management", "Automatic transcript delivery to all participants when tickets close", "Separate embed customization for panels vs ticket channels", "Placeholder variables: {user.mention}, {user.name}, {guild.name}, line breaks", "Role/user ping notifications in ticket channels only", "Customizable deletion delays (0-300 seconds) with countdown messages"],
     });
 
     this.features.set(3, {
