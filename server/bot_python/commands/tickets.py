@@ -35,9 +35,29 @@ class TicketButton(discord.ui.Button):
                 await interaction.response.send_message("❌ This can only be used in a server.", ephemeral=True)
                 return
             
-            # Create ticket channel
+            # Get panel configuration from database
+            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                return
+                
+            async with interaction.client.db_pool.acquire() as conn:
+                panel = await conn.fetchrow("""
+                    SELECT * FROM ticket_panels 
+                    WHERE guild_id = $1 AND panel_id = $2
+                """, str(interaction.guild.id), self.panel_id)
+                
+                if not panel:
+                    await interaction.response.send_message("❌ Panel configuration not found.", ephemeral=True)
+                    return
+            
+            # Create ticket channel with {panel}-{username} format
             channel_name = f"{self.panel_id}-{interaction.user.name}".lower()
             channel_name = "".join(c for c in channel_name if c.isalnum() or c in '-_')[:50]
+            
+            # Get category if specified
+            category = None
+            if panel.get('category_id'):
+                category = interaction.guild.get_channel(int(panel['category_id']))
             
             overwrites = {
                 interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
@@ -47,19 +67,54 @@ class TicketButton(discord.ui.Button):
             
             channel = await interaction.guild.create_text_channel(
                 name=channel_name,
+                category=category,
                 overwrites=overwrites,
                 reason=f"Ticket by {interaction.user}"
             )
             
-            # Send welcome message with control buttons
-            embed = discord.Embed(
-                title=f"🎫 New Ticket",
-                description=f"Hello {interaction.user.mention}! Please describe your issue.",
-                color=0x5865F2
-            )
+            # Prepare role/user pings
+            ping_content = ""
+            if panel.get('support_team_ids'):
+                try:
+                    team_ids = json.loads(panel['support_team_ids'])
+                    pings = []
+                    for role_id in team_ids:
+                        role = interaction.guild.get_role(int(role_id))
+                        if role:
+                            pings.append(role.mention)
+                    if pings:
+                        ping_content = " ".join(pings)
+                except:
+                    pass
             
+            # Create customizable embed
+            embed = discord.Embed(color=0x5865F2)
+            
+            # Set embed header (author field)
+            if panel.get('embed_header'):
+                embed.set_author(name=panel['embed_header'])
+            
+            # Set embed title
+            if panel.get('embed_title'):
+                embed.title = panel['embed_title']
+            else:
+                embed.title = f"🎫 New Ticket"
+            
+            # Set embed description
+            if panel.get('embed_description'):
+                embed.description = panel['embed_description']
+            else:
+                embed.description = f"Hello {interaction.user.mention}! Please describe your issue and we'll help you."
+            
+            embed.set_footer(text="NexGuard | :nexguard:")
+            
+            # Send message with pings and embed
             control_view = TicketControlView(channel.name)
-            await channel.send(embed=embed, view=control_view)
+            
+            if ping_content:
+                await channel.send(content=ping_content, embed=embed, view=control_view)
+            else:
+                await channel.send(embed=embed, view=control_view)
             
             await interaction.response.send_message(
                 f"✅ Ticket created! Continue in {channel.mention}",
@@ -220,20 +275,70 @@ class CloseTicketModal(discord.ui.Modal):
             logger.error(f"Error sending transcripts: {e}")
 
 class TicketsCog(commands.Cog):
-    """Minimal ticket system - 3 core features only"""
+    """Revamped ticket system with custom embeds and pings"""
     
     def __init__(self, bot):
         self.bot = bot
     
     @commands.Cog.listener()
     async def on_ready(self):
-        """Register persistent views"""
+        """Register persistent views and ensure ticket tables"""
         try:
             self.bot.add_view(TicketPanelView([]))
             self.bot.add_view(TicketControlView(""))
-            logger.info("Minimal ticket system initialized")
+            await self.ensure_ticket_tables()
+            logger.info("Revamped ticket system initialized")
         except Exception as e:
             logger.error(f"Error initializing tickets: {e}")
+    
+    async def ensure_ticket_tables(self):
+        """Ensure ticket database tables exist"""
+        if not hasattr(self.bot, 'db_pool') or not self.bot.db_pool:
+            return
+            
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Ensure ticket_panels table has required columns
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS ticket_panels (
+                        id SERIAL PRIMARY KEY,
+                        guild_id TEXT NOT NULL,
+                        panel_id TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        category_id TEXT,
+                        support_team_ids TEXT,
+                        embed_header TEXT,
+                        embed_title TEXT, 
+                        embed_description TEXT,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(guild_id, panel_id)
+                    )
+                """)
+                
+                # Ensure tickets table exists
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS tickets (
+                        id SERIAL PRIMARY KEY,
+                        ticket_id TEXT NOT NULL,
+                        guild_id TEXT NOT NULL,
+                        user_id TEXT NOT NULL,
+                        channel_id TEXT,
+                        panel_id TEXT,
+                        subject TEXT,
+                        status TEXT DEFAULT 'open',
+                        priority TEXT DEFAULT 'normal',
+                        claimed_by TEXT,
+                        claimed_at TIMESTAMP,
+                        closed_by TEXT,
+                        closed_at TIMESTAMP,
+                        close_reason TEXT,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """)
+                
+                logger.info("Ticket tables ensured")
+        except Exception as e:
+            logger.error(f"Error ensuring ticket tables: {e}")
 
 async def setup(bot):
     await bot.add_cog(TicketsCog(bot))
