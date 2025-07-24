@@ -9,6 +9,25 @@ from io import StringIO
 
 logger = logging.getLogger(__name__)
 
+def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
+    """Replace placeholder variables in text"""
+    if not text:
+        return text
+    
+    replacements = {
+        '{user.mention}': interaction.user.mention,
+        '{user.name}': interaction.user.name,
+        '{user.display_name}': interaction.user.display_name,
+        '{guild.name}': interaction.guild.name if interaction.guild else 'Unknown Server',
+        '{channel.name}': interaction.channel.name if hasattr(interaction.channel, 'name') else 'Unknown Channel'
+    }
+    
+    result = text
+    for placeholder, replacement in replacements.items():
+        result = result.replace(placeholder, replacement)
+    
+    return result
+
 class TicketPanelView(discord.ui.View):
     """Panel buttons to open tickets"""
     def __init__(self, panels: list):
@@ -95,22 +114,22 @@ class TicketButton(discord.ui.Button):
                 except Exception as e:
                     logger.error(f"Error parsing support team pings: {e}")
             
-            # Create ticket channel embed with separate customization
+            # Create ticket channel embed with separate customization and placeholder support
             embed = discord.Embed(color=0x5865F2)
             
-            # Set ticket embed header (author field)
+            # Set ticket embed header (author field) with placeholder replacement
             if panel.get('ticket_embed_header'):
-                embed.set_author(name=panel['ticket_embed_header'])
+                embed.set_author(name=replace_placeholders(panel['ticket_embed_header'], interaction))
             
-            # Set ticket embed title
+            # Set ticket embed title with placeholder replacement
             if panel.get('ticket_embed_title'):
-                embed.title = panel['ticket_embed_title']
+                embed.title = replace_placeholders(panel['ticket_embed_title'], interaction)
             else:
                 embed.title = f"🎫 New Ticket"
             
-            # Set ticket embed description
+            # Set ticket embed description with placeholder replacement
             if panel.get('ticket_embed_description'):
-                embed.description = panel['ticket_embed_description']
+                embed.description = replace_placeholders(panel['ticket_embed_description'], interaction)
             else:
                 embed.description = f"Hello {interaction.user.mention}! Please describe your issue and we'll help you."
             
@@ -298,9 +317,9 @@ class TicketsCog(commands.Cog):
         panel_embed_header="Panel message embed header",
         panel_embed_title="Panel message embed title", 
         panel_embed_description="Panel message embed description",
-        ticket_embed_header="Ticket channel embed header",
-        ticket_embed_title="Ticket channel embed title",
-        ticket_embed_description="Ticket channel embed description"
+        ticket_embed_header="Ticket channel embed header (supports {user.mention}, {user.name}, {guild.name})",
+        ticket_embed_title="Ticket channel embed title (supports {user.mention}, {user.name}, {guild.name})",
+        ticket_embed_description="Ticket channel embed description (supports {user.mention}, {user.name}, {guild.name})"
     )
     @app_commands.choices(action=[
         app_commands.Choice(name="create", value="create"),
