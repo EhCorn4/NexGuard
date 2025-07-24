@@ -88,22 +88,22 @@ class TicketButton(discord.ui.Button):
                 except:
                     pass
             
-            # Create customizable embed
+            # Create ticket channel embed with separate customization
             embed = discord.Embed(color=0x5865F2)
             
-            # Set embed header (author field)
-            if panel.get('embed_header'):
-                embed.set_author(name=panel['embed_header'])
+            # Set ticket embed header (author field)
+            if panel.get('ticket_embed_header'):
+                embed.set_author(name=panel['ticket_embed_header'])
             
-            # Set embed title
-            if panel.get('embed_title'):
-                embed.title = panel['embed_title']
+            # Set ticket embed title
+            if panel.get('ticket_embed_title'):
+                embed.title = panel['ticket_embed_title']
             else:
                 embed.title = f"🎫 New Ticket"
             
-            # Set embed description
-            if panel.get('embed_description'):
-                embed.description = panel['embed_description']
+            # Set ticket embed description
+            if panel.get('ticket_embed_description'):
+                embed.description = panel['ticket_embed_description']
             else:
                 embed.description = f"Hello {interaction.user.mention}! Please describe your issue and we'll help you."
             
@@ -288,9 +288,12 @@ class TicketsCog(commands.Cog):
         title="Panel title",
         category="Category for ticket channels",
         roles="Support roles to ping (mention them)",
-        embed_header="Embed header text",
-        embed_title="Embed title",
-        embed_description="Embed description"
+        panel_embed_header="Panel message embed header",
+        panel_embed_title="Panel message embed title", 
+        panel_embed_description="Panel message embed description",
+        ticket_embed_header="Ticket channel embed header",
+        ticket_embed_title="Ticket channel embed title",
+        ticket_embed_description="Ticket channel embed description"
     )
     @app_commands.choices(action=[
         app_commands.Choice(name="create", value="create"),
@@ -306,9 +309,12 @@ class TicketsCog(commands.Cog):
         title: str = None,
         category: discord.CategoryChannel = None,
         roles: str = None,
-        embed_header: str = None,
-        embed_title: str = None,
-        embed_description: str = None
+        panel_embed_header: str = None,
+        panel_embed_title: str = None,
+        panel_embed_description: str = None,
+        ticket_embed_header: str = None,
+        ticket_embed_title: str = None,
+        ticket_embed_description: str = None
     ):
         """Manage ticket panels"""
         
@@ -337,25 +343,30 @@ class TicketsCog(commands.Cog):
                                 role_id = mention[3:-1]
                                 support_team_ids.append(role_id)
                     
-                    # Insert panel
+                    # Insert panel with separate embed settings
                     await conn.execute("""
                         INSERT INTO ticket_panels (
-                            guild_id, panel_id, title, category_id, 
-                            support_team_ids, embed_header, embed_title, embed_description
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                            guild_id, panel_id, title, category_id, support_team_ids,
+                            panel_embed_header, panel_embed_title, panel_embed_description,
+                            ticket_embed_header, ticket_embed_title, ticket_embed_description
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                         ON CONFLICT (guild_id, panel_id) 
                         DO UPDATE SET 
                             title = $3,
                             category_id = $4,
                             support_team_ids = $5,
-                            embed_header = $6,
-                            embed_title = $7,
-                            embed_description = $8
+                            panel_embed_header = $6,
+                            panel_embed_title = $7,
+                            panel_embed_description = $8,
+                            ticket_embed_header = $9,
+                            ticket_embed_title = $10,
+                            ticket_embed_description = $11
                     """, 
                         str(interaction.guild.id), panel_id, title,
                         str(category.id) if category else None,
                         json.dumps(support_team_ids) if support_team_ids else None,
-                        embed_header, embed_title, embed_description
+                        panel_embed_header, panel_embed_title, panel_embed_description,
+                        ticket_embed_header, ticket_embed_title, ticket_embed_description
                     )
                     
                     embed = discord.Embed(
@@ -392,22 +403,22 @@ class TicketsCog(commands.Cog):
                         await interaction.response.send_message("❌ Panel not found.", ephemeral=True)
                         return
                     
-                    # Create panel embed using same customization as ticket channel
+                    # Create panel embed with separate customization
                     panel_embed = discord.Embed(color=0x5865F2)
                     
-                    # Set embed header (author field) - same as ticket channel
-                    if panel.get('embed_header'):
-                        panel_embed.set_author(name=panel['embed_header'])
+                    # Set panel embed header (author field)
+                    if panel.get('panel_embed_header'):
+                        panel_embed.set_author(name=panel['panel_embed_header'])
                     
-                    # Set embed title - same as ticket channel
-                    if panel.get('embed_title'):
-                        panel_embed.title = panel['embed_title']
+                    # Set panel embed title
+                    if panel.get('panel_embed_title'):
+                        panel_embed.title = panel['panel_embed_title']
                     else:
                         panel_embed.title = panel['title']
                     
-                    # Set embed description - same as ticket channel
-                    if panel.get('embed_description'):
-                        panel_embed.description = panel['embed_description']
+                    # Set panel embed description
+                    if panel.get('panel_embed_description'):
+                        panel_embed.description = panel['panel_embed_description']
                     else:
                         panel_embed.description = "Click the button below to open a support ticket."
                     
@@ -496,7 +507,7 @@ class TicketsCog(commands.Cog):
             
         try:
             async with self.bot.db_pool.acquire() as conn:
-                # Ensure ticket_panels table has required columns
+                # Ensure ticket_panels table has required columns for separate embeds
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS ticket_panels (
                         id SERIAL PRIMARY KEY,
@@ -505,9 +516,12 @@ class TicketsCog(commands.Cog):
                         title TEXT NOT NULL,
                         category_id TEXT,
                         support_team_ids TEXT,
-                        embed_header TEXT,
-                        embed_title TEXT, 
-                        embed_description TEXT,
+                        panel_embed_header TEXT,
+                        panel_embed_title TEXT, 
+                        panel_embed_description TEXT,
+                        ticket_embed_header TEXT,
+                        ticket_embed_title TEXT,
+                        ticket_embed_description TEXT,
                         created_at TIMESTAMP DEFAULT NOW(),
                         UNIQUE(guild_id, panel_id)
                     )
