@@ -198,10 +198,26 @@ class CloseTicketModal(discord.ui.Modal):
             style=discord.TextStyle.paragraph
         )
         self.add_item(self.reason)
+        
+        self.delete_delay = discord.ui.TextInput(
+            label="Delete channel in (seconds)",
+            placeholder="Enter 0 for immediate deletion or 30 for default",
+            required=False,
+            default="5",
+            max_length=3
+        )
+        self.add_item(self.delete_delay)
     
     async def on_submit(self, interaction: discord.Interaction):
         try:
             await interaction.response.defer()
+            
+            # Parse deletion delay
+            try:
+                delay = int(self.delete_delay.value) if self.delete_delay.value else 5
+                delay = max(0, min(300, delay))  # Between 0 and 300 seconds
+            except:
+                delay = 5
             
             # Generate transcript and get participants
             transcript_data, participants = await self.generate_transcript(interaction.channel)
@@ -214,22 +230,34 @@ class CloseTicketModal(discord.ui.Modal):
             if self.reason.value:
                 embed.description += f"\n\n**Reason:** {self.reason.value}"
             
+            if delay > 0:
+                embed.description += f"\n\n⏰ Channel will be deleted in {delay} seconds."
+            else:
+                embed.description += f"\n\n⏰ Channel will be deleted immediately."
+            
             await interaction.followup.send(embed=embed)
             
-            # Send transcript to all participants
+            # Send transcript to all participants in background
             if participants and transcript_data:
-                await self.send_transcripts_to_participants(interaction.client, participants, transcript_data)
+                asyncio.create_task(self.send_transcripts_to_participants(interaction.client, participants, transcript_data))
             
             # Delete channel after delay
-            await asyncio.sleep(30)
+            if delay > 0:
+                await asyncio.sleep(delay)
+                
             try:
-                await interaction.channel.delete(reason="Ticket closed")
-            except:
-                pass
+                channel_name = interaction.channel.name
+                await interaction.channel.delete(reason=f"Ticket closed by {interaction.user.display_name}")
+                logger.info(f"Ticket channel '{channel_name}' deleted successfully")
+            except Exception as delete_error:
+                logger.error(f"Failed to delete ticket channel: {delete_error}")
                 
         except Exception as e:
             logger.error(f"Error closing ticket: {e}")
-            await interaction.followup.send("❌ Failed to close ticket.", ephemeral=True)
+            try:
+                await interaction.followup.send("❌ Failed to close ticket.", ephemeral=True)
+            except:
+                pass
     
     async def generate_transcript(self, channel):
         """Generate transcript and return participants"""
