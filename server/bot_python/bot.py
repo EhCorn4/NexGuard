@@ -786,14 +786,25 @@ async def main():
         logger.error("DISCORD_TOKEN environment variable not set")
         return
     
+    # Debug token information (safely)
+    logger.info(f"Token loaded: {len(discord_token)} characters, starts with: {discord_token[:10]}...")
+    
     try:
         # Clean the token of any whitespace
         discord_token = discord_token.strip()
+        logger.info(f"Token after cleanup: {len(discord_token)} characters")
         await bot.start(discord_token)
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
     except Exception as e:
         logger.error(f"Bot crashed: {e}")
+        # Show more details about the token for debugging
+        logger.error(f"Token length: {len(discord_token) if discord_token else 'None'}")
+        logger.error(f"Token first 30 chars: {discord_token[:30] if discord_token else 'None'}")
+        logger.error(f"Token ends with: {discord_token[-10:] if discord_token else 'None'}")
+        # Check for any hidden characters
+        logger.error(f"Token bytes length: {len(discord_token.encode('utf-8')) if discord_token else 'None'}")
+        logger.error(f"Token repr: {repr(discord_token[:50]) if discord_token else 'None'}")
     finally:
         await bot.close()
 
