@@ -53,13 +53,17 @@ class TicketButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Create ticket when button pressed"""
         try:
+            # Immediate response to prevent timeout
+            if not interaction.response.is_done():
+                await interaction.response.defer(ephemeral=True)
+            
             if not interaction.guild:
-                await interaction.response.send_message("❌ This can only be used in a server.", ephemeral=True)
+                await interaction.followup.send("❌ This can only be used in a server.", ephemeral=True)
                 return
             
             # Get panel configuration from database
             if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
-                await interaction.response.send_message("❌ Database not available.", ephemeral=True)
+                await interaction.followup.send("❌ Database not available.", ephemeral=True)
                 return
                 
             async with interaction.client.db_pool.acquire() as conn:
@@ -69,7 +73,7 @@ class TicketButton(discord.ui.Button):
                 """, str(interaction.guild.id), self.panel_id)
                 
                 if not panel:
-                    await interaction.response.send_message("❌ Panel configuration not found.", ephemeral=True)
+                    await interaction.followup.send("❌ Panel configuration not found.", ephemeral=True)
                     return
             
             # Create ticket channel with {panel}-{username} format
@@ -145,14 +149,20 @@ class TicketButton(discord.ui.Button):
             else:
                 await channel.send(embed=embed, view=control_view)
             
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"✅ Ticket created! Continue in {channel.mention}",
                 ephemeral=True
             )
                 
         except Exception as e:
             logger.error(f"Error creating ticket: {e}")
-            await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to create ticket.", ephemeral=True)
+            except:
+                pass
 
 class TicketControlView(discord.ui.View):
     """Close and claim buttons"""
@@ -163,26 +173,54 @@ class TicketControlView(discord.ui.View):
     @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Close ticket with transcript"""
-        if not interaction.user.guild_permissions.manage_messages:
-            await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
-            return
-        
-        modal = CloseTicketModal(self.ticket_id)
-        await interaction.response.send_modal(modal)
+        try:
+            if not interaction.user.guild_permissions.manage_messages:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                return
+            
+            modal = CloseTicketModal(self.ticket_id)
+            if not interaction.response.is_done():
+                await interaction.response.send_modal(modal)
+            else:
+                await interaction.followup.send("❌ Interaction expired. Please try again.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"Error in close_ticket: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to open close dialog. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to open close dialog. Please try again.", ephemeral=True)
+            except:
+                pass
     
     @discord.ui.button(label="Claim", emoji="🙌", style=discord.ButtonStyle.primary, custom_id="claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Claim ticket"""
-        if not interaction.user.guild_permissions.manage_messages:
-            await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
-            return
-        
-        # Disable claim button
-        self.claim_ticket.disabled = True
-        self.claim_ticket.label = f"Claimed by {interaction.user.display_name}"
-        
-        await interaction.response.edit_message(view=self)
-        await interaction.followup.send(f"🙌 Ticket claimed by {interaction.user.mention}")
+        try:
+            if not interaction.user.guild_permissions.manage_messages:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                return
+            
+            # Disable claim button
+            self.claim_ticket.disabled = True
+            self.claim_ticket.label = f"Claimed by {interaction.user.display_name}"
+            
+            if not interaction.response.is_done():
+                await interaction.response.edit_message(view=self)
+                await interaction.followup.send(f"🙌 Ticket claimed by {interaction.user.mention}")
+            else:
+                await interaction.followup.send("❌ Interaction expired. Please try again.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"Error in claim_ticket: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to claim ticket. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to claim ticket. Please try again.", ephemeral=True)
+            except:
+                pass
 
 class CloseTicketModal(discord.ui.Modal):
     """Modal to close ticket"""
