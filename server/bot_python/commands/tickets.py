@@ -91,6 +91,36 @@ class TicketButton(discord.ui.Button):
                 interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
             
+            # Add support team permissions
+            if panel.get('support_team_ids'):
+                try:
+                    team_ids = json.loads(panel['support_team_ids'])
+                    for team_id in team_ids:
+                        if team_id.startswith('role:'):
+                            role_id = team_id[5:]  # Remove 'role:' prefix
+                            role = interaction.guild.get_role(int(role_id))
+                            if role:
+                                overwrites[role] = discord.PermissionOverwrite(
+                                    read_messages=True, 
+                                    send_messages=True,
+                                    attach_files=True,
+                                    embed_links=True,
+                                    read_message_history=True
+                                )
+                        elif team_id.startswith('user:'):
+                            user_id = team_id[5:]  # Remove 'user:' prefix
+                            user = interaction.guild.get_member(int(user_id))
+                            if user:
+                                overwrites[user] = discord.PermissionOverwrite(
+                                    read_messages=True, 
+                                    send_messages=True,
+                                    attach_files=True,
+                                    embed_links=True,
+                                    read_message_history=True
+                                )
+                except Exception as e:
+                    logger.error(f"Error setting support team permissions: {e}")
+            
             channel = await interaction.guild.create_text_channel(
                 name=channel_name,
                 category=category,
@@ -98,7 +128,7 @@ class TicketButton(discord.ui.Button):
                 reason=f"Ticket by {interaction.user}"
             )
             
-            # Prepare role/user pings
+            # Prepare role/user pings (permissions already set above)
             ping_content = ""
             if panel.get('support_team_ids'):
                 try:
