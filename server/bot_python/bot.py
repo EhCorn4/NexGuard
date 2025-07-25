@@ -104,6 +104,15 @@ class NexGuardBot(commands.Bot):
         # Update bot status in database
         await self.update_status_in_db()
     
+    async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        """Handle slash command errors"""
+        logger.error(f"App command error in {interaction.command.name if interaction.command else 'unknown'}: {error}")
+        
+        if interaction.response.is_done():
+            await interaction.followup.send(f"❌ Command failed: {str(error)}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"❌ Command failed: {str(error)}", ephemeral=True)
+    
     async def on_guild_join(self, guild):
         """Called when bot joins a guild"""
         await self.handle_guild_join(guild)

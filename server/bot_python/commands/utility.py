@@ -35,7 +35,11 @@ class UtilityCommands(commands.Cog):
     async def userinfo(self, interaction: discord.Interaction, user: discord.Member = None):
         """Get information about a user"""
         if user is None:
-            user = interaction.user
+            if isinstance(interaction.user, discord.Member):
+                user = interaction.user
+            else:
+                await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+                return
         
         embed = discord.Embed(
             title=f"👤 User Information - {user.name}",
@@ -68,6 +72,10 @@ class UtilityCommands(commands.Cog):
     async def serverinfo(self, interaction: discord.Interaction):
         """Get information about the server"""
         guild = interaction.guild
+        
+        if guild is None:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
         
         embed = discord.Embed(
             title=f"🏠 Server Information - {guild.name}",
@@ -106,7 +114,11 @@ class UtilityCommands(commands.Cog):
     async def avatar(self, interaction: discord.Interaction, user: discord.Member = None):
         """Get a user's avatar"""
         if user is None:
-            user = interaction.user
+            if isinstance(interaction.user, discord.Member):
+                user = interaction.user
+            else:
+                await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+                return
         
         embed = discord.Embed(
             title=f"🖼️ Avatar - {user.name}",
