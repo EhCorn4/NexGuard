@@ -787,6 +787,8 @@ async def main():
         return
     
     try:
+        # Clean the token of any whitespace
+        discord_token = discord_token.strip()
         await bot.start(discord_token)
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
