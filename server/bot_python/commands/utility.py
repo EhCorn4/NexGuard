@@ -6,6 +6,7 @@ from datetime import datetime
 import platform
 import psutil
 import os
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class UtilityCommands(commands.Cog):
     
     @app_commands.command(name="userinfo", description="Get information about a user")
     @app_commands.describe(user="The user to get information about")
-    async def userinfo(self, interaction: discord.Interaction, user: discord.Member = None):
+    async def userinfo(self, interaction: discord.Interaction, user: Optional[discord.Member] = None):
         """Get information about a user"""
         if user is None:
             if isinstance(interaction.user, discord.Member):
@@ -111,7 +112,7 @@ class UtilityCommands(commands.Cog):
     
     @app_commands.command(name="avatar", description="Get a user's avatar")
     @app_commands.describe(user="The user to get the avatar of")
-    async def avatar(self, interaction: discord.Interaction, user: discord.Member = None):
+    async def avatar(self, interaction: discord.Interaction, user: Optional[discord.Member] = None):
         """Get a user's avatar"""
         if user is None:
             if isinstance(interaction.user, discord.Member):
@@ -173,7 +174,7 @@ class UtilityCommands(commands.Cog):
     
     @app_commands.command(name="help", description="Get help with bot commands")
     @app_commands.describe(command="Get detailed help for a specific command")
-    async def help(self, interaction: discord.Interaction, command: str = None):
+    async def help(self, interaction: discord.Interaction, command: Optional[str] = None):
         """Get help with bot commands"""
         if command:
             # Get specific command help
@@ -276,11 +277,11 @@ class UtilityCommands(commands.Cog):
         channel="Channel to send the embed to"
     )
     async def embed(self, interaction: discord.Interaction, title: str, description: str, 
-                   color: str = "#00FFFF", thumbnail: str = None, image: str = None, 
-                   footer: str = None, author: str = None, author_icon: str = None,
-                   url: str = None, channel: discord.TextChannel = None):
+                   color: str = "#00FFFF", thumbnail: Optional[str] = None, image: Optional[str] = None, 
+                   footer: Optional[str] = None, author: Optional[str] = None, author_icon: Optional[str] = None,
+                   url: Optional[str] = None, channel: Optional[discord.TextChannel] = None):
         """Create a custom embed message"""
-        if not interaction.user.guild_permissions.manage_messages:
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
             return
         
@@ -452,12 +453,12 @@ class UtilityCommands(commands.Cog):
         author="Author name",
         channel="Channel to send the embed to"
     )
-    async def embedbuilder(self, interaction: discord.Interaction, title: str, description: str = None,
-                          color: str = "#00FFFF", fields: str = None, buttons: str = None,
-                          thumbnail: str = None, image: str = None, footer: str = None,
-                          author: str = None, channel: discord.TextChannel = None):
+    async def embedbuilder(self, interaction: discord.Interaction, title: str, description: Optional[str] = None,
+                          color: str = "#00FFFF", fields: Optional[str] = None, buttons: Optional[str] = None,
+                          thumbnail: Optional[str] = None, image: Optional[str] = None, footer: Optional[str] = None,
+                          author: Optional[str] = None, channel: Optional[discord.TextChannel] = None):
         """Create advanced embeds with fields and buttons"""
-        if not interaction.user.guild_permissions.manage_messages:
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
             return
         
@@ -543,7 +544,10 @@ class UtilityCommands(commands.Cog):
         target_channel = channel or interaction.channel
         
         try:
-            await target_channel.send(embed=embed, view=view)
+            if view and view.children:
+                await target_channel.send(embed=embed, view=view)
+            else:
+                await target_channel.send(embed=embed)
             
             # Confirm to user
             confirm_embed = discord.Embed(
