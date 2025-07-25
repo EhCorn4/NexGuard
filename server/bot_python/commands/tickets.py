@@ -415,8 +415,16 @@ class TicketsCog(commands.Cog):
     ):
         """Manage ticket panels"""
         
-        # Defer immediately to prevent timeouts
-        await interaction.response.defer(ephemeral=True)
+        try:
+            # Defer immediately to prevent timeouts
+            if not interaction.response.is_done():
+                await interaction.response.defer(ephemeral=True)
+        except discord.errors.NotFound:
+            # Interaction already timed out
+            return
+        except Exception as e:
+            logger.error(f"Error deferring interaction: {e}")
+            return
         
         # Check permissions
         if not interaction.user.guild_permissions.manage_channels:
@@ -615,9 +623,19 @@ class TicketsCog(commands.Cog):
                 else:
                     await interaction.followup.send("❌ Invalid action.", ephemeral=True)
                     
+        except discord.errors.NotFound:
+            # Interaction already expired
+            logger.warning("Ticket panel interaction expired")
+            return
         except Exception as e:
             logger.error(f"Error managing ticket panel: {e}")
-            await interaction.followup.send("❌ Failed to manage ticket panel.", ephemeral=True)
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to manage ticket panel.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to manage ticket panel.", ephemeral=True)
+            except:
+                pass
     
 
     @commands.Cog.listener()
