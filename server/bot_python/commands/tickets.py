@@ -6,6 +6,7 @@ import json
 import asyncio
 from datetime import datetime
 from io import StringIO
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
         '{user.name}': interaction.user.name,
         '{user.display_name}': interaction.user.display_name,
         '{guild.name}': interaction.guild.name if interaction.guild else 'Unknown Server',
-        '{channel.name}': interaction.channel.name if hasattr(interaction.channel, 'name') else 'Unknown Channel',
+        '{channel.name}': getattr(interaction.channel, 'name', 'Unknown Channel'),
         '{newline}': '\n',
         '\\n': '\n'
     }
@@ -62,7 +63,8 @@ class TicketButton(discord.ui.Button):
                 return
             
             # Get panel configuration from database
-            if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+            bot = interaction.client
+            if not hasattr(bot, 'db_pool') or not bot.db_pool:
                 await interaction.followup.send("❌ Database not available.", ephemeral=True)
                 return
                 
@@ -672,12 +674,40 @@ class TicketsCog(commands.Cog):
     async def on_ready(self):
         """Register persistent views and ensure ticket tables"""
         try:
-            self.bot.add_view(TicketPanelView([]))
-            self.bot.add_view(TicketControlView(""))
             await self.ensure_ticket_tables()
+            await self.restore_persistent_views()
             logger.info("Revamped ticket system initialized")
         except Exception as e:
             logger.error(f"Error initializing tickets: {e}")
+    
+    async def restore_persistent_views(self):
+        """Restore all persistent views from database"""
+        if not hasattr(self.bot, 'db_pool') or not self.bot.db_pool:
+            return
+            
+        try:
+            async with self.bot.db_pool.acquire() as conn:
+                # Get all deployed panels from all guilds
+                panels = await conn.fetch("""
+                    SELECT DISTINCT panel_id, title, guild_id 
+                    FROM ticket_panels
+                """)
+                
+                # Register views for each panel
+                for panel in panels:
+                    panel_view = TicketPanelView([{
+                        'panel_id': panel['panel_id'],
+                        'title': panel['title']
+                    }])
+                    self.bot.add_view(panel_view)
+                
+                # Add empty control view for any tickets
+                self.bot.add_view(TicketControlView(""))
+                
+                logger.info(f"Restored {len(panels)} persistent ticket panel views")
+                
+        except Exception as e:
+            logger.error(f"Error restoring persistent views: {e}")
     
     async def ensure_ticket_tables(self):
         """Ensure ticket database tables exist"""
