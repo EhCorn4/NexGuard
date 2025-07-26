@@ -32,21 +32,22 @@ def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
     return result
 
 class TicketPanelView(discord.ui.View):
-    """Panel buttons to open tickets"""
+    """Permanent panel buttons to open tickets"""
     def __init__(self, panels: list):
-        super().__init__(timeout=None)
+        super().__init__(timeout=None)  # Permanent view - never times out
         for panel in panels[:5]:
             button = TicketButton(panel['panel_id'], panel['title'])
             self.add_item(button)
 
 class TicketButton(discord.ui.Button):
-    """Button to open a ticket"""
+    """Permanent button to open a ticket"""
     def __init__(self, panel_id: str, title: str):
+        # Use consistent custom_id format for persistence
         super().__init__(
             label="Open a Ticket",
             emoji='📄',
             style=discord.ButtonStyle.secondary,
-            custom_id=f"ticket_{panel_id}"
+            custom_id=f"nexguard_ticket_{panel_id}"  # Unique prefix for identification
         )
         self.panel_id = panel_id
         self.title = title
@@ -578,16 +579,19 @@ class TicketsCog(commands.Cog):
                     
                     panel_embed.set_footer(text="NexGuard |")
                     
-                    # Create panel view
+                    # Create permanent panel view
                     panel_view = TicketPanelView([{
                         'panel_id': panel['panel_id'],
                         'title': panel['title']
                     }])
                     
+                    # Register the view permanently with the bot
+                    self.bot.add_view(panel_view)
+                    
                     # Deploy to specified channel or current channel
                     if channel:
                         await channel.send(embed=panel_embed, view=panel_view)
-                        await interaction.followup.send(f"✅ Panel `{panel_id}` deployed to {channel.mention}", ephemeral=True)
+                        await interaction.followup.send(f"✅ Permanent panel `{panel_id}` deployed to {channel.mention}", ephemeral=True)
                     else:
                         await interaction.followup.send(embed=panel_embed, view=panel_view)
                 
@@ -681,7 +685,7 @@ class TicketsCog(commands.Cog):
             logger.error(f"Error initializing tickets: {e}")
     
     async def restore_persistent_views(self):
-        """Restore all persistent views from database"""
+        """Restore all permanent persistent views from database"""
         if not hasattr(self.bot, 'db_pool') or not self.bot.db_pool:
             return
             
@@ -693,18 +697,30 @@ class TicketsCog(commands.Cog):
                     FROM ticket_panels
                 """)
                 
-                # Register views for each panel
+                # Group panels by guild for organized view registration
+                guild_panels = {}
                 for panel in panels:
-                    panel_view = TicketPanelView([{
+                    guild_id = panel['guild_id']
+                    if guild_id not in guild_panels:
+                        guild_panels[guild_id] = []
+                    guild_panels[guild_id].append({
                         'panel_id': panel['panel_id'],
                         'title': panel['title']
-                    }])
-                    self.bot.add_view(panel_view)
+                    })
                 
-                # Add empty control view for any tickets
+                # Register permanent views for each unique panel combination
+                total_views = 0
+                for guild_id, guild_panel_list in guild_panels.items():
+                    # Create view for each individual panel (for unique interactions)
+                    for panel in guild_panel_list:
+                        panel_view = TicketPanelView([panel])
+                        self.bot.add_view(panel_view)
+                        total_views += 1
+                
+                # Add permanent control view for ticket management
                 self.bot.add_view(TicketControlView(""))
                 
-                logger.info(f"Restored {len(panels)} persistent ticket panel views")
+                logger.info(f"Restored {total_views} permanent ticket panel views across {len(guild_panels)} guilds")
                 
         except Exception as e:
             logger.error(f"Error restoring persistent views: {e}")
