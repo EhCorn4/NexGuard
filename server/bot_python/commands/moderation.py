@@ -12,7 +12,7 @@ class ModerationCommands(commands.Cog):
         self.bot = bot
         self.check_expired_bans.start()
     
-    def cog_unload(self):
+    async def cog_unload(self):
         self.check_expired_bans.cancel()
     
     @tasks.loop(minutes=5)  # Check every 5 minutes
@@ -152,12 +152,16 @@ class ModerationCommands(commands.Cog):
     )
     async def ban(self, interaction: discord.Interaction, user: discord.Member, reason: str = "No reason provided", duration: str = None, delete_days: int = 0):
         """Ban a user from the server"""
+        if not interaction.guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+            
         # Check permissions using custom role system
         modrole_cog = self.bot.get_cog('ModRoleCog')
         if modrole_cog:
             has_permission = await modrole_cog.has_admin_permissions(interaction.user, str(interaction.guild.id))
         else:
-            has_permission = interaction.user.guild_permissions.ban_members
+            has_permission = isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.ban_members
         
         if not has_permission:
             await interaction.response.send_message("❌ You don't have permission to ban members.", ephemeral=True)

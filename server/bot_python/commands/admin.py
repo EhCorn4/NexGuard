@@ -15,7 +15,11 @@ class AdminCommands(commands.Cog):
     @app_commands.describe(prefix="The new prefix to set")
     async def setprefix(self, interaction: discord.Interaction, prefix: str):
         """Set the command prefix for this server"""
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+            
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
             return
         
@@ -40,7 +44,11 @@ class AdminCommands(commands.Cog):
     ])
     async def configure(self, interaction: discord.Interaction, setting: str, value: str):
         """Configure server settings"""
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+            
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
             return
         
