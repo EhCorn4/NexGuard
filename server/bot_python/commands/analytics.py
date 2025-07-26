@@ -14,7 +14,7 @@ class AnalyticsTracker(commands.Cog):
         self.command_counts = {}  # Guild ID -> count
         self.collect_analytics.start()
         
-    def cog_unload(self):
+    async def cog_unload(self):
         self.collect_analytics.cancel()
     
     @tasks.loop(minutes=5)  # Collect analytics every 5 minutes

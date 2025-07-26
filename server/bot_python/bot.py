@@ -402,12 +402,13 @@ class NexGuardBot(commands.Bot):
         """Update bot status every 30 seconds"""
         await self.update_status_in_db()
         
-        # Update Discord activity status
-        activity = discord.Activity(
-            type=discord.ActivityType.watching,
-            name=f"{len(self.guilds)} servers | /commands for help"
-        )
-        await self.change_presence(activity=activity, status=discord.Status.online)
+        # Update Discord activity status (only if connected)
+        if self.ws is not None and not self.is_closed():
+            activity = discord.Activity(
+                type=discord.ActivityType.watching,
+                name=f"{len(self.guilds)} servers | /commands for help"
+            )
+            await self.change_presence(activity=activity, status=discord.Status.online)
     
     async def update_status_in_db(self):
         """Update bot status in database"""
