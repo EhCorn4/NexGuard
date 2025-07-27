@@ -17,7 +17,7 @@ class ServerStatsCog(commands.Cog):
         self.stat_channels: Dict[int, Dict[str, Any]] = {}
         self.update_stats_task.start()
         
-    def cog_unload(self):
+    async def cog_unload(self):
         """Clean up when cog is unloaded"""
         self.update_stats_task.cancel()
     
@@ -47,7 +47,7 @@ class ServerStatsCog(commands.Cog):
 
     @app_commands.command(name="serverstats", description="Configure live server statistics channels")
     @app_commands.describe(
-        action="Action to perform (setup, remove, list)",
+        action="Action to perform (setup, remove, list, force-update)",
         stat_type="Type of statistic (members, humans, bots, channels, roles, online)",
         channel_name="Custom name format (use {count} for the number, e.g., 'Members: {count}')"
     )
@@ -56,14 +56,15 @@ class ServerStatsCog(commands.Cog):
                          stat_type: Optional[str] = None, 
                          channel_name: Optional[str] = None):
         """Configure live server statistics channels"""
+        if not interaction.guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+            
         if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_channels:
             await interaction.response.send_message("❌ You need Manage Channels permission to use this command.", ephemeral=True)
             return
             
         guild = interaction.guild
-        if not guild:
-            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
-            return
         
         action = action.lower()
         
@@ -84,6 +85,9 @@ class ServerStatsCog(commands.Cog):
         elif action == "list":
             await self.list_stat_channels(interaction)
             
+        elif action == "force-update":
+            await self.force_update_stats(interaction)
+            
         else:
             embed = discord.Embed(
                 title="📊 Server Stats Channel Configuration",
@@ -94,7 +98,7 @@ class ServerStatsCog(commands.Cog):
             
             embed.add_field(
                 name="Available Actions",
-                value="`setup` - Create a new stat channel\n`remove` - Remove a stat channel\n`list` - List all stat channels",
+                value="`setup` - Create a new stat channel\n`remove` - Remove a stat channel\n`list` - List all stat channels\n`force-update` - Force immediate update of all stat channels",
                 inline=False
             )
             
@@ -127,6 +131,9 @@ class ServerStatsCog(commands.Cog):
             return
         
         guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
         
         # Check if a stat channel of this type already exists
         if guild.id in self.stat_channels and stat_type in self.stat_channels[guild.id]:
@@ -208,6 +215,9 @@ class ServerStatsCog(commands.Cog):
     async def remove_stat_channel(self, interaction: discord.Interaction, stat_type: str):
         """Remove a statistics channel"""
         guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
         
         if guild.id not in self.stat_channels or stat_type not in self.stat_channels[guild.id]:
             await interaction.response.send_message(f"❌ No statistics channel found for `{stat_type}`.", ephemeral=True)
@@ -248,6 +258,9 @@ class ServerStatsCog(commands.Cog):
     async def list_stat_channels(self, interaction: discord.Interaction):
         """List all active statistics channels"""
         guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
         
         if guild.id not in self.stat_channels or not self.stat_channels[guild.id]:
             await interaction.response.send_message("❌ No statistics channels configured for this server.", ephemeral=True)
@@ -273,6 +286,65 @@ class ServerStatsCog(commands.Cog):
         embed.set_footer(text="Updates every 5 minutes", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
+
+    async def force_update_stats(self, interaction: discord.Interaction):
+        """Force immediate update of all statistics channels"""
+        guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+        
+        if guild.id not in self.stat_channels or not self.stat_channels[guild.id]:
+            await interaction.response.send_message("❌ No statistics channels configured for this server.", ephemeral=True)
+            return
+
+        await interaction.response.defer()
+        
+        updated_count = 0
+        errors = []
+        
+        try:
+            stats = self.stat_channels[guild.id]
+            
+            for stat_type, data in stats.items():
+                try:
+                    channel = guild.get_channel(data['channel_id'])
+                    if not channel:
+                        errors.append(f"Channel for {stat_type} not found")
+                        continue
+                    
+                    current_value = await self.get_stat_value(guild, stat_type)
+                    new_name = data['format'].format(count=current_value)
+                    
+                    # Force update regardless of current name
+                    await channel.edit(name=new_name)
+                    updated_count += 1
+                    logger.info(f"🔄 Force updated {stat_type} channel: {new_name}")
+                    
+                except Exception as e:
+                    errors.append(f"Error updating {stat_type}: {str(e)}")
+                    logger.error(f"Error force updating {stat_type}: {e}")
+        
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error during force update: {str(e)}", ephemeral=True)
+            return
+        
+        # Create response embed
+        embed = discord.Embed(
+            title="🔄 Force Update Complete",
+            color=0x00FF00,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.add_field(name="Channels Updated", value=str(updated_count), inline=True)
+        
+        if errors:
+            embed.add_field(name="Errors", value='\n'.join(errors[:5]), inline=False)
+            embed.color = 0xFFAA00
+            
+        embed.set_footer(text="Next automatic update in 5 minutes")
+        
+        await interaction.followup.send(embed=embed)
 
     async def get_stat_value(self, guild: discord.Guild, stat_type: str) -> int:
         """Get the current value for a statistic type"""
@@ -311,11 +383,15 @@ class ServerStatsCog(commands.Cog):
     @tasks.loop(minutes=5)
     async def update_stats_task(self):
         """Update all statistics channels every 5 minutes"""
+        logger.info(f"🔄 Server stats update task running - checking {len(self.stat_channels)} guilds")
         try:
             for guild_id, stats in self.stat_channels.items():
                 guild = self.bot.get_guild(guild_id)
                 if not guild:
+                    logger.warning(f"Guild {guild_id} not found, skipping stat updates")
                     continue
+                
+                logger.info(f"📊 Updating {len(stats)} stat channels for guild {guild.name}")
                 
                 for stat_type, data in stats.items():
                     try:
@@ -329,7 +405,9 @@ class ServerStatsCog(commands.Cog):
                         # Only update if name changed (to avoid rate limits)
                         if channel.name != new_name:
                             await channel.edit(name=new_name)
-                            logger.info(f"Updated {stat_type} channel in {guild.name}: {new_name}")
+                            logger.info(f"✅ Updated {stat_type} channel in {guild.name}: {new_name}")
+                        else:
+                            logger.debug(f"📌 {stat_type} channel already up to date: {channel.name}")
                         
                     except Exception as e:
                         logger.error(f"Error updating stat channel {stat_type} in guild {guild_id}: {e}")
