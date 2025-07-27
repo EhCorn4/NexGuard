@@ -22,7 +22,7 @@ class ServerStatsCog(commands.Cog):
         self.update_stats_task.cancel()
     
     async def cog_load(self):
-        """Load existing stat channels from database"""
+        """Load existing stat channels from database and clean up orphaned entries"""
         try:
             async with self.bot.db_pool.acquire() as conn:
                 rows = await conn.fetch("""
@@ -31,23 +31,53 @@ class ServerStatsCog(commands.Cog):
                     WHERE enabled = TRUE
                 """)
                 
+                valid_channels = 0
+                cleaned_channels = 0
+                
                 for row in rows:
                     guild_id = int(row['guild_id'])
+                    channel_id = int(row['channel_id'])
+                    
+                    # Check if guild and channel actually exist
+                    guild = self.bot.get_guild(guild_id)
+                    if not guild:
+                        logger.warning(f"Guild {guild_id} not found, disabling stat channel {row['stat_type']}")
+                        await conn.execute("""
+                            UPDATE server_stat_channels 
+                            SET enabled = FALSE 
+                            WHERE guild_id = $1 AND stat_type = $2
+                        """, str(guild_id), row['stat_type'])
+                        cleaned_channels += 1
+                        continue
+                    
+                    channel = guild.get_channel(channel_id)
+                    if not channel:
+                        logger.warning(f"Channel {channel_id} not found in {guild.name}, disabling stat channel {row['stat_type']}")
+                        await conn.execute("""
+                            UPDATE server_stat_channels 
+                            SET enabled = FALSE 
+                            WHERE guild_id = $1 AND stat_type = $2
+                        """, str(guild_id), row['stat_type'])
+                        cleaned_channels += 1
+                        continue
+                    
+                    # Channel exists, add to cache
                     if guild_id not in self.stat_channels:
                         self.stat_channels[guild_id] = {}
                     
                     self.stat_channels[guild_id][row['stat_type']] = {
-                        'channel_id': int(row['channel_id']),
+                        'channel_id': channel_id,
                         'format': row['channel_name_format']
                     }
+                    valid_channels += 1
                     
-                logger.info(f"Loaded {len(rows)} stat channels across {len(self.stat_channels)} guilds")
+                logger.info(f"Loaded {valid_channels} valid stat channels, cleaned {cleaned_channels} orphaned entries across {len(self.stat_channels)} guilds")
         except Exception as e:
             logger.error(f"Error loading stat channels: {e}")
 
     @app_commands.command(name="serverstats", description="Configure live server statistics channels")
     @app_commands.describe(
-        action="Action to perform (setup, remove, list, force-update)",
+        action="Action to perform (setup, remove, list, force-update, cleanup)",
         stat_type="Type of statistic (members, humans, bots, channels, roles, online)",
         channel_name="Custom name format (use {count} for the number, e.g., 'Members: {count}')"
     )
@@ -88,6 +118,9 @@ class ServerStatsCog(commands.Cog):
         elif action == "force-update":
             await self.force_update_stats(interaction)
             
+        elif action == "cleanup":
+            await self.cleanup_stat_channels(interaction)
+            
         else:
             embed = discord.Embed(
                 title="📊 Server Stats Channel Configuration",
@@ -98,7 +131,7 @@ class ServerStatsCog(commands.Cog):
             
             embed.add_field(
                 name="Available Actions",
-                value="`setup` - Create a new stat channel\n`remove` - Remove a stat channel\n`list` - List all stat channels\n`force-update` - Force immediate update of all stat channels",
+                value="`setup` - Create a new stat channel\n`remove` - Remove a stat channel\n`list` - List all stat channels\n`force-update` - Force immediate update of all stat channels\n`cleanup` - Clean up duplicate/orphaned stat channels",
                 inline=False
             )
             
@@ -345,6 +378,76 @@ class ServerStatsCog(commands.Cog):
         embed.set_footer(text="Next automatic update in 5 minutes")
         
         await interaction.followup.send(embed=embed)
+
+    async def cleanup_stat_channels(self, interaction: discord.Interaction):
+        """Clean up duplicate and orphaned stat channels"""
+        guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
+            return
+
+        await interaction.response.defer()
+        
+        try:
+            # Get all stat channels from database for this guild
+            async with self.bot.db_pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT channel_id, stat_type 
+                    FROM server_stat_channels 
+                    WHERE guild_id = $1 AND enabled = TRUE
+                """, str(guild.id))
+            
+            cleaned_count = 0
+            active_count = 0
+            errors = []
+            
+            # Check each channel
+            for row in rows:
+                try:
+                    channel_id = int(row['channel_id'])
+                    channel = guild.get_channel(channel_id)
+                    
+                    if not channel:
+                        # Channel doesn't exist, disable in database
+                        async with self.bot.db_pool.acquire() as conn:
+                            await conn.execute("""
+                                UPDATE server_stat_channels 
+                                SET enabled = FALSE 
+                                WHERE guild_id = $1 AND channel_id = $2
+                            """, str(guild.id), str(channel_id))
+                        
+                        # Remove from cache
+                        if guild.id in self.stat_channels and row['stat_type'] in self.stat_channels[guild.id]:
+                            del self.stat_channels[guild.id][row['stat_type']]
+                            
+                        cleaned_count += 1
+                        logger.info(f"🧹 Cleaned up orphaned {row['stat_type']} channel: {channel_id}")
+                    else:
+                        active_count += 1
+                        
+                except Exception as e:
+                    errors.append(f"Error checking {row['stat_type']}: {str(e)}")
+            
+            # Create response embed
+            embed = discord.Embed(
+                title="🧹 Cleanup Complete",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(name="Active Channels", value=str(active_count), inline=True)
+            embed.add_field(name="Cleaned Up", value=str(cleaned_count), inline=True)
+            
+            if errors:
+                embed.add_field(name="Errors", value='\n'.join(errors[:3]), inline=False)
+                embed.color = 0xFFAA00
+                
+            embed.set_footer(text="Use /serverstats list to see active channels")
+            
+            await interaction.followup.send(embed=embed)
+            
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error during cleanup: {str(e)}", ephemeral=True)
 
     async def get_stat_value(self, guild: discord.Guild, stat_type: str) -> int:
         """Get the current value for a statistic type"""
