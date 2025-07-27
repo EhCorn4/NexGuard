@@ -561,19 +561,19 @@ class TicketsCog(commands.Cog):
                     # Create panel embed with separate customization
                     panel_embed = discord.Embed(color=0x5865F2)
                     
-                    # Set panel embed header (author field)
+                    # Set panel embed header (author field) with placeholder replacement
                     if panel.get('panel_embed_header'):
-                        panel_embed.set_author(name=panel['panel_embed_header'])
+                        panel_embed.set_author(name=replace_placeholders(panel['panel_embed_header'], interaction))
                     
-                    # Set panel embed title
+                    # Set panel embed title with placeholder replacement
                     if panel.get('panel_embed_title'):
-                        panel_embed.title = panel['panel_embed_title']
+                        panel_embed.title = replace_placeholders(panel['panel_embed_title'], interaction)
                     else:
                         panel_embed.title = panel['title']
                     
-                    # Set panel embed description
+                    # Set panel embed description with placeholder replacement
                     if panel.get('panel_embed_description'):
-                        panel_embed.description = panel['panel_embed_description']
+                        panel_embed.description = replace_placeholders(panel['panel_embed_description'], interaction)
                     else:
                         panel_embed.description = "Click the button below to open a support ticket."
                     
