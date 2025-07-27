@@ -69,41 +69,72 @@ class UtilityCommands(commands.Cog):
         parameters = {"user": user.mention if user != interaction.user else "self"}
         await self.bot.log_command_usage(interaction, "userinfo", parameters)
     
-    @app_commands.command(name="serverinfo", description="Get information about the server")
+    @app_commands.command(name="serverinfo", description="View comprehensive server statistics")
     async def serverinfo(self, interaction: discord.Interaction):
-        """Get information about the server"""
+        """Get comprehensive server statistics"""
         guild = interaction.guild
         
         if guild is None:
             await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
             return
         
+        # Calculate detailed member statistics
+        total_members = guild.member_count or 0
+        human_members = sum(1 for member in guild.members if not member.bot)
+        bot_members = sum(1 for member in guild.members if member.bot)
+        online_members = sum(1 for member in guild.members if member.status != discord.Status.offline)
+        
+        # Calculate channel statistics
+        total_channels = len(guild.channels)
+        text_channels = len(guild.text_channels)
+        voice_channels = len(guild.voice_channels)
+        categories = len(guild.categories)
+        
+        # Role count
+        roles_count = len(guild.roles)
+        
+        # Create main embed with server stats format
         embed = discord.Embed(
-            title=f"🏠 Server Information - {guild.name}",
-            color=0x00FFFF,
+            title=f"📊 SERVER STATS 📊",
+            description=f"**{guild.name}**",
+            color=0x5865F2,  # Discord blurple color
             timestamp=datetime.utcnow()
         )
         
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
         
-        embed.add_field(name="Server Name", value=guild.name, inline=True)
-        embed.add_field(name="Server ID", value=guild.id, inline=True)
-        embed.add_field(name="Owner", value=guild.owner.mention if guild.owner else "Unknown", inline=True)
+        # Server statistics in the exact format from your image
+        stats_text = f"👥 **All Members:** {total_members:,}\n"
+        stats_text += f"👤 **Members:** {human_members:,}\n" 
+        stats_text += f"🤖 **Bots:** {bot_members:,}\n"
+        stats_text += f"📺 **Channels:** {total_channels:,}\n"
+        stats_text += f"🎭 **Roles:** {roles_count:,}"
         
-        embed.add_field(name="Created", value=discord.utils.format_dt(guild.created_at, "F"), inline=True)
-        embed.add_field(name="Members", value=guild.member_count, inline=True)
-        embed.add_field(name="Verification Level", value=guild.verification_level.name.title(), inline=True)
+        embed.add_field(name="", value=stats_text, inline=False)
         
-        embed.add_field(name="Text Channels", value=len(guild.text_channels), inline=True)
-        embed.add_field(name="Voice Channels", value=len(guild.voice_channels), inline=True)
-        embed.add_field(name="Roles", value=len(guild.roles), inline=True)
+        # Additional server details
+        details_text = f"🟢 **Online:** {online_members:,}\n"
+        details_text += f"💬 **Text Channels:** {text_channels:,}\n"
+        details_text += f"🔊 **Voice Channels:** {voice_channels:,}\n"
+        details_text += f"📂 **Categories:** {categories:,}\n"
+        details_text += f"⭐ **Boost Level:** {guild.premium_tier}\n"
+        details_text += f"🚀 **Boosts:** {guild.premium_subscription_count or 0}"
         
-        embed.add_field(name="Boost Level", value=guild.premium_tier, inline=True)
-        embed.add_field(name="Boost Count", value=guild.premium_subscription_count, inline=True)
-        embed.add_field(name="File Size Limit", value=f"{guild.filesize_limit // 1024 // 1024}MB", inline=True)
+        embed.add_field(name="📈 Additional Stats", value=details_text, inline=True)
         
-        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        # Server information
+        info_text = f"**Owner:** <@{guild.owner_id}>\n"
+        info_text += f"**Created:** {discord.utils.format_dt(guild.created_at, 'R')}\n"
+        info_text += f"**ID:** `{guild.id}`\n"
+        info_text += f"**Verification:** {guild.verification_level.name.title()}"
+        
+        embed.add_field(name="ℹ️ Server Info", value=info_text, inline=True)
+        
+        embed.set_footer(
+            text=f"NexGuard Server Statistics • {human_members:,} humans, {bot_members:,} bots", 
+            icon_url=guild.icon.url if guild.icon else None
+        )
         
         await interaction.response.send_message(embed=embed)
         
