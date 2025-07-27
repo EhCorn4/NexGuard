@@ -1,36 +1,21 @@
 **NEW FEATURE: Reaction Roles System**
 
-We're excited to announce a powerful new feature for NexGuard - Reaction Roles! Your community can now automatically assign and remove roles based on message reactions, making role management effortless and interactive.
+NexGuard now supports Reaction Roles! Users can automatically get or remove roles by reacting to messages with specific emojis.
 
 **What Are Reaction Roles?**
-Reaction roles allow users to self-assign roles by simply reacting to messages with specific emojis. When users react, they automatically receive the associated role. When they remove their reaction, the role is automatically removed.
-
-**Key Benefits:**
-- Instant role assignment without admin intervention
-- Self-service role management for community members
-- Reduces administrative workload for server staff
-- Creates interactive and engaging role selection
-- Persistent across bot restarts with reliable database storage
-
-**Available Commands:**
-Server administrators can set up reaction roles using the new `/reaction-roles` command:
+Users react to messages with emojis to instantly receive roles. Remove the reaction to lose the role. Perfect for self-service role management without admin intervention.
 
 **Setup Commands:**
-- `/reaction-roles add` - Create a new reaction role on any message
-- `/reaction-roles remove` - Remove a specific reaction role configuration
-- `/reaction-roles list` - View all active reaction roles in the server
-- `/reaction-roles clear` - Remove all reaction roles from a specific message
+- `/reaction-roles add` - Create a reaction role on any message
+- `/reaction-roles remove` - Remove a specific reaction role
+- `/reaction-roles list` - View all active reaction roles
+- `/reaction-roles clear` - Remove all reaction roles from a message
 
-**How to Set Up Reaction Roles:**
+**How to Set Up:**
 
-**Step 1: Create or Choose a Message**
-Post a message explaining the available roles, or use an existing message where you want users to react for roles.
-
-**Step 2: Get the Message ID**
-Right-click the message and select "Copy Message ID" (Developer Mode must be enabled in Discord settings).
-
-**Step 3: Configure Reaction Roles**
-Use the setup command with your message ID, desired emoji, and target role:
+1. Create or choose a message for role selection
+2. Right-click the message and copy the Message ID
+3. Configure reaction roles using:
 ```
 /reaction-roles add message_id:[MESSAGE_ID] emoji:[EMOJI] role:[@ROLE]
 ```
@@ -40,60 +25,51 @@ Use the setup command with your message ID, desired emoji, and target role:
 /reaction-roles add message_id:123456789 emoji:🎮 role:@Gamer
 /reaction-roles add message_id:123456789 emoji:📚 role:@Student
 /reaction-roles add message_id:123456789 emoji:🎨 role:@Artist
-/reaction-roles add message_id:123456789 emoji:🎵 role:@Music Lover
 ```
 
 **Common Use Cases:**
-- **Game Roles:** Let members choose which games they play
-- **Notification Roles:** Allow users to opt into announcement pings
-- **Interest Groups:** Create hobby or interest-based role selection
-- **Access Roles:** Grant access to specific channels or features
-- **Color Roles:** Let users choose their display color
-- **Pronoun Roles:** Enable self-identification options
+- Game roles for different games
+- Notification roles for announcements
+- Interest-based community groups
+- Access roles for special channels
+- Color roles for display customization
+- Pronoun roles for identification
 
-**Important Features:**
-- **Automatic Management:** Roles are assigned and removed instantly when users react or unreact
-- **Permission Safe:** Respects Discord role hierarchy and bot permissions
-- **Multiple Roles:** Users can have multiple reaction roles from the same message
-- **Persistent Storage:** All configurations survive bot restarts and updates
-- **Smart Cleanup:** Automatically removes configurations if roles or messages are deleted
+**Key Features:**
+- Instant role assignment and removal
+- Respects Discord role hierarchy
+- Multiple roles per message supported
+- Persistent across bot restarts
+- Automatic cleanup of deleted roles/messages
+- Works with Unicode and custom emojis
 
 **Permission Requirements:**
-- Administrators need "Manage Roles" permission to configure reaction roles
-- The bot must have permission to assign the target roles
-- Target roles must be below the bot's highest role in the server hierarchy
+- Admins need "Manage Roles" permission to configure
+- Bot must be able to assign target roles
+- Target roles must be below bot's highest role
 
-**Example Reaction Role Message:**
+**Example Message:**
 "React below to get your roles:
 🎮 for Gamer role
-📚 for Student role  
+📚 for Student role
 🎨 for Artist role
 🎵 for Music Lover role"
 
 **Getting Started:**
-1. Choose or create a message for role selection
-2. Copy the message ID (right-click → Copy Message ID)
-3. Use `/reaction-roles add` to configure each emoji and role pair
-4. The bot automatically adds reactions to the message
+1. Post a role selection message
+2. Copy the message ID (Developer Mode required)
+3. Use `/reaction-roles add` for each emoji/role pair
+4. Bot automatically adds reactions to the message
 5. Users can now react to receive roles instantly
 
 **Management Tips:**
-- Use `/reaction-roles list` to review all active reaction roles
-- Keep role selection messages pinned for easy access
-- Group related roles on the same message for organization
-- Use clear, recognizable emojis that match the role purpose
-
-**Technical Details:**
-- Unlimited reaction roles per server
-- Supports all standard Unicode emojis and server custom emojis
-- Real-time role assignment with sub-second response times
-- Comprehensive error handling and logging
-- Database backup ensures no configuration loss
+- Use `/reaction-roles list` to review configurations
+- Pin role selection messages for easy access
+- Group related roles on the same message
+- Use clear, recognizable emojis
 
 **Bot Status:**
-NexGuard is currently online across 11 servers, protecting 201 users with 50 total commands available. The reaction roles system is part of our comprehensive server management suite alongside our advanced moderation tools, ticket system, and automation features.
+NexGuard is online across 11 servers protecting 200 users with 50 total commands. Reaction roles joins our comprehensive suite including advanced moderation, ticket system, server statistics, and automation features.
 
 **Support:**
-For setup assistance or questions about reaction roles, contact server administrators or use our support channels. This feature requires administrative permissions to configure but provides immediate value for community engagement and self-service role management.
-
-The reaction roles system represents another step forward in making Discord server management more automated, user-friendly, and engaging for your entire community.
+Contact server administrators for setup assistance. Requires admin permissions to configure but provides immediate value for community engagement and automated role management.
