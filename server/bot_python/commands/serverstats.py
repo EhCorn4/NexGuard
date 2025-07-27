@@ -128,6 +128,24 @@ class ServerStatsCog(commands.Cog):
         
         guild = interaction.guild
         
+        # Check if a stat channel of this type already exists
+        if guild.id in self.stat_channels and stat_type in self.stat_channels[guild.id]:
+            existing_channel_id = self.stat_channels[guild.id][stat_type]['channel_id']
+            existing_channel = guild.get_channel(existing_channel_id)
+            
+            if existing_channel:
+                await interaction.response.send_message(
+                    f"❌ A statistics channel for `{stat_type}` already exists: {existing_channel.mention}\n"
+                    f"Use `/serverstats remove {stat_type}` first if you want to replace it.",
+                    ephemeral=True
+                )
+                return
+            else:
+                # Channel doesn't exist anymore, remove from cache
+                del self.stat_channels[guild.id][stat_type]
+                if not self.stat_channels[guild.id]:
+                    del self.stat_channels[guild.id]
+        
         try:
             # Create voice channel
             category = None
