@@ -1,5 +1,5 @@
 import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, prefetchCriticalData } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +10,9 @@ import { Footer } from "@/components/layout/footer";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PerformanceWrapper } from "@/components/optimized/performance-wrapper";
 import { PageTransition } from "@/components/ui/page-transition";
-import { Suspense, lazy } from "react";
+import { usePrefetchCriticalData, useServiceWorker, useMemoryOptimization } from "@/components/optimized/cache-optimization";
+import { PerformanceMonitor } from "@/components/optimized/performance-monitor";
+import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 
 // Lazy load pages for better performance
@@ -43,6 +45,7 @@ function Router() {
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
         <Navbar />
         <main role="main">
+          <PerformanceMonitor enabled={false} />
           <AnimatePresence mode="wait" initial={false}>
             <Switch key={location}>
               <Route path="/" component={() => (
@@ -175,6 +178,16 @@ function Router() {
 }
 
 function App() {
+  // Initialize optimizations
+  useServiceWorker();
+  useMemoryOptimization();
+  usePrefetchCriticalData();
+  
+  // Prefetch critical data on app start
+  useEffect(() => {
+    prefetchCriticalData();
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="nexguard-ui-theme">
       <QueryClientProvider client={queryClient}>

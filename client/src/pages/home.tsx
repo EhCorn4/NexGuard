@@ -8,6 +8,9 @@ import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_17519369
 import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
 import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { SEOHead } from "@/components/optimized/seo-head";
+import { OptimizedImage } from "@/components/optimized/image-optimization";
+import { PrefetchOnHover } from "@/components/optimized/cache-optimization";
 
 const Home = memo(function Home() {
   // Fetch live bot status
@@ -15,6 +18,11 @@ const Home = memo(function Home() {
     queryKey: ['/api/bot/status'],
     refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  // Type-safe bot status data
+  const safeGuildsCount = (botStatus as any)?.guildsCount || 0;
+  const safeUsersCount = (botStatus as any)?.usersCount || 0;
+  const safeIsOnline = (botStatus as any)?.isOnline || false;
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -32,7 +40,15 @@ const Home = memo(function Home() {
   };
 
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
+    <>
+      <SEOHead 
+        title="Home"
+        description="NexGuard - Professional Discord bot with advanced moderation, ticket system, analytics, and comprehensive server management. Protecting 205+ users across 11+ servers."
+        keywords="discord bot, moderation bot, discord moderation, server management, discord utilities, ticket system, automod, discord analytics"
+        image="/nexguard-banner.png"
+        type="website"
+      />
+      <div className="min-h-screen hero-gradient circuit-pattern flex items-center justify-center relative overflow-hidden">
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20" 
         style={{ backgroundImage: `url(${nexguardIcon})` }}
@@ -42,10 +58,14 @@ const Home = memo(function Home() {
       <div className="container mx-auto px-4 text-center relative z-10 pt-20">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
-            <img 
+            <OptimizedImage
               src={nexguardBanner} 
-              alt="NexGuard Banner" 
+              alt="NexGuard - Professional Discord Bot Banner" 
               className="w-64 md:w-80 h-auto max-w-full animate-float"
+              width={320}
+              height={160}
+              priority
+              loading="eager"
             />
           </div>
           
@@ -81,13 +101,13 @@ const Home = memo(function Home() {
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
-                {botStatus?.guildsCount || 0}+
+                {safeGuildsCount}+
               </div>
               <div className="text-sm text-gray-400">Servers Protected</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">
-                {botStatus?.usersCount ? formatNumber(botStatus.usersCount) : '0'}+
+                {formatNumber(safeUsersCount)}+
               </div>
               <div className="text-sm text-gray-400">Users Secured</div>
             </div>
@@ -98,8 +118,8 @@ const Home = memo(function Home() {
               <div className="text-sm text-gray-400">Support</div>
             </div>
             <div className="text-center">
-              <div className={`text-3xl font-bold ${getBotStatusColor(botStatus?.isOnline || false)}`}>
-                {getBotStatusText(botStatus?.isOnline || false)}
+              <div className={`text-3xl font-bold ${getBotStatusColor(safeIsOnline)}`}>
+                {getBotStatusText(safeIsOnline)}
               </div>
               <div className="text-sm text-gray-400">Bot Status</div>
             </div>
@@ -152,9 +172,8 @@ const Home = memo(function Home() {
           </div>
         </div>
       </div>
-
-
-    </div>
+      </div>
+    </>
   );
 });
 

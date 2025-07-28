@@ -1,0 +1,15 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="24" fill="url(#gradient)"/>
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(48, 48)">
+    <circle cx="48" cy="48" r="36" fill="white" opacity="0.1"/>
+    <path d="M48 16L64 32L48 48L32 32L48 16Z" fill="white"/>
+    <path d="M24 48L48 72L72 48L48 24L24 48Z" fill="white" opacity="0.8"/>
+    <text x="48" y="88" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">NexGuard</text>
+  </g>
+</svg>

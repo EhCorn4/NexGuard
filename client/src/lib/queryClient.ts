@@ -59,11 +59,41 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes for better performance
+      gcTime: 1000 * 60 * 10, // 10 minutes in memory (formerly cacheTime)
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors, but retry on network issues
+        if (error?.message?.includes('4')) {
+          return false;
+        }
+        return failureCount < 2; // Limit retries to prevent slowdown
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 5000),
     },
     mutations: {
-      retry: false,
+      retry: 1, // Retry mutations once on failure
+      retryDelay: 1000,
     },
   },
 });
+
+// Prefetch critical data on app start
+export function prefetchCriticalData() {
+  // Bot status - most important for homepage
+  queryClient.prefetchQuery({
+    queryKey: ["/api/bot/status"],
+    staleTime: 30 * 1000, // Fresh data every 30 seconds
+  });
+  
+  // Features data - static content
+  queryClient.prefetchQuery({
+    queryKey: ["/api/features"],
+    staleTime: 10 * 60 * 1000, // 10 minutes for mostly static content
+  });
+  
+  // Config data
+  queryClient.prefetchQuery({
+    queryKey: ["/api/config"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
