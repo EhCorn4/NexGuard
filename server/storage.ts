@@ -294,7 +294,17 @@ export class MemStorage implements IStorage {
       comments: 112,
     });
 
-    this.currentNewsId = 30;
+    this.newsUpdates.set(28, {
+      id: 28,
+      title: "🔍 Comprehensive Event Logging System",
+      content: "Advanced server monitoring with 7 specialized logging categories: member events, message tracking, voice activity, channel/role changes, and moderation actions. Professional Discord embeds with configurable channels per event type.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-07-28T14:30:00Z'),
+      likes: 245,
+      comments: 67,
+    });
+
+    this.currentNewsId = 29;
 
     // Initialize developers
     this.developers.set(1, {
@@ -397,7 +407,15 @@ export class MemStorage implements IStorage {
       benefits: ["Add/remove roles by reacting to messages", "Persistent configuration across bot restarts", "Automatic cleanup of deleted roles", "Role hierarchy validation", "Comprehensive management commands", "Real-time role synchronization"],
     });
 
-    this.currentFeatureId = 11;
+    this.features.set(11, {
+      id: 11,
+      title: "Comprehensive Event Logging",
+      description: "Advanced server monitoring with 7 specialized logging categories including member events, message tracking, voice activity, role changes, and moderation actions with professional Discord embeds.",
+      icon: "shield",
+      benefits: ["7 specialized logging categories", "Member join/leave tracking with account age warnings", "Message edit/delete logs with content preservation", "Voice activity monitoring and channel movements", "Role and channel change notifications", "Moderation event tracking with audit logs", "Professional Discord embed formatting", "Configurable logging channels per event type"],
+    });
+
+    this.currentFeatureId = 12;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {

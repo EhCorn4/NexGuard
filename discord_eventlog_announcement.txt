@@ -1,0 +1,67 @@
+🔍 **MAJOR UPDATE: Comprehensive Event Logging System**
+
+NexGuard now features the most advanced Discord server monitoring system available! Track everything happening in your server with professional logging across 7 specialized categories.
+
+## 📊 **What's New?**
+
+**Member Event Logging:**
+- Member joins with account age warnings for new accounts
+- Member leaves with role information and join duration
+- Nickname changes with before/after tracking
+- Role additions and removals with detailed change logs
+
+**Message Event Logging:**
+- Message deletions with full content preservation
+- Message edits with before/after comparison
+- Attachment tracking for deleted messages
+- Channel context and jump links for investigations
+
+**Voice Activity Logging:**
+- Voice channel joins and leaves
+- Channel movement tracking between voice rooms
+- Real-time voice activity monitoring
+
+**Server Management Logging:**
+- Channel creation and deletion with detailed information
+- Role creation and deletion with permission tracking
+- Moderation events (bans/unbans) with audit log integration
+
+## ⚙️ **Advanced Configuration**
+
+Configure specialized logging channels for different event types:
+- `/eventlog set member #member-logs` - Member activity tracking
+- `/eventlog set message #message-logs` - Message monitoring
+- `/eventlog set voice #voice-logs` - Voice activity tracking
+- `/eventlog set moderation #mod-logs` - Moderation actions
+- `/eventlog set channel #server-logs` - Server changes
+- `/eventlog set role #role-logs` - Role management
+- `/eventlog set general #general-logs` - Everything else
+
+**Test Your Setup:**
+- `/logtest member` - Test member event logging
+- `/logtest message` - Test message event logging
+- `/eventlog view` - View all current logging settings
+
+## 🏆 **Why NexGuard's Logging is Superior**
+
+✅ **7 Specialized Categories** - Not just basic logging
+✅ **Professional Embeds** - Clean, organized, easy to read
+✅ **Detailed Context** - User IDs, timestamps, audit trails
+✅ **Smart Filtering** - Account age warnings and suspicious activity detection
+✅ **Attachment Preservation** - Links to deleted files and images
+✅ **Zero Setup Required** - Works immediately with your existing channels
+
+## 🚀 **Complete Bot Stats**
+
+- **52+ Total Commands** across all categories
+- **11+ Servers Protected** with real-time monitoring  
+- **205+ Users Secured** with comprehensive logging
+- **7 Logging Categories** for complete server oversight
+- **Professional Grade** logging comparable to premium bots
+
+Ready to upgrade your server security and monitoring? NexGuard's comprehensive event logging system provides enterprise-level insights into your Discord community.
+
+**Add NexGuard Today:** [Invite Link]
+**Need Help?** Use `/commands` to see all available features
+
+*Professional Discord server management made simple.*
