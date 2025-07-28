@@ -96,9 +96,29 @@ export class MemStorage implements IStorage {
     // Initialize news updates spanning past 2 months
     this.newsUpdates.set(1, {
       id: 1,
+      title: "📊 Live Server Statistics Channels - Real-Time Community Insights",
+      content: "Introducing live server statistics channels! Voice channels that automatically display real-time member counts, bot counts, channel counts, and role counts. Updates every 5 minutes with professional formatting and automatic cleanup. Perfect for showcasing your community's growth at a glance.",
+      category: "NEW FEATURE", 
+      publishedAt: new Date('2025-07-27T10:00:00Z'),
+      likes: 203,
+      comments: 45,
+    });
+
+    this.newsUpdates.set(28, {
+      id: 28,
+      title: "🎭 Dynamic Reaction Roles - Interactive Role Management",
+      content: "Advanced reaction roles system now live! Users can add/remove roles by reacting to messages with automatic role synchronization. Includes persistent configuration, role hierarchy validation, and comprehensive management commands. Perfect for self-service role assignment.",
+      category: "NEW FEATURE", 
+      publishedAt: new Date('2025-07-27T09:30:00Z'),
+      likes: 178,
+      comments: 38,
+    });
+
+    this.newsUpdates.set(29, {
+      id: 29,
       title: "🛡️ Advanced AutoMod Protection: Caps Lock & Mention Limits",
       content: "Revolutionary automod expansion with caps lock filtering and mention spam protection! Configure thresholds from 10-100% for caps detection and limits from 1-20 mentions per message. Enhanced protection against spam with professional logging and moderator bypass functionality.",
-      category: "NEW FEATURE", 
+      category: "UPDATE", 
       publishedAt: new Date('2025-07-21T10:00:00Z'),
       likes: 156,
       comments: 34,
@@ -274,7 +294,7 @@ export class MemStorage implements IStorage {
       comments: 112,
     });
 
-    this.currentNewsId = 28;
+    this.currentNewsId = 30;
 
     // Initialize developers
     this.developers.set(1, {
@@ -332,9 +352,9 @@ export class MemStorage implements IStorage {
     this.features.set(5, {
       id: 5,
       title: "Comprehensive Command Suite",
-      description: "Complete server administration suite with 51+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
+      description: "Complete server administration suite with 50+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
       icon: "cog",
-      benefits: ["51+ slash commands across all categories", "Advanced admin tools with error logging", "AI assistant with intelligent responses", "8 comprehensive automod commands", "Role management with hierarchical permissions", "Real-time monitoring and analytics"],
+      benefits: ["50+ slash commands across all categories", "Advanced admin tools with error logging", "AI assistant with intelligent responses", "8 comprehensive automod commands", "Role management with hierarchical permissions", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
@@ -342,7 +362,7 @@ export class MemStorage implements IStorage {
       title: "Real-time Analytics Dashboard", 
       description: "Professional analytics dashboard with live bot status monitoring, server statistics, command usage tracking, and comprehensive performance insights.",
       icon: "chart-line",
-      benefits: ["Live bot status with real-time updates (9+ servers, 174+ users)", "Interactive server statistics and charts", "Universal command logging with professional embeds", "Error tracking and logging system", "Professional dashboard with data visualization"],
+      benefits: ["Live bot status with real-time updates (11+ servers, 201+ users)", "Interactive server statistics and charts", "Universal command logging with professional embeds", "Error tracking and logging system", "Professional dashboard with data visualization"],
     });
 
     this.features.set(7, {
@@ -361,7 +381,23 @@ export class MemStorage implements IStorage {
       benefits: ["Smart spam detection with configurable thresholds", "Bad word filtering with strict and flexible modes", "Link and invite blocking with custom actions", "Professional logging to configured channels", "Cooldown systems to prevent abuse"],
     });
 
-    this.currentFeatureId = 9;
+    this.features.set(9, {
+      id: 9,
+      title: "Live Server Statistics Channels",
+      description: "Real-time voice channels displaying live server metrics with automatic updates every 5 minutes, providing instant visibility into your community's growth and activity.",
+      icon: "chart-line",
+      benefits: ["Real-time member, bot, and channel counts", "Professional voice channel display with custom formatting", "Automatic updates every 5 minutes", "Organized 'Server Statistics' category creation", "Force update and cleanup commands for maintenance", "Database persistence with orphaned entry cleanup"],
+    });
+
+    this.features.set(10, {
+      id: 10,
+      title: "Dynamic Reaction Roles",
+      description: "Advanced reaction-based role assignment system with automatic role management, persistent configuration, and comprehensive administrative controls.",
+      icon: "users",
+      benefits: ["Add/remove roles by reacting to messages", "Persistent configuration across bot restarts", "Automatic cleanup of deleted roles", "Role hierarchy validation", "Comprehensive management commands", "Real-time role synchronization"],
+    });
+
+    this.currentFeatureId = 11;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {
