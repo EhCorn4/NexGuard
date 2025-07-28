@@ -709,9 +709,8 @@ class AutoModCog(commands.Cog):
                 ephemeral=True
             )
     
-    # Message event listener for automod enforcement
-    @commands.Cog.listener()
-    async def on_message(self, message):
+    # AutoMod message processing method (called by eventlog.py to prevent duplicate listeners)
+    async def process_automod_checks(self, message):
         """Handle incoming messages for AutoMod enforcement"""
         # Skip bots and DMs
         if message.author.bot or not message.guild:

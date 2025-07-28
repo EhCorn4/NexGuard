@@ -776,11 +776,14 @@ class EventLogger(commands.Cog):
             automod_cog = self.bot.get_cog('AutoModCog')
             if automod_cog:
                 # If AutoMod takes action (deletes message), it returns True
-                automod_action_taken = await automod_cog.on_message(message)
+                automod_action_taken = await automod_cog.process_automod_checks(message)
                 if automod_action_taken:
                     return  # Don't process further if message was deleted
             
-            # Analytics are handled by the AnalyticsTracker cog's on_message listener
+            # Process analytics for the message
+            analytics_cog = self.bot.get_cog('AnalyticsTracker')
+            if analytics_cog:
+                await analytics_cog.process_message_analytics(message)
             
             # Check for auto-replies
             autoreply_cog = self.bot.get_cog('AutoReply')

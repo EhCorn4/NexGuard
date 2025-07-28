@@ -97,8 +97,7 @@ class AnalyticsTracker(commands.Cog):
     async def before_collect_analytics(self):
         await self.bot.wait_until_ready()
     
-    @commands.Cog.listener()
-    async def on_message(self, message):
+    async def process_message_analytics(self, message):
         """Track message analytics efficiently"""
         if message.author.bot or not message.guild:
             return
