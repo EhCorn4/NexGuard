@@ -49,12 +49,12 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "What permissions does NexGuard need?",
-        answer: "NexGuard requires several key permissions: Manage Messages (for moderation), Ban/Kick Members (for enforcement), Moderate Members (for timeouts), Manage Channels (for lock/unlock), View Channels, Send Messages, Embed Links, and Read Message History. These permissions ensure all 44+ commands work properly.",
+        answer: "NexGuard requires several key permissions: Manage Messages (for moderation), Ban/Kick Members (for enforcement), Moderate Members (for timeouts), Manage Channels (for lock/unlock and server statistics), View Channels, Send Messages, Embed Links, and Read Message History. These permissions ensure all 50+ commands work properly.",
         tags: ["permissions", "setup"]
       },
       {
         question: "How do I configure NexGuard for my server?",
-        answer: "Start with `/botlogging` to set up command logging, then use `/welcome` for welcome messages, `/automod-config` for spam protection, and `/modrole` to set custom moderator roles. Use `/help` to see all available commands and their setup instructions.",
+        answer: "Start with `/botlogging` to set up command logging, then use `/welcome` for welcome messages, `/automod-config` for spam protection, and `/modrole` to set custom moderator roles. Configure `/serverstats` for live server statistics and `/reaction-roles` for interactive role management. Use `/commands` to see all available commands organized by category.",
         tags: ["configuration", "commands"]
       },
       {
@@ -72,7 +72,7 @@ const faqCategories: FAQCategory[] = [
     questions: [
       {
         question: "How does NexGuard's AutoMod spam protection work?",
-        answer: "NexGuard tracks message frequency and automatically detects when users send too many messages in a short time (default: 5 messages in 10 seconds). It can delete messages, warn users, or apply timeouts. Configure it with `/automod-spam` command.",
+        answer: "NexGuard tracks message frequency and automatically detects when users send too many messages in a short time (default: 5 messages in 10 seconds). It also includes caps lock filtering (configurable 10-100% threshold) and mention limits (1-20 mentions per message). It can delete messages, warn users, or apply timeouts. Configure it with `/automod-config` and related commands.",
         tags: ["automod", "spam", "protection"]
       },
       {
@@ -101,11 +101,11 @@ const faqCategories: FAQCategory[] = [
     id: "features",
     title: "Features & Commands",
     icon: Zap,
-    description: "Using NexGuard's 44+ commands",
+    description: "Using NexGuard's 50+ commands and advanced features",
     questions: [
       {
         question: "How many commands does NexGuard have?",
-        answer: "NexGuard has 44+ commands across categories: 15 Admin commands, 17 Moderation commands, 11 Utility commands, and 4 Ticket system commands. Use `/commands` to see the complete list organized by category.",
+        answer: "NexGuard has 50+ commands across 9 categories: 12 Admin, 15 Moderation, 10 Utility, 4 Ticket System, 8 AutoMod, 5 Auto-Reply, 3 Role Management, 2 Embed Builder, and 1 Analytics command. Use `/commands` to see the complete list organized by category.",
         tags: ["commands", "features"]
       },
       {
@@ -115,7 +115,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "What is the ticket system and how do I use it?",
-        answer: "NexGuard's ticket system creates private channels for user support. Use `/ticketcategory` to set up categories, then users can create tickets with `/ticket`. Staff can manage and close tickets efficiently. Supports multiple categories for different types of support.",
+        answer: "NexGuard's professional ticket system creates private channels for user support with interactive panels. Use `/ticket-panel create` to set up ticket panels, then deploy them with buttons users can click. Features include staff claiming, automatic transcripts, and {panel}-{username} channel naming (e.g., 'support-john').",
         tags: ["tickets", "support"]
       },
       {
@@ -127,6 +127,16 @@ const faqCategories: FAQCategory[] = [
         question: "How do I view server analytics and statistics?",
         answer: "Use `/botstats` for live bot statistics, `/serverinfo` for current server information, and visit the website's Analytics page for detailed charts and trends. NexGuard tracks message activity, user engagement, and command usage.",
         tags: ["analytics", "statistics", "data"]
+      },
+      {
+        question: "How do live server statistics channels work?",
+        answer: "Use `/serverstats add [type]` to create live voice channels that display real-time server data like member count, bot count, channel count, and role count. These update automatically every 5 minutes and restore on bot restart.",
+        tags: ["serverstats", "channels", "live"]
+      },
+      {
+        question: "How do I set up reaction roles?",
+        answer: "Use `/reaction-roles add [message_id] [emoji] [role]` to create reaction-based role assignment. Users can react to messages to automatically get or remove roles. Perfect for self-assignable roles and interactive role management.",
+        tags: ["reaction", "roles", "interactive"]
       }
     ]
   },

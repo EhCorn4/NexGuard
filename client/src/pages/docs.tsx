@@ -37,6 +37,11 @@ const Docs = memo(function Docs() {
       case 'moderation': return Shield;
       case 'ticket': return Ticket;
       case 'utility': return Zap;
+      case 'autoreply': return Terminal;
+      case 'automod': return Shield;
+      case 'role': return Settings;
+      case 'embed': return Terminal;
+      case 'analytics': return Zap;
       default: return Terminal;
     }
   };
@@ -47,6 +52,11 @@ const Docs = memo(function Docs() {
       case 'moderation': return 'bg-red-500/20 text-red-400 border-red-500/30';
       case 'ticket': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       case 'utility': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'autoreply': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'automod': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'role': return 'bg-pink-500/20 text-pink-400 border-pink-500/30';
+      case 'embed': return 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
+      case 'analytics': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
@@ -75,12 +85,14 @@ const Docs = memo(function Docs() {
     },
     {
       title: "3. Set Up AutoMod System",
-      description: "Configure comprehensive auto-moderation with multiple protection layers.",
+      description: "Configure comprehensive auto-moderation with multiple protection layers including caps lock filtering and mention limits.",
       content: [
         "Use `/automod-config` to view current automod status and settings",
         "Configure spam protection: `/automod-spam True 5 10 timeout`",
         "Set up link filtering: `/automod-links True delete`",
         "Enable bad word filtering: `/automod-badwords True True warn`",
+        "Configure caps lock filter: `/automod-caps True 80` (80% threshold)",
+        "Set mention limits: `/automod-mentions True 5` (max 5 mentions per message)",
         "Manage custom word lists: `/automod-words add [word]` or `/automod-words list`",
         "Reset all settings: `/automod-reset` (with confirmation prompt)"
       ]
@@ -124,14 +136,43 @@ const Docs = memo(function Docs() {
       ]
     },
     {
-      title: "7. Test Basic Commands",
+      title: "7. Set Up Live Server Statistics",
+      description: "Configure real-time voice channels displaying live server metrics with automatic updates.",
+      content: [
+        "Create statistics channels: `/serverstats add member_count` for live member count",
+        "Add bot count display: `/serverstats add bot_count` for active bot statistics",
+        "Show channel count: `/serverstats add channel_count` for total channels",
+        "Display role count: `/serverstats add role_count` for server roles",
+        "List all stats: `/serverstats list` to view configured statistics channels",
+        "Remove stats: `/serverstats remove [stat_type]` to delete specific channels",
+        "Force update: `/serverstats force-update` for immediate refresh",
+        "Cleanup orphaned entries: `/serverstats cleanup` for maintenance"
+      ]
+    },
+    {
+      title: "8. Configure Reaction Roles",
+      description: "Set up dynamic reaction-based role assignment for interactive role management.",
+      content: [
+        "Add reaction role: `/reaction-roles add [message_id] [emoji] [role]`",
+        "Remove reaction role: `/reaction-roles remove [message_id] [emoji]`",
+        "List all reaction roles: `/reaction-roles list` to view configurations",
+        "Clear all from message: `/reaction-roles clear [message_id]`",
+        "Supports custom emojis and Unicode emojis",
+        "Automatic role hierarchy validation and permission checking",
+        "Persistent configuration across bot restarts",
+        "Automatic cleanup of deleted roles and invalid configurations"
+      ]
+    },
+    {
+      title: "9. Test Basic Commands",
       description: "Verify the bot is working correctly with basic commands.",
       content: [
         "Try `/ping` to check bot responsiveness",
         "Use `/commands` to see all available commands organized by category",
         "Test `/serverinfo` to view server statistics",
         "Use `/botinfo` to see bot statistics and uptime",
-        "Try `/avatar` to test user interaction commands"
+        "Try `/avatar` to test user interaction commands",
+        "Use `/settings` to view complete server configuration overview"
       ]
     }
   ];
@@ -142,7 +183,7 @@ const Docs = memo(function Docs() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
           title="Documentation"
-          description="Complete guide to using NexGuard bot commands and features for your Discord server."
+          description="Complete guide to using NexGuard's 50+ commands including professional ticket system, live server statistics, reaction roles, advanced automod, and comprehensive moderation tools."
         />
 
         <Tabs defaultValue="setup" className="w-full">
@@ -303,7 +344,7 @@ const Docs = memo(function Docs() {
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        For immediate help, use the <code>/help</code> command in your Discord server to get a quick overview of all available commands.
+                        For immediate help, use the <code>/commands</code> command in your Discord server to get a detailed overview of all 50+ available commands organized by category.
                       </AlertDescription>
                     </Alert>
 
@@ -314,10 +355,12 @@ const Docs = memo(function Docs() {
                         </CardHeader>
                         <CardContent>
                           <ul className="space-y-2 text-sm">
-                            <li>• Bot not responding? Check if it has the necessary permissions</li>
-                            <li>• Commands not working? Verify your role permissions</li>
-                            <li>• Moderation features disabled? Use <code>/configure moderation</code></li>
-                            <li>• Tickets not working? Enable tickets with <code>/configure tickets</code></li>
+                            <li>• Bot not responding? Check if it has the necessary permissions and verify it's online</li>
+                            <li>• Commands not working? Use <code>/modpermissions @user</code> to verify your permissions</li>
+                            <li>• AutoMod not filtering? Enable with <code>/automod-config</code> and configure specific filters</li>
+                            <li>• Tickets not working? Create panels with <code>/ticket-panel create</code></li>
+                            <li>• Server stats not updating? Use <code>/serverstats force-update</code></li>
+                            <li>• Reaction roles not working? Check role hierarchy and permissions</li>
                           </ul>
                         </CardContent>
                       </Card>
@@ -328,10 +371,12 @@ const Docs = memo(function Docs() {
                         </CardHeader>
                         <CardContent>
                           <ul className="space-y-2 text-sm">
-                            <li>• Use <code>/ticket</code> to create a support ticket</li>
-                            <li>• Check our community testimonials for tips</li>
-                            <li>• Submit feedback through our feedback form</li>
-                            <li>• Browse the changelog for recent updates</li>
+                            <li>• Create support tickets using interactive ticket panels</li>
+                            <li>• Check our comprehensive FAQ page for detailed answers</li>
+                            <li>• Submit feedback through our website feedback form</li>
+                            <li>• Browse the changelog for recent updates and feature releases</li>
+                            <li>• Use <code>/settings</code> to view your current server configuration</li>
+                            <li>• Contact the developer directly for critical issues</li>
                           </ul>
                         </CardContent>
                       </Card>
@@ -363,10 +408,15 @@ const Docs = memo(function Docs() {
                           <div>
                             <h4 className="font-medium text-white mb-2">User Permissions for Commands:</h4>
                             <div className="space-y-1 text-sm">
-                              <p>• <strong>Admin Commands (15):</strong> Administrator permission required</p>
-                              <p>• <strong>Moderation Commands (17):</strong> Moderate Members permission required</p>
+                              <p>• <strong>Admin Commands (12):</strong> Administrator permission required</p>
+                              <p>• <strong>Moderation Commands (15):</strong> Moderate Members permission or custom mod role</p>
                               <p>• <strong>Ticket Commands (4):</strong> Available to all users (creation), staff for management</p>
-                              <p>• <strong>Utility Commands (11):</strong> Available to all users</p>
+                              <p>• <strong>Utility Commands (10):</strong> Available to all users</p>
+                              <p>• <strong>AutoMod Commands (8):</strong> Administrator permission required</p>
+                              <p>• <strong>Auto-Reply Commands (5):</strong> Administrator permission required</p>
+                              <p>• <strong>Role Management (3):</strong> Administrator permission required</p>
+                              <p>• <strong>Server Statistics (6):</strong> Administrator permission required</p>
+                              <p>• <strong>Reaction Roles (4):</strong> Administrator permission required</p>
                             </div>
                           </div>
                         </div>
