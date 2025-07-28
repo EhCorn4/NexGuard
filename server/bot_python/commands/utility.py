@@ -10,6 +10,20 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+def process_newlines(text: str) -> str:
+    """Process newline characters in text for proper Discord embed display"""
+    if not text:
+        return text
+    
+    # Convert common newline representations to actual newlines
+    result = text.replace('\\n', '\n')  # \n literal
+    result = result.replace('\\r\\n', '\n')  # Windows line endings
+    result = result.replace('\\r', '\n')  # Mac line endings
+    result = result.replace('\r\n', '\n')  # Normalize Windows endings
+    result = result.replace('\r', '\n')   # Normalize Mac endings
+    
+    return result
+
 class UtilityCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -297,12 +311,12 @@ class UtilityCommands(commands.Cog):
     @app_commands.command(name="embed", description="Create a custom embed message")
     @app_commands.describe(
         title="Title of the embed",
-        description="Description of the embed",
+        description="Description of the embed (supports \\n for newlines)",
         color="Color in hex format (e.g., #00FFFF)",
         thumbnail="URL for thumbnail image",
         image="URL for main image",
-        footer="Footer text",
-        author="Author name",
+        footer="Footer text (supports \\n for newlines)",
+        author="Author name (supports \\n for newlines)",
         author_icon="Author icon URL",
         url="URL to make title clickable",
         channel="Channel to send the embed to"
@@ -311,9 +325,11 @@ class UtilityCommands(commands.Cog):
                    color: str = "#00FFFF", thumbnail: Optional[str] = None, image: Optional[str] = None, 
                    footer: Optional[str] = None, author: Optional[str] = None, author_icon: Optional[str] = None,
                    url: Optional[str] = None, channel: Optional[discord.TextChannel] = None):
-        """Create a custom embed message"""
+        """Create a custom embed message with newline support"""
+        await interaction.response.defer()
+        
         if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_messages:
-            await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
+            await interaction.followup.send("❌ You need Manage Messages permission to use this command.", ephemeral=True)
             return
         
         try:
@@ -324,10 +340,16 @@ class UtilityCommands(commands.Cog):
         except ValueError:
             color_int = 0x00FFFF
         
-        # Create embed
+        # Process newlines in text fields
+        processed_title = process_newlines(title)
+        processed_description = process_newlines(description)
+        processed_footer = process_newlines(footer) if footer else None
+        processed_author = process_newlines(author) if author else None
+        
+        # Create embed with newline processing
         embed = discord.Embed(
-            title=title,
-            description=description,
+            title=processed_title,
+            description=processed_description,
             color=color_int,
             timestamp=datetime.utcnow(),
             url=url
@@ -339,11 +361,11 @@ class UtilityCommands(commands.Cog):
         if image:
             embed.set_image(url=image)
         
-        if author:
-            embed.set_author(name=author, icon_url=author_icon)
+        if processed_author:
+            embed.set_author(name=processed_author, icon_url=author_icon)
         
-        if footer:
-            embed.set_footer(text=footer, icon_url=interaction.user.display_avatar.url)
+        if processed_footer:
+            embed.set_footer(text=processed_footer, icon_url=interaction.user.display_avatar.url)
         else:
             embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
@@ -361,10 +383,11 @@ class UtilityCommands(commands.Cog):
                 timestamp=datetime.utcnow()
             )
             
-            await interaction.response.send_message(embed=confirm_embed, ephemeral=True)
+            await interaction.followup.send(embed=confirm_embed, ephemeral=True)
             
         except Exception as e:
-            await interaction.response.send_message(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
+            logger.error(f"Error creating embed: {e}")
+            await interaction.followup.send(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
     
     @app_commands.command(name="commands", description="List all available bot commands")
     async def commands_list(self, interaction: discord.Interaction):

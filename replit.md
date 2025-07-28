@@ -528,6 +528,10 @@ The system is a complete Discord bot with integrated website that:
 - July 28, 2025: Enhanced placeholder system to handle \n, \\n, \r\n, and {newline} in embed text
 - July 28, 2025: Added {ticket.id} placeholder for unique ticket identification in embeds
 - July 28, 2025: Multi-line embed support now works across panel and ticket channel embeds
+- July 28, 2025: **ENHANCEMENT** - Added \\n newline support to regular embed system (/embed command)
+- July 28, 2025: Fixed Discord interaction timeout errors in embed command with proper defer() handling
+- July 28, 2025: Enhanced /embed command to process newlines in title, description, footer, and author fields
+- July 28, 2025: Universal newline support now available across all embed creation systems
 
 ## User Preferences
 
