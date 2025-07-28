@@ -116,13 +116,8 @@ class NexGuardBot(commands.Bot):
         else:
             await interaction.response.send_message(f"❌ Command failed: {str(error)}", ephemeral=True)
     
-    async def on_guild_join(self, guild):
-        """Called when bot joins a guild"""
-        await self.handle_guild_join(guild)
-    
-    async def on_guild_remove(self, guild):
-        """Called when bot leaves a guild"""
-        await self.handle_guild_leave(guild)
+    # Guild join/leave events are now handled by eventlog.py to prevent duplication
+    # Core functionality moved to handle_guild_join_core and handle_guild_leave_core methods
     
     async def handle_member_join_core(self, member):
         """Handle core member join functionality (called by eventlog.py to avoid duplication)"""
@@ -145,33 +140,11 @@ class NexGuardBot(commands.Bot):
         await self.handle_welcome_message(member)
         await self.handle_auto_role(member)
     
-    async def on_message(self, message):
-        """Called when a message is sent"""
-        # Ignore messages from bots
-        if message.author.bot:
-            return
-        
-
-        # Check AutoMod first (it may delete messages)
-        automod_cog = self.get_cog('AutoModCog')
-        if automod_cog:
-            # If AutoMod takes action (deletes message), it returns True
-            automod_action_taken = await automod_cog.on_message(message)
-            if automod_action_taken:
-                return  # Don't process further if message was deleted
-        
-        # Analytics are handled by the AnalyticsTracker cog's on_message listener
-        
-        # Check for auto-replies
-        autoreply_cog = self.get_cog('AutoReply')
-        if autoreply_cog:
-            await autoreply_cog.process_auto_replies(message)
-        
-        # Process other commands
-        await self.process_commands(message)
+    # Message events are now handled by individual cogs (analytics, automod, autoreply) to prevent duplication
+    # This on_message handler removed to eliminate duplicate processing
     
 
-    async def handle_guild_join(self, guild):
+    async def handle_guild_join_core(self, guild):
         """Handle bot joining a guild"""
         # Send welcome message to the guild
         await self.send_guild_welcome_message(guild)
@@ -194,7 +167,7 @@ class NexGuardBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to register guild: {e}")
     
-    async def handle_guild_leave(self, guild):
+    async def handle_guild_leave_core(self, guild):
         """Handle bot leaving a guild"""
         if not self.db_pool:
             return

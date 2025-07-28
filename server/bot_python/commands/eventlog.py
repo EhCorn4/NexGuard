@@ -725,5 +725,73 @@ class EventLogger(commands.Cog):
                 ephemeral=True
             )
 
+    # === GUILD AND MESSAGE EVENTS (to prevent duplication from bot.py) ===
+    
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild: discord.Guild):
+        """Handle guild join events and call core functionality"""
+        try:
+            # Handle core functionality first
+            await self.bot.handle_guild_join_core(guild)
+            
+            # Then log the event
+            embed = self.create_embed(
+                title="Bot Added to Server",
+                description=f"NexGuard has been added to **{guild.name}**",
+                color=discord.Color.green()
+            )
+            
+            embed.add_field(name="Server Name", value=guild.name, inline=True)
+            embed.add_field(name="Member Count", value=f"{guild.member_count:,}", inline=True)
+            embed.add_field(name="Server ID", value=f"`{guild.id}`", inline=True)
+            
+            # Log to a general logging channel if available
+            await self.log_event(guild, embed, 'general')
+            
+        except Exception as e:
+            logger.error(f"Error handling guild join: {e}")
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        """Handle guild leave events and call core functionality"""
+        try:
+            # Handle core functionality first
+            await self.bot.handle_guild_leave_core(guild)
+            
+            # Then log the event (though this won't be visible to the guild anymore)
+            logger.info(f"Bot removed from guild: {guild.name} ({guild.id})")
+            
+        except Exception as e:
+            logger.error(f"Error handling guild leave: {e}")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """Handle message events and process through various systems"""
+        # Ignore messages from bots
+        if message.author.bot:
+            return
+            
+        try:
+            # Check AutoMod first (it may delete messages)
+            automod_cog = self.bot.get_cog('AutoModCog')
+            if automod_cog:
+                # If AutoMod takes action (deletes message), it returns True
+                automod_action_taken = await automod_cog.on_message(message)
+                if automod_action_taken:
+                    return  # Don't process further if message was deleted
+            
+            # Analytics are handled by the AnalyticsTracker cog's on_message listener
+            
+            # Check for auto-replies
+            autoreply_cog = self.bot.get_cog('AutoReply')
+            if autoreply_cog:
+                await autoreply_cog.process_auto_replies(message)
+            
+            # Process other commands
+            await self.bot.process_commands(message)
+            
+        except Exception as e:
+            logger.error(f"Error processing message: {e}")
+
 async def setup(bot):
     await bot.add_cog(EventLogger(bot))

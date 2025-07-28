@@ -545,6 +545,13 @@ The system is a complete Discord bot with integrated website that:
 - July 28, 2025: Added `load_stat_channels_delayed()` method to wait for bot initialization before loading stat channels from database
 - July 28, 2025: Enhanced debug logging for welcome message system to track and identify duplication causes
 - July 28, 2025: Bot now properly restores all configured server statistics channels after restart with zero configuration loss
+- July 28, 2025: **COMPLETE DUPLICATE EVENT LOGGING ELIMINATION** - Comprehensive architectural fix implemented
+- July 28, 2025: Removed all duplicate event handlers from bot.py (on_guild_join, on_guild_remove, on_message) that were causing conflicts
+- July 28, 2025: Centralized all event processing in eventlog.py with clean separation calling core bot functionality
+- July 28, 2025: Renamed core methods to handle_guild_join_core() and handle_guild_leave_core() for clarity
+- July 28, 2025: Added comprehensive guild and message event handlers to eventlog.py with proper routing to subsystems
+- July 28, 2025: Bot now operates with true single-instance event processing across all 7 logging categories
+- July 28, 2025: Architecture ensures zero duplicate logs while preserving all functionality through clean handler separation
 
 ## User Preferences
 
