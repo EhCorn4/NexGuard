@@ -10,8 +10,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
-    """Replace placeholder variables in text"""
+def replace_placeholders(text: str, interaction: discord.Interaction, ticket_id: str = None) -> str:
+    """Replace placeholder variables in text and handle newlines properly"""
     if not text:
         return text
     
@@ -21,13 +21,23 @@ def replace_placeholders(text: str, interaction: discord.Interaction) -> str:
         '{user.display_name}': interaction.user.display_name,
         '{guild.name}': interaction.guild.name if interaction.guild else 'Unknown Server',
         '{channel.name}': getattr(interaction.channel, 'name', 'Unknown Channel'),
+        '{ticket.id}': ticket_id or 'Unknown',
         '{newline}': '\n',
-        '\\n': '\n'
+        '\\\\n': '\n',  # Handle escaped newlines
+        '\\n': '\n'     # Handle literal \n
     }
     
     result = text
     for placeholder, replacement in replacements.items():
         result = result.replace(placeholder, replacement)
+    
+    # Additional newline processing for better embed support
+    # Convert common newline representations to actual newlines
+    result = result.replace('\\n', '\n')  # \n literal
+    result = result.replace('\\r\\n', '\n')  # Windows line endings
+    result = result.replace('\\r', '\n')  # Mac line endings
+    result = result.replace('\r\n', '\n')  # Normalize Windows endings
+    result = result.replace('\r', '\n')   # Normalize Mac endings
     
     return result
 
@@ -156,19 +166,22 @@ class TicketButton(discord.ui.Button):
             # Create ticket channel embed with separate customization and placeholder support
             embed = discord.Embed(color=0x5865F2)
             
+            # Generate unique ticket ID for placeholders
+            ticket_id = f"{panel['panel_id']}-{interaction.user.name.lower()}"
+            
             # Set ticket embed header (author field) with placeholder replacement
             if panel.get('ticket_embed_header'):
-                embed.set_author(name=replace_placeholders(panel['ticket_embed_header'], interaction))
+                embed.set_author(name=replace_placeholders(panel['ticket_embed_header'], interaction, ticket_id))
             
             # Set ticket embed title with placeholder replacement
             if panel.get('ticket_embed_title'):
-                embed.title = replace_placeholders(panel['ticket_embed_title'], interaction)
+                embed.title = replace_placeholders(panel['ticket_embed_title'], interaction, ticket_id)
             else:
                 embed.title = f"🎫 New Ticket"
             
             # Set ticket embed description with placeholder replacement
             if panel.get('ticket_embed_description'):
-                embed.description = replace_placeholders(panel['ticket_embed_description'], interaction)
+                embed.description = replace_placeholders(panel['ticket_embed_description'], interaction, ticket_id)
             else:
                 embed.description = f"Hello {interaction.user.mention}! Please describe your issue and we'll help you."
             
@@ -563,17 +576,17 @@ class TicketsCog(commands.Cog):
                     
                     # Set panel embed header (author field) with placeholder replacement
                     if panel.get('panel_embed_header'):
-                        panel_embed.set_author(name=replace_placeholders(panel['panel_embed_header'], interaction))
+                        panel_embed.set_author(name=replace_placeholders(panel['panel_embed_header'], interaction, panel['panel_id']))
                     
                     # Set panel embed title with placeholder replacement
                     if panel.get('panel_embed_title'):
-                        panel_embed.title = replace_placeholders(panel['panel_embed_title'], interaction)
+                        panel_embed.title = replace_placeholders(panel['panel_embed_title'], interaction, panel['panel_id'])
                     else:
                         panel_embed.title = panel['title']
                     
                     # Set panel embed description with placeholder replacement
                     if panel.get('panel_embed_description'):
-                        panel_embed.description = replace_placeholders(panel['panel_embed_description'], interaction)
+                        panel_embed.description = replace_placeholders(panel['panel_embed_description'], interaction, panel['panel_id'])
                     else:
                         panel_embed.description = "Click the button below to open a support ticket."
                     

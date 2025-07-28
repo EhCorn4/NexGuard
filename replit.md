@@ -524,6 +524,10 @@ The system is a complete Discord bot with integrated website that:
 - July 28, 2025: Added /close-request command for users to request ticket closure with staff approval buttons
 - July 28, 2025: Created /add command to add users to tickets with proper permission management
 - July 28, 2025: Bot now has 55+ commands including comprehensive ticket management functionality
+- July 28, 2025: **ENHANCEMENT** - Added comprehensive newline support for all ticket embeds
+- July 28, 2025: Enhanced placeholder system to handle \n, \\n, \r\n, and {newline} in embed text
+- July 28, 2025: Added {ticket.id} placeholder for unique ticket identification in embeds
+- July 28, 2025: Multi-line embed support now works across panel and ticket channel embeds
 
 ## User Preferences
 
