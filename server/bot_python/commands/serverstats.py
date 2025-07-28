@@ -15,13 +15,22 @@ class ServerStatsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stat_channels: Dict[int, Dict[str, Any]] = {}
+        # Load existing stat channels after bot is ready
+        asyncio.create_task(self.load_stat_channels_delayed())
         self.update_stats_task.start()
         
     async def cog_unload(self):
         """Clean up when cog is unloaded"""
         self.update_stats_task.cancel()
     
-    async def cog_load(self):
+    async def load_stat_channels_delayed(self):
+        """Load existing stat channels from database after bot is ready"""
+        # Wait for bot to be ready and database to be connected
+        await self.bot.wait_until_ready()
+        await asyncio.sleep(2)  # Give a bit more time for full initialization
+        await self.load_stat_channels()
+    
+    async def load_stat_channels(self):
         """Load existing stat channels from database and clean up orphaned entries"""
         try:
             async with self.bot.db_pool.acquire() as conn:

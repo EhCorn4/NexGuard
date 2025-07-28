@@ -541,6 +541,10 @@ The system is a complete Discord bot with integrated website that:
 - July 28, 2025: **FINAL RESOLUTION** - Removed redundant auto-role logging from bot.py that was causing duplicate member join events
 - July 28, 2025: Event logging now truly single-instance across all 7 categories with clean separation of concerns
 - July 28, 2025: Bot fully operational with 55 commands across 11+ servers protecting 206+ users with zero duplicate events
+- July 28, 2025: **SERVERSTATS RESTART FIX** - Fixed serverstats resetting after bot restart by implementing proper delayed loading
+- July 28, 2025: Added `load_stat_channels_delayed()` method to wait for bot initialization before loading stat channels from database
+- July 28, 2025: Enhanced debug logging for welcome message system to track and identify duplication causes
+- July 28, 2025: Bot now properly restores all configured server statistics channels after restart with zero configuration loss
 
 ## User Preferences
 
