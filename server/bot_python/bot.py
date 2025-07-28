@@ -462,7 +462,10 @@ class NexGuardBot(commands.Bot):
             logger.error(f"Failed to log error to channel: {log_error}")
     
     async def log_command_usage(self, interaction: discord.Interaction, command_name: str, parameters: dict = None, result: str = "Success"):
-        """Log command usage to the guild's configured logging channel"""
+        """Log command usage to the guild's configured logging channel - DISABLED to prevent duplicate logging with eventlog.py"""
+        # DISABLED: Universal command logging disabled to prevent duplication with comprehensive eventlog.py system
+        return
+        
         try:
             guild_config = await self.get_guild_config(str(interaction.guild.id))
             log_channel_id = guild_config.get('log_channel_id')

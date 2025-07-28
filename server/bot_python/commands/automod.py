@@ -828,7 +828,10 @@ class AutoModCog(commands.Cog):
         return False
     
     async def log_automod_action(self, message: discord.Message, filter_type: str, reason: str, action: str):
-        """Log automod action to the guild's configured logging channel"""
+        """Log automod action to the guild's configured logging channel - DISABLED to prevent duplicate logging with eventlog.py"""
+        # DISABLED: AutoMod logging disabled to prevent duplication with comprehensive eventlog.py system
+        return
+        
         try:
             guild_config = await self.bot.get_guild_config(str(message.guild.id))
             log_channel_id = guild_config.get('log_channel_id')
