@@ -1,0 +1,56 @@
+🛡️ **NexGuard - The Ultimate Discord Server Protection** 🛡️
+
+**Protect Your Community with Professional-Grade Moderation**
+
+**🚀 Why Choose NexGuard?**
+
+✅ **50+ Professional Commands** across 9 specialized categories
+✅ **Advanced AutoMod** with spam detection, link blocking, caps filtering
+✅ **Smart Auto-Reply System** with customizable triggers and rich embeds
+✅ **Complete Ticket System** with permanent panels and staff management
+✅ **Live Statistics Channels** showing real-time server metrics
+✅ **24/7 Uptime** protecting **200+ users** across **11+ servers**
+
+**⚡ Key Features:**
+🛡️ **Advanced Moderation** - Ban, kick, warn, timeout with hierarchy system
+🎫 **Professional Tickets** - Multi-category support with custom forms
+🤖 **Intelligent AutoMod** - Caps filtering, mention limits, spam protection
+👥 **Reaction Roles** - Dynamic role assignment with custom emojis
+📊 **Live Server Stats** - Real-time member counts in voice channels
+💬 **Auto-Reply System** - Smart responses with analytics tracking
+
+**🎯 Command Categories:**
+• **Admin (15)** - Server configuration and logging
+• **Moderation (15)** - Comprehensive moderation tools
+• **Tickets (4)** - Professional support system
+• **AutoMod (8)** - Intelligent content filtering
+• **Auto-Reply (5)** - Smart response management
+• **Utility (11)** - Server info and management tools
+
+**💼 Professional Features:**
+🔒 Database-backed storage for reliability
+🔍 Advanced error logging and diagnostics
+⏱️ Intelligent cooldown systems
+🏗️ Role hierarchy validation
+🌐 Multi-guild support with isolated configs
+
+**🚀 Get Started in 30 Seconds:**
+1. **Invite NexGuard** using the link below
+2. Run `/help` to see all commands
+3. Configure with `/settings`
+4. Set roles with `/modrole` and `/adminrole`
+5. Create tickets with `/ticket-panel create`
+
+**Ready to protect your community?**
+
+**[🔗 Add NexGuard to Your Server](https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands)**
+
+*Join thousands of protected users across professional Discord communities.*
+
+**📚 Support & Documentation:**
+• Complete docs available with `/commands`
+• 24/7 support through our support server
+• Regular updates with community feedback
+• Optional donations: paypal.me/ehcorn4
+
+**NexGuard - Where Security Meets Simplicity** 🛡️
