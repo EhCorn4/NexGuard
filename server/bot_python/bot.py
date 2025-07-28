@@ -124,10 +124,8 @@ class NexGuardBot(commands.Bot):
         """Called when bot leaves a guild"""
         await self.handle_guild_leave(guild)
     
-    async def on_member_join(self, member):
-        """Called when a member joins a guild - handle analytics and welcome only"""
-        # Remove duplicate logging - eventlog.py handles all event logging
-        
+    async def handle_member_join_core(self, member):
+        """Handle core member join functionality (called by eventlog.py to avoid duplication)"""
         # Track member join analytics
         try:
             if self.db_pool:

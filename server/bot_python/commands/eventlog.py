@@ -76,8 +76,12 @@ class EventLogger(commands.Cog):
     
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        """Log member joins with comprehensive information"""
+        """Log member joins with comprehensive information AND handle core functionality"""
         try:
+            # Handle core bot functionality (analytics, welcome, autorole)
+            await self.bot.handle_member_join_core(member)
+            
+            # Create and send event log
             embed = self.create_embed(
                 title="Member Joined",
                 description=f"{member.mention} has joined the server",
