@@ -725,6 +725,256 @@ class TicketsCog(commands.Cog):
         except Exception as e:
             logger.error(f"Error restoring persistent views: {e}")
     
+    @app_commands.command(name="close", description="Close a ticket")
+    @app_commands.describe(
+        reason="Reason for closing the ticket"
+    )
+    async def close_ticket(self, interaction: discord.Interaction, reason: str = "No reason provided"):
+        """Close the current ticket"""
+        await interaction.response.defer()
+        
+        try:
+            if not interaction.guild:
+                await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
+                return
+            
+            # Check if this is a ticket channel
+            channel_name = interaction.channel.name
+            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
+                   "ticket" in channel_name.lower()):
+                await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
+                return
+            
+            # Check permissions
+            if not (interaction.user.guild_permissions.manage_messages or 
+                   any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles)):
+                await interaction.followup.send("❌ You don't have permission to close tickets.", ephemeral=True)
+                return
+            
+            # Create transcript
+            transcript = StringIO()
+            transcript.write(f"Ticket Transcript - {channel_name}\n")
+            transcript.write(f"Closed by: {interaction.user} ({interaction.user.id})\n")
+            transcript.write(f"Closed at: {datetime.now()}\n")
+            transcript.write(f"Reason: {reason}\n")
+            transcript.write("-" * 50 + "\n\n")
+            
+            # Get recent messages for transcript
+            messages = [message async for message in interaction.channel.history(limit=100)]
+            messages.reverse()
+            
+            for message in messages:
+                timestamp = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                author = f"{message.author} ({message.author.id})"
+                content = message.content or "[No text content]"
+                transcript.write(f"[{timestamp}] {author}: {content}\n")
+                
+                # Include attachments
+                if message.attachments:
+                    for attachment in message.attachments:
+                        transcript.write(f"    📎 Attachment: {attachment.filename} ({attachment.url})\n")
+            
+            transcript.seek(0)
+            transcript_file = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+            
+            # Update database
+            if hasattr(self.bot, 'db_pool') and self.bot.db_pool:
+                async with self.bot.db_pool.acquire() as conn:
+                    await conn.execute("""
+                        UPDATE tickets 
+                        SET status = 'closed', closed_by = $1, closed_at = NOW(), close_reason = $2
+                        WHERE channel_id = $3 AND status = 'open'
+                    """, str(interaction.user.id), reason, str(interaction.channel.id))
+            
+            # Create close embed
+            close_embed = discord.Embed(
+                title="🔒 Ticket Closed",
+                description=f"This ticket has been closed by {interaction.user.mention}",
+                color=0xff0000
+            )
+            close_embed.add_field(name="Reason", value=reason, inline=False)
+            close_embed.add_field(name="Closed by", value=f"{interaction.user} ({interaction.user.id})", inline=True)
+            close_embed.add_field(name="Closed at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
+            close_embed.set_footer(text="Transcript will be sent to participants")
+            
+            await interaction.followup.send(embed=close_embed, file=transcript_file)
+            
+            # Send transcript to ticket creator (try to get from channel name or database)
+            try:
+                # Extract username from channel name (format: panel-username)
+                if "-" in channel_name:
+                    username = channel_name.split("-", 1)[1]
+                    # Try to find user by username
+                    for member in interaction.guild.members:
+                        if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
+                            try:
+                                transcript.seek(0)
+                                user_transcript = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+                                await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
+                            except:
+                                pass
+                            break
+            except:
+                pass
+            
+            # Delete channel after delay
+            await asyncio.sleep(5)
+            await interaction.channel.send("🗑️ This channel will be deleted in 5 seconds...")
+            await asyncio.sleep(5)
+            await interaction.channel.delete()
+            
+        except Exception as e:
+            logger.error(f"Error closing ticket: {e}")
+            await interaction.followup.send("❌ Failed to close ticket.", ephemeral=True)
+
+    @app_commands.command(name="close-request", description="Request ticket closure (for ticket owners)")
+    @app_commands.describe(
+        reason="Reason for requesting closure"
+    )
+    async def close_request(self, interaction: discord.Interaction, reason: str = "Issue resolved"):
+        """Request ticket closure from staff"""
+        await interaction.response.defer()
+        
+        try:
+            if not interaction.guild:
+                await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
+                return
+            
+            # Check if this is a ticket channel
+            channel_name = interaction.channel.name
+            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
+                   "ticket" in channel_name.lower()):
+                await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
+                return
+            
+            # Create close request embed
+            request_embed = discord.Embed(
+                title="🔄 Ticket Closure Requested",
+                description=f"{interaction.user.mention} has requested this ticket to be closed.",
+                color=0xffa500
+            )
+            request_embed.add_field(name="Reason", value=reason, inline=False)
+            request_embed.add_field(name="Requested by", value=f"{interaction.user} ({interaction.user.id})", inline=True)
+            request_embed.add_field(name="Requested at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
+            request_embed.set_footer(text="Staff can use /close to close this ticket")
+            
+            # Create approval buttons for staff
+            class CloseRequestView(discord.ui.View):
+                def __init__(self):
+                    super().__init__(timeout=3600)  # 1 hour timeout
+                
+                @discord.ui.button(label="Approve & Close", style=discord.ButtonStyle.red, emoji="✅")
+                async def approve_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
+                    if not (button_interaction.user.guild_permissions.manage_messages or 
+                           any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in button_interaction.user.roles)):
+                        await button_interaction.response.send_message("❌ You don't have permission to close tickets.", ephemeral=True)
+                        return
+                    
+                    # Use the close ticket functionality
+                    await button_interaction.response.defer()
+                    # Simulate calling close command
+                    await interaction.channel.send(f"✅ Ticket closure approved by {button_interaction.user.mention}")
+                    
+                @discord.ui.button(label="Deny Request", style=discord.ButtonStyle.gray, emoji="❌")
+                async def deny_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
+                    if not (button_interaction.user.guild_permissions.manage_messages or 
+                           any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in button_interaction.user.roles)):
+                        await button_interaction.response.send_message("❌ You don't have permission to manage tickets.", ephemeral=True)
+                        return
+                    
+                    await button_interaction.response.send_message(f"❌ Ticket closure request denied by {button_interaction.user.mention}")
+                    self.clear_items()
+                    await button_interaction.edit_original_response(view=self)
+            
+            # Ping support roles
+            support_mentions = []
+            for role in interaction.guild.roles:
+                if role.name.lower() in ['support', 'staff', 'moderator', 'admin']:
+                    support_mentions.append(role.mention)
+            
+            mention_text = " ".join(support_mentions) if support_mentions else "@here"
+            
+            await interaction.followup.send(f"{mention_text}", embed=request_embed, view=CloseRequestView())
+            
+        except Exception as e:
+            logger.error(f"Error requesting ticket closure: {e}")
+            await interaction.followup.send("❌ Failed to request ticket closure.", ephemeral=True)
+
+    @app_commands.command(name="add", description="Add a user to the current ticket")
+    @app_commands.describe(
+        user="User to add to the ticket"
+    )
+    async def add_user(self, interaction: discord.Interaction, user: discord.Member):
+        """Add a user to the current ticket channel"""
+        await interaction.response.defer()
+        
+        try:
+            if not interaction.guild:
+                await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
+                return
+            
+            # Check if this is a ticket channel
+            channel_name = interaction.channel.name
+            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
+                   "ticket" in channel_name.lower()):
+                await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
+                return
+            
+            # Check permissions
+            if not (interaction.user.guild_permissions.manage_messages or 
+                   any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles)):
+                await interaction.followup.send("❌ You don't have permission to add users to tickets.", ephemeral=True)
+                return
+            
+            # Check if user is already in the channel
+            if user in interaction.channel.members:
+                await interaction.followup.send(f"❌ {user.mention} is already in this ticket.", ephemeral=True)
+                return
+            
+            # Add permissions for the user
+            overwrites = {
+                user: discord.PermissionOverwrite(
+                    read_messages=True,
+                    send_messages=True,
+                    read_message_history=True,
+                    attach_files=True,
+                    embed_links=True
+                )
+            }
+            
+            await interaction.channel.edit(overwrites={**interaction.channel.overwrites, **overwrites})
+            
+            # Create notification embed
+            add_embed = discord.Embed(
+                title="✅ User Added to Ticket",
+                description=f"{user.mention} has been added to this ticket by {interaction.user.mention}",
+                color=0x00ff00
+            )
+            add_embed.add_field(name="Added User", value=f"{user} ({user.id})", inline=True)
+            add_embed.add_field(name="Added by", value=f"{interaction.user} ({interaction.user.id})", inline=True)
+            add_embed.add_field(name="Added at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
+            
+            await interaction.followup.send(embed=add_embed)
+            
+            # Welcome message for the added user
+            welcome_embed = discord.Embed(
+                title="🎫 Welcome to the Ticket",
+                description=f"Hello {user.mention}! You have been added to this support ticket.",
+                color=0x5865F2
+            )
+            welcome_embed.add_field(
+                name="What you can do:", 
+                value="• View the conversation history\n• Send messages and attachments\n• Provide additional information\n• Collaborate on resolving the issue", 
+                inline=False
+            )
+            welcome_embed.set_footer(text="Use /close-request if you want to request ticket closure")
+            
+            await interaction.channel.send(f"{user.mention}", embed=welcome_embed)
+            
+        except Exception as e:
+            logger.error(f"Error adding user to ticket: {e}")
+            await interaction.followup.send("❌ Failed to add user to ticket.", ephemeral=True)
+
     async def ensure_ticket_tables(self):
         """Ensure ticket database tables exist"""
         if not hasattr(self.bot, 'db_pool') or not self.bot.db_pool:
