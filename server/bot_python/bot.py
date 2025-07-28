@@ -735,27 +735,8 @@ class NexGuardBot(commands.Bot):
             # Log the action
             logger.info(f"Assigned auto-role {role.name} to {member.name} in {member.guild.name}")
             
-            # Log to command logging channel if configured
-            log_channel_id = config.get('log_channel_id')
-            if log_channel_id:
-                log_channel = self.get_channel(int(log_channel_id))
-                if log_channel:
-                    embed = discord.Embed(
-                        title="🎭 Auto-Role Assigned",
-                        description=f"Automatically assigned role to new member",
-                        color=0x00FF00,
-                        timestamp=datetime.utcnow()
-                    )
-                    embed.add_field(name="Member", value=f"{member.mention} ({member.name})", inline=True)
-                    embed.add_field(name="Role", value=role.mention, inline=True)
-                    embed.add_field(name="Member ID", value=str(member.id), inline=True)
-                    embed.set_footer(text="NexGuard Auto-Role System")
-                    embed.set_thumbnail(url=member.display_avatar.url)
-                    
-                    try:
-                        await log_channel.send(embed=embed)
-                    except Exception as e:
-                        logger.error(f"Failed to send auto-role log: {e}")
+            # Note: Auto-role logging removed to prevent duplicate logs with eventlog.py
+            # eventlog.py handles all member join event logging including auto-role assignments
             
         except Exception as e:
             logger.error(f"Error assigning auto-role to {member.name}: {e}")
