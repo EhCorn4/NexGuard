@@ -78,6 +78,7 @@ class EventLogger(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         """Log member joins with comprehensive information AND handle core functionality"""
         try:
+            logger.info(f"🔔 EVENTLOG: Member join event triggered for {member.name} in {member.guild.name}")
             # Handle core bot functionality (analytics, welcome, autorole)
             await self.bot.handle_member_join_core(member)
             

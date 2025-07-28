@@ -126,6 +126,7 @@ class NexGuardBot(commands.Bot):
     
     async def handle_member_join_core(self, member):
         """Handle core member join functionality (called by eventlog.py to avoid duplication)"""
+        logger.info(f"🔧 CORE: handle_member_join_core called for {member.name} in {member.guild.name}")
         # Track member join analytics
         try:
             if self.db_pool:
@@ -210,7 +211,9 @@ class NexGuardBot(commands.Bot):
     
     async def handle_welcome_message(self, member):
         """Handle welcome message for new members"""
+        logger.info(f"🎉 WELCOME: handle_welcome_message called for {member.name} in {member.guild.name}")
         if not self.db_pool:
+            logger.warning(f"🚫 WELCOME: No database pool, skipping for {member.name}")
             return
         
         # Prevent duplicate welcome messages with a robust cooldown check
