@@ -1,0 +1,32 @@
+**NexGuard Bot Update: Enhanced Embed System**
+
+We've improved the embed creation system with comprehensive newline support!
+
+**What's New:**
+
+**Universal Newline Support**
+- The /embed command now supports \n characters for multi-line text
+- Works in all embed fields: title, description, footer, and author
+- Multiple newline formats supported: \n, \\n, \r\n, \r
+
+**Fixed Issues**
+- Resolved interaction timeout errors that were causing embed command failures
+- Enhanced error handling and command reliability
+
+**How to Use:**
+```
+/embed title:"Welcome Message" description:"Line 1\nLine 2\n\nLine 4 after blank line"
+/embed title:"Multi-line Title\nSubtitle" footer:"Footer line 1\nFooter line 2"
+```
+
+**Professional Multi-line Embeds**
+Create sophisticated announcements, rules, and information displays with proper formatting using simple \n characters.
+
+**System Status:**
+- 55 total commands operational
+- 11 servers protected with 205+ users
+- Universal newline support across all embed systems
+
+This enhancement works alongside our existing comprehensive ticket system newline support, giving you complete control over embed formatting across all NexGuard features.
+
+Ready to create professional multi-line embeds? Try the enhanced /embed command today!
