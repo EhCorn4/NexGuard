@@ -23,55 +23,72 @@ class AnalyticsTracker(commands.Cog):
         try:
             if not self.bot.db_pool:
                 return
-                
-            async with self.bot.db_pool.acquire() as conn:
-                for guild in self.bot.guilds:
-                    try:
-                        # Calculate member counts
-                        member_count = guild.member_count
-                        online_members = len([m for m in guild.members if m.status != discord.Status.offline])
-                        voice_members = len([m for m in guild.members if m.voice])
+            
+            # Batch operations for better performance
+            server_analytics_batch = []
+            channel_analytics_batch = []
+            
+            for guild in self.bot.guilds:
+                try:
+                    # Calculate member counts efficiently
+                    member_count = guild.member_count or 0
+                    online_members = sum(1 for m in guild.members if m.status != discord.Status.offline)
+                    voice_members = sum(1 for m in guild.members if m.voice)
+                    
+                    # Get message and command counts for this period
+                    messages_this_period = self.message_counts.get(str(guild.id), 0)
+                    commands_this_period = self.command_counts.get(str(guild.id), 0)
+                    
+                    # Prepare server analytics data
+                    server_analytics_batch.append((
+                        str(guild.id), member_count, online_members, 
+                        messages_this_period, commands_this_period, voice_members
+                    ))
+                    
+                    # Prepare channel analytics data (limited to avoid performance issues)
+                    for channel in guild.text_channels[:50]:  # Limit to first 50 channels
+                        channel_analytics_batch.append((
+                            str(guild.id), str(channel.id), channel.name, "text", datetime.utcnow()
+                        ))
+                    
+                    for channel in guild.voice_channels[:20]:  # Limit to first 20 voice channels
+                        channel_analytics_batch.append((
+                            str(guild.id), str(channel.id), channel.name, "voice", datetime.utcnow()
+                        ))
                         
-                        # Get message and command counts for this hour
-                        messages_this_hour = self.message_counts.get(str(guild.id), 0)
-                        commands_this_hour = self.command_counts.get(str(guild.id), 0)
-                        
-                        # Insert server analytics
-                        await conn.execute("""
-                            INSERT INTO server_analytics 
-                            (guild_id, member_count, online_members, messages_per_hour, 
-                             commands_executed, voice_members)
-                            VALUES ($1, $2, $3, $4, $5, $6)
-                        """, str(guild.id), member_count, online_members, 
-                             messages_this_hour, commands_this_hour, voice_members)
-                        
-                        # Update channel analytics
-                        for channel in guild.text_channels:
+                except Exception as e:
+                    logger.error(f"Error preparing analytics for guild {guild.id}: {e}")
+            
+            # Batch insert server analytics
+            if server_analytics_batch:
+                async with self.bot.db_pool.acquire() as conn:
+                    await conn.executemany("""
+                        INSERT INTO server_analytics 
+                        (guild_id, member_count, online_members, messages_per_hour, 
+                         commands_executed, voice_members)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                    """, server_analytics_batch)
+            
+            # Batch insert channel analytics
+            if channel_analytics_batch:
+                async with self.bot.db_pool.acquire() as conn:
+                    for batch_data in channel_analytics_batch:
+                        try:
                             await conn.execute("""
                                 INSERT INTO channel_analytics 
                                 (guild_id, channel_id, channel_name, channel_type, last_activity)
                                 VALUES ($1, $2, $3, $4, $5)
                                 ON CONFLICT (guild_id, channel_id) 
                                 DO UPDATE SET last_activity = EXCLUDED.last_activity
-                            """, str(guild.id), str(channel.id), channel.name, "text", datetime.utcnow())
-                        
-                        for channel in guild.voice_channels:
-                            await conn.execute("""
-                                INSERT INTO channel_analytics 
-                                (guild_id, channel_id, channel_name, channel_type, last_activity)
-                                VALUES ($1, $2, $3, $4, $5)
-                                ON CONFLICT (guild_id, channel_id)
-                                DO UPDATE SET last_activity = EXCLUDED.last_activity
-                            """, str(guild.id), str(channel.id), channel.name, "voice", datetime.utcnow())
-                        
-                        logger.info(f"Analytics collected for guild {guild.name} ({guild.id})")
-                        
-                    except Exception as e:
-                        logger.error(f"Error collecting analytics for guild {guild.id}: {e}")
-                
-                # Reset counters
-                self.message_counts.clear()
-                self.command_counts.clear()
+                            """, *batch_data)
+                        except Exception as e:
+                            logger.error(f"Error inserting channel analytics: {e}")
+            
+            logger.info(f"Analytics collected for {len(server_analytics_batch)} guilds")
+            
+            # Reset counters
+            self.message_counts.clear()
+            self.command_counts.clear()
                 
         except Exception as e:
             logger.error(f"Error in analytics collection: {e}")
@@ -82,37 +99,42 @@ class AnalyticsTracker(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        """Track message analytics"""
+        """Track message analytics efficiently"""
         if message.author.bot or not message.guild:
             return
             
         guild_id = str(message.guild.id)
         
-        # Increment message count
+        # Increment in-memory counter for performance
         self.message_counts[guild_id] = self.message_counts.get(guild_id, 0) + 1
         
-        # Store detailed message analytics
+        # Store detailed message analytics (optimized)
         try:
             if self.bot.db_pool:
                 async with self.bot.db_pool.acquire() as conn:
-                    hour = datetime.utcnow().hour
-                    await conn.execute("""
-                        INSERT INTO message_analytics 
-                        (guild_id, channel_id, user_id, hour)
-                        VALUES ($1, $2, $3, $4)
-                    """, guild_id, str(message.channel.id), str(message.author.id), hour)
+                    current_time = datetime.utcnow()
+                    hour = current_time.hour
                     
-                    # Update user activity
-                    await conn.execute("""
-                        INSERT INTO user_activity 
-                        (guild_id, user_id, username, message_count)
-                        VALUES ($1, $2, $3, 1)
-                        ON CONFLICT (guild_id, user_id)
-                        DO UPDATE SET 
-                            message_count = user_activity.message_count + 1,
-                            last_active = EXCLUDED.last_active,
-                            username = EXCLUDED.username
-                    """, guild_id, str(message.author.id), message.author.name)
+                    # Use single transaction for better performance
+                    async with conn.transaction():
+                        await conn.execute("""
+                            INSERT INTO message_analytics 
+                            (guild_id, channel_id, user_id, message_id, hour, timestamp, content_length, has_attachments)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        """, guild_id, str(message.channel.id), str(message.author.id), 
+                             str(message.id), hour, current_time, len(message.content), len(message.attachments) > 0)
+                        
+                        # Update user activity efficiently
+                        await conn.execute("""
+                            INSERT INTO user_activity 
+                            (guild_id, user_id, username, message_count, last_active)
+                            VALUES ($1, $2, $3, 1, $4)
+                            ON CONFLICT (guild_id, user_id)
+                            DO UPDATE SET 
+                                message_count = user_activity.message_count + 1,
+                                last_active = $4,
+                                username = $3
+                        """, guild_id, str(message.author.id), message.author.name, current_time)
                     
         except Exception as e:
             logger.error(f"Error storing message analytics: {e}")

@@ -722,9 +722,6 @@ class AutoModCog(commands.Cog):
             return
         
         try:
-            # Store message in analytics for spam detection (always store, even for admins)
-            await self.store_message_analytics(message)
-            
             # Skip moderators and admins for automod checks
             if (message.author.guild_permissions.administrator or 
                 message.author.guild_permissions.manage_messages):
@@ -749,20 +746,7 @@ class AutoModCog(commands.Cog):
         
         return False
     
-    async def store_message_analytics(self, message):
-        """Store message data for spam detection"""
-        if not self.bot.db_pool:
-            return
-        
-        try:
-            async with self.bot.db_pool.acquire() as conn:
-                await conn.execute('''
-                    INSERT INTO message_analytics (guild_id, channel_id, user_id, timestamp, hour)
-                    VALUES ($1, $2, $3, $4, $5)
-                ''', str(message.guild.id), str(message.channel.id), str(message.author.id), 
-                    datetime.utcnow(), datetime.utcnow().hour)
-        except Exception as e:
-            logger.error(f"Error storing message analytics: {e}")
+
     
     async def check_spam_filter(self, message, settings) -> bool:
         """Check message against spam filter"""
