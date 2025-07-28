@@ -304,6 +304,12 @@ class ServerStatsCog(commands.Cog):
             await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
             return
         
+        # Debug logging
+        logger.info(f"🔍 Listing stat channels for guild {guild.id}")
+        logger.info(f"🔍 Available guilds in stat_channels: {list(self.stat_channels.keys())}")
+        if guild.id in self.stat_channels:
+            logger.info(f"🔍 Stat types for guild {guild.id}: {list(self.stat_channels[guild.id].keys())}")
+        
         if guild.id not in self.stat_channels or not self.stat_channels[guild.id]:
             await interaction.response.send_message("❌ No statistics channels configured for this server.", ephemeral=True)
             return
@@ -336,10 +342,17 @@ class ServerStatsCog(commands.Cog):
             await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
             return
         
+        # Debug logging
+        logger.info(f"🔍 Checking stat channels for guild {guild.id}")
+        logger.info(f"🔍 Available guilds in stat_channels: {list(self.stat_channels.keys())}")
+        if guild.id in self.stat_channels:
+            logger.info(f"🔍 Stat types for guild {guild.id}: {list(self.stat_channels[guild.id].keys())}")
+        
         if guild.id not in self.stat_channels or not self.stat_channels[guild.id]:
             await interaction.response.send_message("❌ No statistics channels configured for this server.", ephemeral=True)
             return
 
+        # Defer the interaction first
         await interaction.response.defer()
         
         updated_count = 0
