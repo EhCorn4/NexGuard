@@ -532,6 +532,9 @@ The system is a complete Discord bot with integrated website that:
 - July 28, 2025: Fixed Discord interaction timeout errors in embed command with proper defer() handling
 - July 28, 2025: Enhanced /embed command to process newlines in title, description, footer, and author fields
 - July 28, 2025: Universal newline support now available across all embed creation systems
+- July 28, 2025: **CRITICAL FIX** - Resolved duplicate event logging by removing conflicting listeners from bot.py
+- July 28, 2025: Event logging now handled exclusively by eventlog.py extension preventing double messages
+- July 28, 2025: Maintained essential bot.py functionality (analytics, welcome messages) while eliminating duplication
 
 ## User Preferences
 
