@@ -898,7 +898,8 @@ class AutoModCog(commands.Cog):
             
             embed.set_thumbnail(url=message.author.display_avatar.url)
             
-            await log_channel.send(embed=embed)
+            # DISABLED: Direct logging call disabled to prevent duplication with eventlog.py
+            # await log_channel.send(embed=embed)
             
         except Exception as e:
             logger.error(f"Failed to log automod action: {e}")
