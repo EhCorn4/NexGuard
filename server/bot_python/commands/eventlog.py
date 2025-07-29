@@ -327,6 +327,7 @@ class EventLogger(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         """Log voice channel activity"""
         try:
+            logger.info(f"🔔 VOICE EVENT: {member.name} in {member.guild.name} - Before: {before.channel}, After: {after.channel}")
             # Member joined voice channel
             if before.channel is None and after.channel is not None:
                 embed = self.create_embed(
