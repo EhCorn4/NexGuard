@@ -5,7 +5,7 @@
 ## Why Choose NexGuard?
 
 **🚀 Comprehensive Protection Suite**
-- **50+ Professional Commands** across 9 specialized categories
+- **55+ Professional Commands** across 9 specialized categories
 - **Advanced AutoMod** with spam detection, link blocking, caps filtering, and mention limits
 - **Smart Auto-Reply System** with customizable triggers and rich embed responses
 - **Complete Ticket System** with permanent panels, custom forms, and staff management
@@ -13,13 +13,14 @@
 **⚡ Live Server Intelligence**
 - **Real-Time Statistics Channels** showing live member counts, bot counts, and server metrics
 - **Professional Analytics Dashboard** tracking server activity and command usage
+- **Comprehensive Event Logging** with 7 specialized categories for complete oversight
 - **24/7 Uptime Monitoring** with automatic status updates
 
 **🎯 Advanced Moderation Tools**
 - **Hierarchical Permission System** with custom admin and moderator roles
 - **Comprehensive Ban Management** with temporary bans, appeal system, and history tracking
 - **Channel Management** with lock/unlock commands and permission controls
-- **Universal Command Logging** for complete administrative oversight
+- **Enterprise-Level Event Logging** with zero duplicate logs and professional reliability
 
 **🎨 Customization & User Experience**
 - **Reaction Roles** for dynamic role assignment
@@ -29,10 +30,10 @@
 
 ## Trusted by Growing Communities
 
-✅ **Currently Active:** 11+ servers protecting 200+ users  
-✅ **99.9% Uptime** with professional reliability  
+✅ **Currently Active:** 11+ servers protecting 208+ users  
+✅ **99.9% Uptime** with enterprise-level reliability  
 ✅ **Zero Setup Complexity** - works immediately after invite  
-✅ **Continuous Updates** with new features added regularly  
+✅ **Zero Duplicate Logs** with clean single-instance event processing  
 
 ## Command Categories
 
@@ -42,7 +43,7 @@
 - **🤖 AutoMod (8):** Intelligent spam protection and content filtering
 - **💬 Auto-Reply (5):** Smart response system with analytics
 - **👥 Role Management (5):** Reaction roles and permission control
-- **📊 Analytics (1):** Comprehensive server insights
+- **📊 Event Logging (2):** Comprehensive server monitoring with 7 specialized categories
 - **🛠️ Utility (11):** Server info, user management, helpful tools
 
 ## What Server Owners Say
@@ -65,6 +66,8 @@
 
 - **Database-Backed Storage** for reliable data persistence
 - **Advanced Error Logging** with detailed diagnostic information  
+- **Enterprise-Level Event Monitoring** with 7 specialized logging categories
+- **Zero Duplicate Logs** with clean single-instance processing
 - **Intelligent Cooldown Systems** preventing spam and abuse
 - **Role Hierarchy Validation** ensuring proper permission management
 - **Multi-Guild Support** with isolated configurations per server
@@ -75,7 +78,7 @@
 
 **[🔗 Add NexGuard to Your Server](https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands)**
 
-*Join thousands of protected users across professional Discord communities.*
+*Join 208+ protected users across 11+ professional Discord communities.*
 
 ---
 
