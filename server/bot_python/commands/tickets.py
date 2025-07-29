@@ -5,12 +5,13 @@ import logging
 import json
 import asyncio
 from datetime import datetime
-from io import StringIO
-from typing import Optional
+from io import StringIO, BytesIO
+from typing import Optional, Union
+import uuid
 
 logger = logging.getLogger(__name__)
 
-def replace_placeholders(text: str, interaction: discord.Interaction, ticket_id: str = None) -> str:
+def replace_placeholders(text: Optional[str], interaction: discord.Interaction, ticket_id: Optional[str] = None) -> str:
     """Replace placeholder variables in text and handle newlines properly"""
     if not text:
         return text
@@ -75,11 +76,11 @@ class TicketButton(discord.ui.Button):
             
             # Get panel configuration from database
             bot = interaction.client
-            if not hasattr(bot, 'db_pool') or not bot.db_pool:
+            if not hasattr(bot, 'db_pool') or not getattr(bot, 'db_pool', None):
                 await interaction.followup.send("❌ Database not available.", ephemeral=True)
                 return
                 
-            async with interaction.client.db_pool.acquire() as conn:
+            async with getattr(bot, 'db_pool').acquire() as conn:
                 panel = await conn.fetchrow("""
                     SELECT * FROM ticket_panels 
                     WHERE guild_id = $1 AND panel_id = $2
@@ -95,21 +96,25 @@ class TicketButton(discord.ui.Button):
             
             # Get category if specified
             category = None
-            if panel.get('category_id'):
-                category = interaction.guild.get_channel(int(panel['category_id']))
+            if panel.get('category_id') and interaction.guild:
+                channel = interaction.guild.get_channel(int(panel['category_id']))
+                if isinstance(channel, discord.CategoryChannel):
+                    category = channel
             
-            overwrites = {
-                interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-            }
+            overwrites = {}
+            if interaction.guild:
+                overwrites = {
+                    interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+                }
             
             # Add support team permissions
             if panel.get('support_team_ids'):
                 try:
                     team_ids = json.loads(panel['support_team_ids'])
                     for team_id in team_ids:
-                        if team_id.startswith('role:'):
+                        if team_id.startswith('role:') and interaction.guild:
                             role_id = team_id[5:]  # Remove 'role:' prefix
                             role = interaction.guild.get_role(int(role_id))
                             if role:
@@ -120,7 +125,7 @@ class TicketButton(discord.ui.Button):
                                     embed_links=True,
                                     read_message_history=True
                                 )
-                        elif team_id.startswith('user:'):
+                        elif team_id.startswith('user:') and interaction.guild:
                             user_id = team_id[5:]  # Remove 'user:' prefix
                             user = interaction.guild.get_member(int(user_id))
                             if user:
@@ -134,6 +139,10 @@ class TicketButton(discord.ui.Button):
                 except Exception as e:
                     logger.error(f"Error setting support team permissions: {e}")
             
+            if not interaction.guild:
+                await interaction.followup.send("❌ This can only be used in a server.", ephemeral=True)
+                return
+                
             channel = await interaction.guild.create_text_channel(
                 name=channel_name,
                 category=category,
@@ -148,12 +157,12 @@ class TicketButton(discord.ui.Button):
                     team_ids = json.loads(panel['support_team_ids'])
                     pings = []
                     for team_id in team_ids:
-                        if team_id.startswith('role:'):
+                        if team_id.startswith('role:') and interaction.guild:
                             role_id = team_id[5:]  # Remove 'role:' prefix
                             role = interaction.guild.get_role(int(role_id))
                             if role:
                                 pings.append(role.mention)
-                        elif team_id.startswith('user:'):
+                        elif team_id.startswith('user:') and interaction.guild:
                             user_id = team_id[5:]  # Remove 'user:' prefix
                             user = interaction.guild.get_member(int(user_id))
                             if user:
@@ -220,9 +229,15 @@ class TicketControlView(discord.ui.View):
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Close ticket with transcript"""
         try:
-            if not interaction.user.guild_permissions.manage_messages:
+            # Check if user has manage messages permission
+            if interaction.guild and isinstance(interaction.user, discord.Member):
+                if not interaction.user.guild_permissions.manage_messages:
+                    if not interaction.response.is_done():
+                        await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                    return
+            else:
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                    await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
             modal = CloseTicketModal(self.ticket_id)
@@ -244,9 +259,15 @@ class TicketControlView(discord.ui.View):
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Claim ticket"""
         try:
-            if not interaction.user.guild_permissions.manage_messages:
+            # Check if user has manage messages permission
+            if interaction.guild and isinstance(interaction.user, discord.Member):
+                if not interaction.user.guild_permissions.manage_messages:
+                    if not interaction.response.is_done():
+                        await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                    return
+            else:
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                    await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
             # Disable claim button
@@ -401,7 +422,7 @@ class CloseTicketModal(discord.ui.Modal):
                         # Send as file if too long
                         if len(readable_transcript) > 2000:
                             file = discord.File(
-                                fp=StringIO(readable_transcript),
+                                fp=BytesIO(readable_transcript.encode('utf-8')),
                                 filename=f"ticket_{self.ticket_id}_transcript.txt"
                             )
                             await user.send(embed=embed, file=file)
@@ -473,16 +494,20 @@ class TicketsCog(commands.Cog):
             return
         
         # Check permissions
-        if not interaction.user.guild_permissions.manage_channels:
-            await interaction.followup.send("❌ You need Manage Channels permissions to manage ticket panels.", ephemeral=True)
+        if interaction.guild and isinstance(interaction.user, discord.Member):
+            if not interaction.user.guild_permissions.manage_channels:
+                await interaction.followup.send("❌ You need Manage Channels permissions to manage ticket panels.", ephemeral=True)
+                return
+        else:
+            await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
             return
         
-        if not hasattr(interaction.client, 'db_pool') or not interaction.client.db_pool:
+        if not hasattr(interaction.client, 'db_pool') or not getattr(interaction.client, 'db_pool', None):
             await interaction.followup.send("❌ Database not available.", ephemeral=True)
             return
         
         try:
-            async with interaction.client.db_pool.acquire() as conn:
+            async with getattr(interaction.client, 'db_pool').acquire() as conn:
                 if action == "create":
                     if not panel_id or not title:
                         await interaction.followup.send("❌ Panel ID and title are required for creation.", ephemeral=True)
