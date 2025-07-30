@@ -198,6 +198,8 @@ class TicketButton(discord.ui.Button):
             
             # Send message with pings and embed
             control_view = TicketControlView(channel.name)
+            # Register the control view as persistent
+            interaction.client.add_view(control_view)
             
             if ping_content:
                 await channel.send(content=ping_content, embed=embed, view=control_view)
@@ -220,12 +222,12 @@ class TicketButton(discord.ui.Button):
                 pass
 
 class TicketControlView(discord.ui.View):
-    """Close and claim buttons"""
+    """Close and claim buttons - persistent across restarts"""
     def __init__(self, ticket_id: str):
         super().__init__(timeout=None)
         self.ticket_id = ticket_id
     
-    @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="close_ticket")
+    @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="nexguard_close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Close ticket with transcript"""
         try:
@@ -255,7 +257,7 @@ class TicketControlView(discord.ui.View):
             except:
                 pass
     
-    @discord.ui.button(label="Claim", emoji="🙌", style=discord.ButtonStyle.primary, custom_id="claim_ticket")
+    @discord.ui.button(label="Claim", emoji="🙌", style=discord.ButtonStyle.primary, custom_id="nexguard_claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Claim ticket"""
         try:
@@ -441,6 +443,8 @@ class TicketsCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+        # Schedule persistent view restoration after bot is ready
+        bot.loop.create_task(self.restore_control_views())
     
     @app_commands.command(name="ticket-panel", description="Create or manage a ticket panel")
     @app_commands.describe(
@@ -1069,6 +1073,40 @@ class TicketsCog(commands.Cog):
                 logger.info("Ticket tables ensured")
         except Exception as e:
             logger.error(f"Error ensuring ticket tables: {e}")
+    
+    async def restore_control_views(self):
+        """Restore control views for existing ticket channels on startup"""
+        await self.bot.wait_until_ready()
+        
+        try:
+            restored_count = 0
+            for guild in self.bot.guilds:
+                for channel in guild.text_channels:
+                    # Check if this looks like a ticket channel
+                    if (channel.name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
+                        "ticket" in channel.name.lower()):
+                        
+                        # Check if channel has recent messages with ticket control buttons
+                        try:
+                            async for message in channel.history(limit=10):
+                                if (message.author == self.bot.user and 
+                                    message.components and 
+                                    any("Close" in str(component) for component in message.components)):
+                                    
+                                    # Register a new control view for this ticket
+                                    control_view = TicketControlView(channel.name)
+                                    self.bot.add_view(control_view)
+                                    restored_count += 1
+                                    break
+                        except Exception as e:
+                            logger.warning(f"Could not check channel {channel.name}: {e}")
+                            continue
+            
+            if restored_count > 0:
+                logger.info(f"Restored {restored_count} ticket control views")
+            
+        except Exception as e:
+            logger.error(f"Error restoring control views: {e}")
 
 async def setup(bot):
     await bot.add_cog(TicketsCog(bot))
