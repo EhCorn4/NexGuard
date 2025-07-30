@@ -780,10 +780,29 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel
+            # Check if this is a ticket channel - flexible detection for close command
             channel_name = interaction.channel.name
-            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
-                   "ticket" in channel_name.lower()):
+            is_ticket_channel = False
+            
+            # Check for common ticket patterns including custom panels
+            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
+                "ticket" in channel_name.lower() or
+                "-" in channel_name):  # Most ticket channels have panel-username format
+                is_ticket_channel = True
+            
+            # If not obvious, check for ticket control buttons in recent messages
+            if not is_ticket_channel:
+                try:
+                    async for message in interaction.channel.history(limit=20):
+                        if (message.author == interaction.client.user and 
+                            message.components and 
+                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
+                            is_ticket_channel = True
+                            break
+                except:
+                    pass
+            
+            if not is_ticket_channel:
                 await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
                 return
             
@@ -882,10 +901,29 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel
+            # Check if this is a ticket channel - more flexible detection
             channel_name = interaction.channel.name
-            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
-                   "ticket" in channel_name.lower()):
+            is_ticket_channel = False
+            
+            # Check for common ticket patterns including custom panels
+            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
+                "ticket" in channel_name.lower() or
+                "-" in channel_name):  # Most ticket channels have panel-username format
+                is_ticket_channel = True
+            
+            # If not obvious, check for ticket control buttons in recent messages
+            if not is_ticket_channel:
+                try:
+                    async for message in interaction.channel.history(limit=20):
+                        if (message.author == interaction.client.user and 
+                            message.components and 
+                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
+                            is_ticket_channel = True
+                            break
+                except:
+                    pass
+            
+            if not is_ticket_channel:
                 await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
                 return
             
@@ -955,10 +993,29 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel
+            # Check if this is a ticket channel - flexible detection for add command
             channel_name = interaction.channel.name
-            if not (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
-                   "ticket" in channel_name.lower()):
+            is_ticket_channel = False
+            
+            # Check for common ticket patterns including custom panels
+            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
+                "ticket" in channel_name.lower() or
+                "-" in channel_name):  # Most ticket channels have panel-username format
+                is_ticket_channel = True
+            
+            # If not obvious, check for ticket control buttons in recent messages
+            if not is_ticket_channel:
+                try:
+                    async for message in interaction.channel.history(limit=20):
+                        if (message.author == interaction.client.user and 
+                            message.components and 
+                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
+                            is_ticket_channel = True
+                            break
+                except:
+                    pass
+            
+            if not is_ticket_channel:
                 await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
                 return
             
