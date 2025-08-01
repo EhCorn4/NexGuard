@@ -585,6 +585,91 @@ class TicketsCog(commands.Cog):
                     
                     await interaction.followup.send(embed=embed)
                 
+                elif action == "edit":
+                    if not panel_id:
+                        await interaction.followup.send("❌ Panel ID required for editing.", ephemeral=True)
+                        return
+                    
+                    # Check if panel exists first
+                    existing_panel = await conn.fetchrow("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, str(interaction.guild.id), panel_id)
+                    
+                    if not existing_panel:
+                        await interaction.followup.send("❌ Panel not found. Use 'create' action to create a new panel.", ephemeral=True)
+                        return
+                    
+                    # Parse role mentions and user mentions for editing
+                    support_team_ids = []
+                    if roles:
+                        import re
+                        role_matches = re.findall(r'<@&(\d+)>', roles)
+                        user_matches = re.findall(r'<@!?(\d+)>', roles)
+                        
+                        for role_id in role_matches:
+                            support_team_ids.append(f"role:{role_id}")
+                        for user_id in user_matches:
+                            support_team_ids.append(f"user:{user_id}")
+                    
+                    # Update only provided fields, keep existing values for others
+                    update_title = title if title is not None else existing_panel['title']
+                    update_category_id = str(category.id) if category is not None else existing_panel['category_id']
+                    update_support_team_ids = json.dumps(support_team_ids) if roles is not None else existing_panel['support_team_ids']
+                    update_panel_embed_header = panel_embed_header if panel_embed_header is not None else existing_panel['panel_embed_header']
+                    update_panel_embed_title = panel_embed_title if panel_embed_title is not None else existing_panel['panel_embed_title']
+                    update_panel_embed_description = panel_embed_description if panel_embed_description is not None else existing_panel['panel_embed_description']
+                    update_ticket_embed_header = ticket_embed_header if ticket_embed_header is not None else existing_panel['ticket_embed_header']
+                    update_ticket_embed_title = ticket_embed_title if ticket_embed_title is not None else existing_panel['ticket_embed_title']
+                    update_ticket_embed_description = ticket_embed_description if ticket_embed_description is not None else existing_panel['ticket_embed_description']
+                    
+                    # Update the panel
+                    await conn.execute("""
+                        UPDATE ticket_panels SET 
+                            title = $3,
+                            category_id = $4,
+                            support_team_ids = $5,
+                            panel_embed_header = $6,
+                            panel_embed_title = $7,
+                            panel_embed_description = $8,
+                            ticket_embed_header = $9,
+                            ticket_embed_title = $10,
+                            ticket_embed_description = $11
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, 
+                        str(interaction.guild.id), panel_id,
+                        update_title, update_category_id, update_support_team_ids,
+                        update_panel_embed_header, update_panel_embed_title, update_panel_embed_description,
+                        update_ticket_embed_header, update_ticket_embed_title, update_ticket_embed_description
+                    )
+                    
+                    embed = discord.Embed(
+                        title="✅ Ticket Panel Updated",
+                        description=f"Panel `{panel_id}` has been successfully updated.",
+                        color=0x00ff00
+                    )
+                    embed.add_field(name="Updated Title", value=update_title, inline=True)
+                    
+                    if category:
+                        embed.add_field(name="Category", value=category.mention, inline=True)
+                    if support_team_ids:
+                        mentions = []
+                        for team_id in support_team_ids:
+                            if team_id.startswith('role:'):
+                                role_id = team_id[5:]
+                                role = interaction.guild.get_role(int(role_id))
+                                if role:
+                                    mentions.append(role.mention)
+                            elif team_id.startswith('user:'):
+                                user_id = team_id[5:]
+                                user = interaction.guild.get_member(int(user_id))
+                                if user:
+                                    mentions.append(user.mention)
+                        if mentions:
+                            embed.add_field(name="Support Team", value=" ".join(mentions), inline=True)
+                    
+                    await interaction.followup.send(embed=embed)
+                
                 elif action == "deploy":
                     if not panel_id:
                         await interaction.followup.send("❌ Panel ID required for deployment.", ephemeral=True)
