@@ -443,8 +443,6 @@ class TicketsCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-        # Schedule persistent view restoration after bot is ready
-        bot.loop.create_task(self.restore_control_views())
     
     @app_commands.command(name="ticket-panel", description="Create or manage a ticket panel")
     @app_commands.describe(
@@ -807,6 +805,7 @@ class TicketsCog(commands.Cog):
         try:
             await self.ensure_ticket_tables()
             await self.restore_persistent_views()
+            await self.restore_control_views()
             logger.info("Revamped ticket system initialized")
         except Exception as e:
             logger.error(f"Error initializing tickets: {e}")
@@ -844,13 +843,53 @@ class TicketsCog(commands.Cog):
                         self.bot.add_view(panel_view)
                         total_views += 1
                 
-                # Add permanent control view for ticket management
-                self.bot.add_view(TicketControlView(""))
+                # Control views will be restored separately for individual ticket channels
                 
                 logger.info(f"Restored {total_views} permanent ticket panel views across {len(guild_panels)} guilds")
                 
         except Exception as e:
             logger.error(f"Error restoring persistent views: {e}")
+    
+    async def restore_control_views(self):
+        """Restore control views for existing ticket channels on startup"""
+        try:
+            restored_count = 0
+            for guild in self.bot.guilds:
+                for channel in guild.text_channels:
+                    # Check if this looks like a ticket channel with dash format or common prefixes
+                    if ('-' in channel.name and 
+                        (channel.name.count('-') == 1 or  # panel-username format
+                         channel.name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "civapplication-"])))):
+                        
+                        # Check if channel has recent messages with NexGuard ticket control buttons
+                        try:
+                            async for message in channel.history(limit=20):
+                                if (message.author == self.bot.user and 
+                                    message.components):
+                                    # Check for NexGuard-specific button custom IDs
+                                    for action_row in message.components:
+                                        for component in action_row.children:
+                                            if hasattr(component, 'custom_id') and component.custom_id in ['nexguard_close_ticket', 'nexguard_claim_ticket']:
+                                                # This is a ticket channel with our control buttons
+                                                control_view = TicketControlView(channel.name)
+                                                self.bot.add_view(control_view)
+                                                restored_count += 1
+                                                break
+                                        else:
+                                            continue
+                                        break
+                                    else:
+                                        continue
+                                    break
+                        except Exception as e:
+                            logger.warning(f"Could not check channel {channel.name}: {e}")
+                            continue
+            
+            if restored_count > 0:
+                logger.info(f"Restored {restored_count} ticket control views")
+            
+        except Exception as e:
+            logger.error(f"Error restoring control views: {e}")
     
     @app_commands.command(name="close", description="Close a ticket")
     @app_commands.describe(
