@@ -229,15 +229,10 @@ class TicketControlView(discord.ui.View):
     
     @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="nexguard_close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Close ticket with transcript"""
+        """Close ticket with transcript - accessible to all ticket participants"""
         try:
-            # Check if user has manage messages permission
-            if interaction.guild and isinstance(interaction.user, discord.Member):
-                if not interaction.user.guild_permissions.manage_messages:
-                    if not interaction.response.is_done():
-                        await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
-                    return
-            else:
+            # Basic server check only - anyone in the ticket channel can close it
+            if not interaction.guild:
                 if not interaction.response.is_done():
                     await interaction.response.send_message("❌ This command can only be used in a server.", ephemeral=True)
                 return
@@ -259,13 +254,13 @@ class TicketControlView(discord.ui.View):
     
     @discord.ui.button(label="Claim", emoji="🙌", style=discord.ButtonStyle.primary, custom_id="nexguard_claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Claim ticket"""
+        """Claim ticket - staff action only"""
         try:
-            # Check if user has manage messages permission
+            # Check if user has manage messages permission for claiming
             if interaction.guild and isinstance(interaction.user, discord.Member):
                 if not interaction.user.guild_permissions.manage_messages:
                     if not interaction.response.is_done():
-                        await interaction.response.send_message("❌ You need Manage Messages permissions.", ephemeral=True)
+                        await interaction.response.send_message("❌ You need Manage Messages permissions to claim tickets.", ephemeral=True)
                     return
             else:
                 if not interaction.response.is_done():
@@ -930,11 +925,7 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
                 return
             
-            # Check permissions
-            if not (interaction.user.guild_permissions.manage_messages or 
-                   any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles)):
-                await interaction.followup.send("❌ You don't have permission to close tickets.", ephemeral=True)
-                return
+            # Anyone in the ticket channel can close it - no permission check needed
             
             # Create transcript
             transcript = StringIO()
