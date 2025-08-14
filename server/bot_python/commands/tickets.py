@@ -1255,6 +1255,150 @@ class TicketsCog(commands.Cog):
             logger.error(f"Error adding user to ticket: {e}")
             await interaction.followup.send("❌ Failed to add user to ticket.", ephemeral=True)
 
+    @app_commands.command(name="rename", description="Rename the current ticket channel")
+    @app_commands.describe(
+        new_name="New name for the ticket channel (without spaces or special characters)"
+    )
+    async def rename_ticket(self, interaction: discord.Interaction, new_name: str):
+        """Rename the current ticket channel"""
+        await interaction.response.defer()
+        
+        try:
+            if not interaction.guild:
+                await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
+                return
+            
+            # Enhanced ticket channel detection - very flexible approach
+            channel_name = interaction.channel.name
+            is_ticket_channel = False
+            
+            # Primary detection: Check for any dash pattern (most tickets use panel-username format)
+            if "-" in channel_name:
+                is_ticket_channel = True
+            
+            # Secondary detection: Known ticket prefixes
+            if not is_ticket_channel:
+                ticket_prefixes = ["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "ticket-", "help-"]
+                if any(channel_name.startswith(prefix) for prefix in ticket_prefixes):
+                    is_ticket_channel = True
+            
+            # Tertiary detection: "ticket" in name
+            if not is_ticket_channel and "ticket" in channel_name.lower():
+                is_ticket_channel = True
+            
+            # Final fallback: Check for NexGuard ticket control buttons in recent messages
+            if not is_ticket_channel:
+                try:
+                    async for message in interaction.channel.history(limit=30):
+                        if (message.author == interaction.client.user and 
+                            message.components):
+                            # Look for NexGuard-specific button IDs
+                            message_content = str(message.components)
+                            if ("nexguard_close_ticket" in message_content or 
+                                "nexguard_claim_ticket" in message_content or
+                                ("Close" in message_content and "Claim" in message_content)):
+                                is_ticket_channel = True
+                                break
+                except:
+                    pass
+            
+            # If still not detected, be more permissive - allow in any channel with "ticket" context
+            if not is_ticket_channel:
+                try:
+                    # Check channel topic or pins for ticket-related content
+                    if (interaction.channel.topic and 
+                        any(word in interaction.channel.topic.lower() for word in ["ticket", "support", "help"])):
+                        is_ticket_channel = True
+                except:
+                    pass
+            
+            if not is_ticket_channel:
+                await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
+                return
+            
+            # Check permissions - staff or ticket creator can rename
+            has_permission = False
+            
+            # Staff permissions
+            if (interaction.user.guild_permissions.manage_messages or 
+                any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles)):
+                has_permission = True
+            
+            # Check if user is the ticket creator (from channel name pattern)
+            if not has_permission and "-" in channel_name:
+                try:
+                    username_part = channel_name.split("-", 1)[1]
+                    if (interaction.user.name.lower() == username_part.lower() or 
+                        interaction.user.display_name.lower() == username_part.lower()):
+                        has_permission = True
+                except:
+                    pass
+            
+            if not has_permission:
+                await interaction.followup.send("❌ You don't have permission to rename this ticket. Only staff or the ticket creator can rename tickets.", ephemeral=True)
+                return
+            
+            # Validate new name
+            new_name = new_name.lower().strip()
+            
+            # Remove invalid characters
+            import re
+            new_name = re.sub(r'[^a-z0-9\-]', '', new_name)
+            
+            if not new_name:
+                await interaction.followup.send("❌ Invalid channel name. Please use only letters, numbers, and hyphens.", ephemeral=True)
+                return
+            
+            if len(new_name) > 100:
+                await interaction.followup.send("❌ Channel name is too long. Please use 100 characters or less.", ephemeral=True)
+                return
+            
+            # Preserve format if it exists (panel-username becomes panel-newname)
+            old_name = channel_name
+            final_name = new_name
+            
+            # If current name has a dash pattern, try to preserve the prefix
+            if "-" in old_name:
+                parts = old_name.split("-", 1)
+                if len(parts) == 2:
+                    prefix = parts[0]
+                    # Check if it's a known ticket prefix
+                    ticket_prefixes = ["support", "billing", "general", "admin", "technical", "lspdapplication", "ticket", "help"]
+                    if prefix in ticket_prefixes:
+                        final_name = f"{prefix}-{new_name}"
+            
+            # Check if name already exists
+            existing_channels = [channel.name for channel in interaction.guild.channels]
+            if final_name in existing_channels:
+                await interaction.followup.send(f"❌ A channel named `{final_name}` already exists. Please choose a different name.", ephemeral=True)
+                return
+            
+            # Rename the channel
+            try:
+                await interaction.channel.edit(name=final_name)
+                
+                # Log the rename action
+                rename_embed = discord.Embed(
+                    title="📝 Ticket Renamed",
+                    description=f"Ticket channel has been renamed by {interaction.user.mention}",
+                    color=0x00ff00
+                )
+                rename_embed.add_field(name="Old Name", value=f"`{old_name}`", inline=True)
+                rename_embed.add_field(name="New Name", value=f"`{final_name}`", inline=True)
+                rename_embed.add_field(name="Renamed by", value=f"{interaction.user} ({interaction.user.id})", inline=False)
+                rename_embed.timestamp = datetime.now()
+                
+                await interaction.followup.send(embed=rename_embed)
+                
+            except discord.Forbidden:
+                await interaction.followup.send("❌ I don't have permission to rename this channel.", ephemeral=True)
+            except discord.HTTPException as e:
+                await interaction.followup.send(f"❌ Failed to rename channel: {str(e)}", ephemeral=True)
+            
+        except Exception as e:
+            logger.error(f"Error renaming ticket: {e}")
+            await interaction.followup.send("❌ Failed to rename ticket.", ephemeral=True)
+
     async def ensure_ticket_tables(self):
         """Ensure ticket database tables exist"""
         if not hasattr(self.bot, 'db_pool') or not self.bot.db_pool:
