@@ -899,25 +899,47 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel - flexible detection for close command
+            # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
             
-            # Check for common ticket patterns including custom panels
-            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
-                "ticket" in channel_name.lower() or
-                "-" in channel_name):  # Most ticket channels have panel-username format
+            # Primary detection: Check for any dash pattern (most tickets use panel-username format)
+            if "-" in channel_name:
                 is_ticket_channel = True
             
-            # If not obvious, check for ticket control buttons in recent messages
+            # Secondary detection: Known ticket prefixes
+            if not is_ticket_channel:
+                ticket_prefixes = ["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "ticket-", "help-"]
+                if any(channel_name.startswith(prefix) for prefix in ticket_prefixes):
+                    is_ticket_channel = True
+            
+            # Tertiary detection: "ticket" in name
+            if not is_ticket_channel and "ticket" in channel_name.lower():
+                is_ticket_channel = True
+            
+            # Final fallback: Check for NexGuard ticket control buttons in recent messages
             if not is_ticket_channel:
                 try:
-                    async for message in interaction.channel.history(limit=20):
+                    async for message in interaction.channel.history(limit=30):
                         if (message.author == interaction.client.user and 
-                            message.components and 
-                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
-                            is_ticket_channel = True
-                            break
+                            message.components):
+                            # Look for NexGuard-specific button IDs
+                            message_content = str(message.components)
+                            if ("nexguard_close_ticket" in message_content or 
+                                "nexguard_claim_ticket" in message_content or
+                                ("Close" in message_content and "Claim" in message_content)):
+                                is_ticket_channel = True
+                                break
+                except:
+                    pass
+            
+            # If still not detected, be more permissive - allow in any channel with "ticket" context
+            if not is_ticket_channel:
+                try:
+                    # Check channel topic or pins for ticket-related content
+                    if (interaction.channel.topic and 
+                        any(word in interaction.channel.topic.lower() for word in ["ticket", "support", "help"])):
+                        is_ticket_channel = True
                 except:
                     pass
             
@@ -1016,30 +1038,52 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel - more flexible detection
+            # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
             
-            # Check for common ticket patterns including custom panels
-            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
-                "ticket" in channel_name.lower() or
-                "-" in channel_name):  # Most ticket channels have panel-username format
+            # Primary detection: Check for any dash pattern (most tickets use panel-username format)
+            if "-" in channel_name:
                 is_ticket_channel = True
             
-            # If not obvious, check for ticket control buttons in recent messages
+            # Secondary detection: Known ticket prefixes
+            if not is_ticket_channel:
+                ticket_prefixes = ["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "ticket-", "help-"]
+                if any(channel_name.startswith(prefix) for prefix in ticket_prefixes):
+                    is_ticket_channel = True
+            
+            # Tertiary detection: "ticket" in name
+            if not is_ticket_channel and "ticket" in channel_name.lower():
+                is_ticket_channel = True
+            
+            # Final fallback: Check for NexGuard ticket control buttons in recent messages
             if not is_ticket_channel:
                 try:
-                    async for message in interaction.channel.history(limit=20):
+                    async for message in interaction.channel.history(limit=30):
                         if (message.author == interaction.client.user and 
-                            message.components and 
-                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
-                            is_ticket_channel = True
-                            break
+                            message.components):
+                            # Look for NexGuard-specific button IDs
+                            message_content = str(message.components)
+                            if ("nexguard_close_ticket" in message_content or 
+                                "nexguard_claim_ticket" in message_content or
+                                ("Close" in message_content and "Claim" in message_content)):
+                                is_ticket_channel = True
+                                break
+                except:
+                    pass
+            
+            # If still not detected, be more permissive - allow in any channel with "ticket" context
+            if not is_ticket_channel:
+                try:
+                    # Check channel topic or pins for ticket-related content
+                    if (interaction.channel.topic and 
+                        any(word in interaction.channel.topic.lower() for word in ["ticket", "support", "help"])):
+                        is_ticket_channel = True
                 except:
                     pass
             
             if not is_ticket_channel:
-                await interaction.followup.send("❌ This command can only be used in ticket channels.", ephemeral=True)
+                await interaction.followup.send("❌ This command can only be used in ticket channels. If this is a ticket channel, ask staff to use `/close` instead.", ephemeral=True)
                 return
             
             # Create close request embed
@@ -1108,25 +1152,47 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
-            # Check if this is a ticket channel - flexible detection for add command
+            # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
             
-            # Check for common ticket patterns including custom panels
-            if (channel_name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-"])) or 
-                "ticket" in channel_name.lower() or
-                "-" in channel_name):  # Most ticket channels have panel-username format
+            # Primary detection: Check for any dash pattern (most tickets use panel-username format)
+            if "-" in channel_name:
                 is_ticket_channel = True
             
-            # If not obvious, check for ticket control buttons in recent messages
+            # Secondary detection: Known ticket prefixes
+            if not is_ticket_channel:
+                ticket_prefixes = ["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "ticket-", "help-"]
+                if any(channel_name.startswith(prefix) for prefix in ticket_prefixes):
+                    is_ticket_channel = True
+            
+            # Tertiary detection: "ticket" in name
+            if not is_ticket_channel and "ticket" in channel_name.lower():
+                is_ticket_channel = True
+            
+            # Final fallback: Check for NexGuard ticket control buttons in recent messages
             if not is_ticket_channel:
                 try:
-                    async for message in interaction.channel.history(limit=20):
+                    async for message in interaction.channel.history(limit=30):
                         if (message.author == interaction.client.user and 
-                            message.components and 
-                            any("Close" in str(component) or "Claim" in str(component) for component in message.components)):
-                            is_ticket_channel = True
-                            break
+                            message.components):
+                            # Look for NexGuard-specific button IDs
+                            message_content = str(message.components)
+                            if ("nexguard_close_ticket" in message_content or 
+                                "nexguard_claim_ticket" in message_content or
+                                ("Close" in message_content and "Claim" in message_content)):
+                                is_ticket_channel = True
+                                break
+                except:
+                    pass
+            
+            # If still not detected, be more permissive - allow in any channel with "ticket" context
+            if not is_ticket_channel:
+                try:
+                    # Check channel topic or pins for ticket-related content
+                    if (interaction.channel.topic and 
+                        any(word in interaction.channel.topic.lower() for word in ["ticket", "support", "help"])):
+                        is_ticket_channel = True
                 except:
                     pass
             
