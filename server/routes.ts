@@ -12,7 +12,7 @@ import PDFDocument from "pdfkit";
 
 function generateQuickStartGuide(): string {
   return `# NexGuard Quick Start Guide - Professional Discord Bot Setup
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Introduction & Pre-Installation Planning
@@ -632,7 +632,7 @@ Your server is now equipped with professional-grade Discord management capabilit
 
 function generateAutoModGuide(): string {
   return `# NexGuard AutoMod Setup Guide - Complete Protection System
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Understanding AutoMod - The Complete Protection System
@@ -2691,7 +2691,7 @@ For advanced consultation, enterprise features, and ongoing support, connect wit
 
 function generateTicketGuide(): string {
   return `# NexGuard Ticket System Guide - Complete Professional Support Management
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Complete System Overview & Architecture
@@ -3527,7 +3527,7 @@ Professional ticket management streamlines support operations and creates except
 
 function generateAnalyticsGuide(): string {
   return `# NexGuard Analytics & Logging Guide - Complete Data Intelligence System
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Complete Analytics Architecture & Overview
@@ -4319,7 +4319,7 @@ Data-driven community management enables informed decision-making, proactive pro
 
 function generateRoleGuide(): string {
   return `# NexGuard Role Management Guide
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Introduction to Role Management Systems
@@ -4934,7 +4934,7 @@ Professional role management creates organized, secure, and scalable Discord com
 
 function generateCompleteGuide(): string {
   return `# NexGuard Complete Admin Guide
-Version 2.3.2 | ${new Date().toLocaleDateString()}
+Version 2.3.2 | August 2025
 
 ## Table of Contents
 1. Introduction & Setup
