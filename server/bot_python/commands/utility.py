@@ -245,39 +245,63 @@ class UtilityCommands(commands.Cog):
         else:
             # General help
             embed = discord.Embed(
-                title="📖 NexGuard Help",
-                description="Here are the available command categories:",
+                title="📖 NexGuard Command Reference",
+                description="Complete list of all 56 available commands:",
                 color=0x00FFFF,
                 timestamp=datetime.utcnow()
             )
             
             embed.add_field(
-                name="🔧 Admin Commands",
-                value="`/setprefix` `/configure` `/welcome` `/settings`",
+                name="🔧 Admin Commands (8)",
+                value="`/setprefix` `/configure` `/welcome` `/settings` `/logging-setup` `/autoreply-setup` `/automod-setup` `/modrole-setup`",
                 inline=False
             )
             
             embed.add_field(
-                name="🛡️ Moderation Commands", 
-                value="`/ban` `/kick` `/warn` `/timeout` `/unban` `/purge`",
+                name="🛡️ Moderation Commands (13)", 
+                value="`/ban` `/kick` `/warn` `/timeout` `/unban` `/purge` `/slowmode` `/lock` `/unlock` `/nuke` `/warnlist` `/unwarn` `/modlogs`",
                 inline=False
             )
             
             embed.add_field(
-                name="🎫 Ticket Commands",
-                value="`/ticket` `/ticketinfo` `/ticketmanage`",
+                name="🎫 Ticket Commands (11)",
+                value="`/ticket-panel` `/ticket-info` `/ticket-list` `/ticket-manage` `/ticket-deploy` `/close` `/close-request` `/claim` `/add` `/rename` `/ticket-logs`",
                 inline=False
             )
             
             embed.add_field(
-                name="🔍 Utility Commands",
-                value="`/ping` `/userinfo` `/serverinfo` `/avatar` `/botstats`",
+                name="🔍 Utility Commands (7)",
+                value="`/ping` `/userinfo` `/serverinfo` `/avatar` `/botstats` `/help` `/uptime` `/embed`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🛡️ AutoMod Commands (6)",
+                value="`/automod-toggle` `/automod-settings` `/automod-whitelist` `/automod-logs` `/automod-status` `/automod-reset`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="💬 Auto-Reply Commands (4)",
+                value="`/autoreply-add` `/autoreply-remove` `/autoreply-list` `/autoreply-toggle`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="📊 Event Logging Commands (3)",
+                value="`/eventlog-setup` `/eventlog-toggle` `/eventlog-status`",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="🎭 Role Management Commands (4)", 
+                value="`/modrole-add` `/modrole-remove` `/modrole-list` `/reaction-role`",
                 inline=False
             )
             
             embed.add_field(
                 name="Need more help?",
-                value="Use `/help <command>` for detailed information about a specific command.",
+                value="Use `/help <command>` for detailed information about a specific command.\n\n**Total Commands:** 56 across 8 categories\n**Server Coverage:** 18 guilds, 406 users protected",
                 inline=False
             )
             
