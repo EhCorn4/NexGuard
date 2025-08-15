@@ -515,91 +515,229 @@ class UtilityCommands(commands.Cog):
         # Log command usage
         await self.bot.log_command_usage(interaction, "broadcast-community", {"success": success_count, "failed": failed_count})
     
-    @app_commands.command(name="help", description="Get help with bot commands")
+    @app_commands.command(name="commands", description="List all available bot commands")
+    async def commands(self, interaction: discord.Interaction):
+        """List all available bot commands"""
+        embed = discord.Embed(
+            title="📋 NexGuard Commands",
+            description="Complete list of all 60 available commands",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.add_field(
+            name="🔧 Admin Commands (8)",
+            value="`/setprefix` `/configure` `/welcome` `/settings` `/logging-setup` `/autoreply-setup` `/automod-setup` `/modrole-setup`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🛡️ Moderation Commands (13)", 
+            value="`/ban` `/kick` `/warn` `/timeout` `/unban` `/purge` `/slowmode` `/lock` `/unlock` `/nuke` `/warnlist` `/unwarn` `/modlogs`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🎫 Ticket Commands (11)",
+            value="`/ticket-panel` `/ticket-info` `/ticket-list` `/ticket-manage` `/ticket-deploy` `/close` `/close-request` `/claim` `/add` `/rename` `/ticket-logs`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔍 Utility Commands (11)",
+            value="`/ping` `/userinfo` `/serverinfo` `/avatar` `/botstats` `/uptime` `/embed` `/guildlist` `/getinvite` `/community` `/broadcast-community`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🛡️ AutoMod Commands (6)",
+            value="`/automod-toggle` `/automod-settings` `/automod-whitelist` `/automod-logs` `/automod-status` `/automod-reset`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="💬 Auto-Reply Commands (4)",
+            value="`/autoreply-add` `/autoreply-remove` `/autoreply-list` `/autoreply-toggle`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📊 Event Logging Commands (3)",
+            value="`/eventlog-setup` `/eventlog-toggle` `/eventlog-status`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🎭 Role Management Commands (4)", 
+            value="`/modrole-add` `/modrole-remove` `/modrole-list` `/reaction-role`",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="ℹ️ Information",
+            value="Use `/help <command>` for detailed information about any command.\nUse `/commands` to see this list anytime.",
+            inline=False
+        )
+        
+        embed.set_footer(text=f"NexGuard v2.3.2 | Total: 60 Commands | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed)
+        
+        # Log command usage
+        await self.bot.log_command_usage(interaction, "commands")
+    
+    @app_commands.command(name="help", description="Get detailed help for a specific command")
     @app_commands.describe(command="Get detailed help for a specific command")
     async def help(self, interaction: discord.Interaction, command: Optional[str] = None):
         """Get help with bot commands"""
+        
+        # Define all commands with their detailed descriptions
+        command_help = {
+            # Admin Commands
+            "setprefix": {"desc": "Set a custom prefix for the bot", "params": ["prefix (Required): New prefix to use"]},
+            "configure": {"desc": "Configure bot settings for your server", "params": []},
+            "welcome": {"desc": "Set up welcome messages for new members", "params": ["channel (Optional): Welcome channel", "message (Optional): Welcome message"]},
+            "settings": {"desc": "View current server settings", "params": []},
+            "logging-setup": {"desc": "Configure logging channels", "params": ["channel (Required): Logging channel"]},
+            "autoreply-setup": {"desc": "Set up auto-reply system", "params": []},
+            "automod-setup": {"desc": "Configure AutoMod settings", "params": []},
+            "modrole-setup": {"desc": "Set up moderation roles", "params": []},
+            
+            # Moderation Commands
+            "ban": {"desc": "Ban a user from the server", "params": ["user (Required): User to ban", "reason (Optional): Ban reason"]},
+            "kick": {"desc": "Kick a user from the server", "params": ["user (Required): User to kick", "reason (Optional): Kick reason"]},
+            "warn": {"desc": "Warn a user", "params": ["user (Required): User to warn", "reason (Required): Warning reason"]},
+            "timeout": {"desc": "Timeout a user", "params": ["user (Required): User to timeout", "duration (Required): Timeout duration", "reason (Optional): Timeout reason"]},
+            "unban": {"desc": "Unban a user", "params": ["user (Required): User ID to unban", "reason (Optional): Unban reason"]},
+            "purge": {"desc": "Delete multiple messages", "params": ["amount (Required): Number of messages to delete"]},
+            "slowmode": {"desc": "Set channel slowmode", "params": ["seconds (Required): Slowmode duration in seconds"]},
+            "lock": {"desc": "Lock a channel", "params": ["channel (Optional): Channel to lock"]},
+            "unlock": {"desc": "Unlock a channel", "params": ["channel (Optional): Channel to unlock"]},
+            "nuke": {"desc": "Delete and recreate a channel", "params": ["channel (Optional): Channel to nuke"]},
+            "warnlist": {"desc": "View warnings for a user", "params": ["user (Required): User to check warnings"]},
+            "unwarn": {"desc": "Remove a warning", "params": ["user (Required): User", "warning_id (Required): Warning ID to remove"]},
+            "modlogs": {"desc": "View moderation logs", "params": ["user (Optional): User to check logs"]},
+            
+            # Ticket Commands
+            "ticket-panel": {"desc": "Create or manage ticket panels", "params": ["action (Required): create/edit/delete", "name (Optional): Panel name"]},
+            "ticket-info": {"desc": "Get information about current ticket", "params": []},
+            "ticket-list": {"desc": "List all ticket panels", "params": []},
+            "ticket-manage": {"desc": "Manage ticket settings", "params": []},
+            "ticket-deploy": {"desc": "Deploy ticket panel to channel", "params": ["panel (Required): Panel name", "channel (Required): Target channel"]},
+            "close": {"desc": "Close current ticket", "params": ["reason (Optional): Close reason"]},
+            "close-request": {"desc": "Request ticket closure", "params": ["reason (Optional): Close reason"]},
+            "claim": {"desc": "Claim a ticket", "params": []},
+            "add": {"desc": "Add user to ticket", "params": ["user (Required): User to add"]},
+            "rename": {"desc": "Rename ticket channel", "params": ["name (Required): New channel name"]},
+            "ticket-logs": {"desc": "View ticket logs", "params": ["ticket_id (Optional): Specific ticket ID"]},
+            
+            # Utility Commands
+            "ping": {"desc": "Check bot latency", "params": []},
+            "userinfo": {"desc": "Get information about a user", "params": ["user (Optional): User to get info about"]},
+            "serverinfo": {"desc": "Get information about the server", "params": []},
+            "avatar": {"desc": "Get a user's avatar", "params": ["user (Optional): User to get avatar"]},
+            "botstats": {"desc": "Get bot statistics", "params": []},
+            "uptime": {"desc": "Check how long the bot has been running", "params": []},
+            "embed": {"desc": "Create custom embeds", "params": ["title (Required): Embed title", "description (Optional): Embed description"]},
+            "guildlist": {"desc": "List all guilds (Admin only)", "params": []},
+            "getinvite": {"desc": "Generate invite for guild (Owner only)", "params": ["guild_id (Required): Guild ID"]},
+            "community": {"desc": "Join NexGuard Community Server", "params": []},
+            "broadcast-community": {"desc": "Broadcast community invite (Owner only)", "params": []},
+            
+            # AutoMod Commands
+            "automod-toggle": {"desc": "Toggle AutoMod on/off", "params": ["enabled (Required): true/false"]},
+            "automod-settings": {"desc": "Configure AutoMod settings", "params": []},
+            "automod-whitelist": {"desc": "Manage AutoMod whitelist", "params": ["action (Required): add/remove", "item (Required): Item to whitelist"]},
+            "automod-logs": {"desc": "View AutoMod logs", "params": []},
+            "automod-status": {"desc": "Check AutoMod status", "params": []},
+            "automod-reset": {"desc": "Reset AutoMod settings", "params": []},
+            
+            # Auto-Reply Commands
+            "autoreply-add": {"desc": "Add auto-reply trigger", "params": ["trigger (Required): Trigger word/phrase", "response (Required): Auto response"]},
+            "autoreply-remove": {"desc": "Remove auto-reply trigger", "params": ["trigger (Required): Trigger to remove"]},
+            "autoreply-list": {"desc": "List all auto-reply triggers", "params": []},
+            "autoreply-toggle": {"desc": "Toggle auto-reply system", "params": ["enabled (Required): true/false"]},
+            
+            # Event Logging Commands
+            "eventlog-setup": {"desc": "Set up event logging", "params": ["channel (Required): Logging channel"]},
+            "eventlog-toggle": {"desc": "Toggle event logging", "params": ["event_type (Required): Event type", "enabled (Required): true/false"]},
+            "eventlog-status": {"desc": "Check event logging status", "params": []},
+            
+            # Role Management Commands
+            "modrole-add": {"desc": "Add moderation role", "params": ["role (Required): Role to add"]},
+            "modrole-remove": {"desc": "Remove moderation role", "params": ["role (Required): Role to remove"]},
+            "modrole-list": {"desc": "List moderation roles", "params": []},
+            "reaction-role": {"desc": "Set up reaction roles", "params": ["message_id (Required): Message ID", "emoji (Required): Emoji", "role (Required): Role to assign"]},
+            
+            # Information Commands
+            "commands": {"desc": "List all available commands", "params": []},
+            "help": {"desc": "Get help for specific commands", "params": ["command (Optional): Command to get help for"]}
+        }
+        
         if command:
-            # Get specific command help
-            cmd = self.bot.tree.get_command(command)
-            if cmd:
+            if command in command_help:
+                cmd_info = command_help[command]
                 embed = discord.Embed(
                     title=f"📖 Help - /{command}",
-                    description=cmd.description,
+                    description=cmd_info["desc"],
                     color=0x00FFFF,
                     timestamp=datetime.utcnow()
                 )
                 
-                if hasattr(cmd, 'parameters') and cmd.parameters:
-                    params = []
-                    for param in cmd.parameters:
-                        required = "Required" if param.required else "Optional"
-                        params.append(f"`{param.name}` - {param.description} ({required})")
-                    embed.add_field(name="Parameters", value="\n".join(params), inline=False)
+                if cmd_info["params"]:
+                    embed.add_field(
+                        name="Parameters",
+                        value="\n".join([f"• {param}" for param in cmd_info["params"]]),
+                        inline=False
+                    )
+                else:
+                    embed.add_field(
+                        name="Parameters",
+                        value="No parameters required",
+                        inline=False
+                    )
+                
+                embed.add_field(
+                    name="Usage",
+                    value=f"`/{command}` - {cmd_info['desc']}",
+                    inline=False
+                )
+                
+                embed.set_footer(text=f"Use /commands to see all commands | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
                 
                 await interaction.response.send_message(embed=embed)
             else:
-                await interaction.response.send_message(f"❌ Command `{command}` not found.", ephemeral=True)
+                embed = discord.Embed(
+                    title="❌ Command Not Found",
+                    description=f"Command `/{command}` not found.\n\nUse `/commands` to see all available commands.",
+                    color=0xFF0000,
+                    timestamp=datetime.utcnow()
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            # General help
+            # Show general help
             embed = discord.Embed(
-                title="📖 NexGuard Command Reference",
-                description="Complete list of all 56 available commands:",
+                title="📖 NexGuard Help",
+                description="Get detailed help for any command",
                 color=0x00FFFF,
                 timestamp=datetime.utcnow()
             )
             
             embed.add_field(
-                name="🔧 Admin Commands (8)",
-                value="`/setprefix` `/configure` `/welcome` `/settings` `/logging-setup` `/autoreply-setup` `/automod-setup` `/modrole-setup`",
+                name="🔍 How to Use",
+                value="• Use `/commands` to see all available commands\n• Use `/help <command>` to get detailed help for a specific command\n• Example: `/help ban` for ban command details",
                 inline=False
             )
             
             embed.add_field(
-                name="🛡️ Moderation Commands (13)", 
-                value="`/ban` `/kick` `/warn` `/timeout` `/unban` `/purge` `/slowmode` `/lock` `/unlock` `/nuke` `/warnlist` `/unwarn` `/modlogs`",
+                name="📊 Quick Stats",
+                value=f"**61** total commands across **8** categories\n**{len(self.bot.guilds)}** servers protected\n**{sum(guild.member_count for guild in self.bot.guilds)}** users secured",
                 inline=False
             )
             
             embed.add_field(
-                name="🎫 Ticket Commands (11)",
-                value="`/ticket-panel` `/ticket-info` `/ticket-list` `/ticket-manage` `/ticket-deploy` `/close` `/close-request` `/claim` `/add` `/rename` `/ticket-logs`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="🔍 Utility Commands (7)",
-                value="`/ping` `/userinfo` `/serverinfo` `/avatar` `/botstats` `/help` `/uptime` `/embed`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="🛡️ AutoMod Commands (6)",
-                value="`/automod-toggle` `/automod-settings` `/automod-whitelist` `/automod-logs` `/automod-status` `/automod-reset`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="💬 Auto-Reply Commands (4)",
-                value="`/autoreply-add` `/autoreply-remove` `/autoreply-list` `/autoreply-toggle`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="📊 Event Logging Commands (3)",
-                value="`/eventlog-setup` `/eventlog-toggle` `/eventlog-status`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="🎭 Role Management Commands (4)", 
-                value="`/modrole-add` `/modrole-remove` `/modrole-list` `/reaction-role`",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="Need more help?",
-                value="Use `/help <command>` for detailed information about a specific command.\n\n**Total Commands:** 56 across 8 categories\n**Server Coverage:** 18 guilds, 406 users protected",
+                name="🌟 Popular Commands",
+                value="`/commands` `/ticket-panel` `/ban` `/help` `/community`",
                 inline=False
             )
             
