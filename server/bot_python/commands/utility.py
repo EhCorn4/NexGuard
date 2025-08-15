@@ -217,6 +217,70 @@ class UtilityCommands(commands.Cog):
         
         await interaction.response.send_message(embed=embed)
     
+    @app_commands.command(name="guildlist", description="List all guilds the bot is connected to (Owner only)")
+    async def guildlist(self, interaction: discord.Interaction):
+        """List all guilds the bot is connected to"""
+        # Check if user is bot owner or has admin permissions
+        if interaction.user.id != 533347500679503872:  # Bot owner ID
+            await interaction.response.send_message("❌ This command is restricted to the bot owner.", ephemeral=True)
+            return
+        
+        guilds = self.bot.guilds
+        guild_count = len(guilds)
+        total_users = sum(guild.member_count for guild in guilds if guild.member_count)
+        
+        # Create embed with guild information
+        embed = discord.Embed(
+            title="🌐 NexGuard Guild List",
+            description=f"Connected to **{guild_count}** guilds protecting **{total_users:,}** users",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        # Split guilds into chunks for multiple fields (Discord field limit)
+        chunk_size = 10
+        guild_chunks = [guilds[i:i + chunk_size] for i in range(0, len(guilds), chunk_size)]
+        
+        for i, chunk in enumerate(guild_chunks):
+            guild_info = []
+            for guild in chunk:
+                guild_info.append(f"**{guild.name}**\n`ID: {guild.id}`\nMembers: {guild.member_count:,}")
+            
+            field_name = f"📋 Guilds {i*chunk_size + 1}-{min((i+1)*chunk_size, guild_count)}"
+            embed.add_field(
+                name=field_name,
+                value="\n\n".join(guild_info),
+                inline=True
+            )
+        
+        # Add summary field
+        embed.add_field(
+            name="📊 Summary",
+            value=f"**Total Guilds:** {guild_count}\n**Total Users:** {total_users:,}\n**Average Users/Guild:** {total_users//guild_count if guild_count > 0 else 0}",
+            inline=False
+        )
+        
+        # Create text file with all guild IDs for easy copying
+        guild_ids_text = "\n".join([f"{guild.name}: {guild.id}" for guild in guilds])
+        guild_ids_simple = ", ".join([str(guild.id) for guild in guilds])
+        
+        # Create downloadable file
+        file_content = f"NexGuard Guild List - {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        file_content += "=" * 60 + "\n\n"
+        file_content += f"Total Guilds: {guild_count}\n"
+        file_content += f"Total Users: {total_users:,}\n\n"
+        file_content += "Guild Details:\n" + "-" * 30 + "\n"
+        file_content += guild_ids_text + "\n\n"
+        file_content += "Guild IDs Only (comma-separated):\n" + "-" * 40 + "\n"
+        file_content += guild_ids_simple
+        
+        # Send embed and file
+        file = discord.File(StringIO(file_content), filename=f"nexguard_guilds_{datetime.utcnow().strftime('%Y%m%d')}.txt")
+        
+        embed.set_footer(text=f"Requested by {interaction.user.name} | See attached file for complete list", icon_url=interaction.user.display_avatar.url)
+        
+        await interaction.response.send_message(embed=embed, file=file, ephemeral=True)
+    
     @app_commands.command(name="help", description="Get help with bot commands")
     @app_commands.describe(command="Get detailed help for a specific command")
     async def help(self, interaction: discord.Interaction, command: Optional[str] = None):
