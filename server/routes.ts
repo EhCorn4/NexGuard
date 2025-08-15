@@ -11,104 +11,623 @@ import PDFDocument from "pdfkit";
 
 
 function generateQuickStartGuide(): string {
-  return `# NexGuard Quick Start Guide
+  return `# NexGuard Quick Start Guide - Professional Discord Bot Setup
 Version 2.3.2 | ${new Date().toLocaleDateString()}
 
 ## Table of Contents
-1. Introduction
-2. Bot Invitation & Setup
-3. Essential First Commands
-4. Basic Configuration
-5. Testing Your Setup
-6. Next Steps
+1. Introduction & Pre-Installation Planning
+2. Comprehensive Bot Invitation & Permissions
+3. Initial Setup & Verification Process
+4. Essential Configuration Walkthrough
+5. Feature Testing & Validation
+6. Advanced Initial Setup
+7. First Week Optimization
+8. Troubleshooting Common Issues
+9. Next Steps & Advanced Features
 
-## 1. Introduction
+## 1. Introduction & Pre-Installation Planning
 
-Welcome to NexGuard, a professional Discord bot management system with 60+ commands across 8 specialized categories. This guide will help you get started quickly with the essential features.
+### Welcome to NexGuard Professional
+NexGuard is an enterprise-grade Discord bot management system featuring 60+ commands across 8 specialized categories, designed for servers of all sizes from small communities to large organizations with thousands of members.
 
-### What NexGuard Offers:
-- Professional ticket system with persistent panels
-- Advanced moderation with AutoMod
-- Server statistics and analytics
-- Role management and reaction roles
-- Event logging and audit trails
-- Auto-reply system
-- Webhook integration
+### Complete Feature Overview:
+**Core Management Systems:**
+- Professional ticket system with persistent panels and transcripts
+- Advanced 6-layer AutoMod with AI-powered detection
+- Real-time server statistics and comprehensive analytics
+- Sophisticated role management with reaction roles
+- Complete event logging and audit trails across 7 categories
+- Intelligent auto-reply system with conditional responses
+- Enterprise webhook integrations and API access
 
-## 2. Bot Invitation & Setup
+**Advanced Capabilities:**
+- Cross-server analytics and insights
+- Custom moderation workflows
+- Automated staff training systems
+- Performance monitoring and optimization
+- Compliance and security features
+- Scalable architecture supporting 10k+ members
 
-### Step 1: Invite the Bot
-1. Use this invitation link: https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands
-2. Select your server from the dropdown
-3. Ensure all permissions are checked (Administrator recommended)
-4. Click "Authorize"
+### Pre-Installation Server Assessment:
+Before installation, evaluate your server's needs:
 
-### Step 2: Verify Bot Status
-Run \`/ping\` to ensure the bot is responsive.
+**Small Servers (< 100 members):**
+- Focus on basic moderation and ticket system
+- Simple role management
+- Essential logging
 
-### Required Permissions:
-- Administrator (recommended) OR
-- Manage Channels, Manage Roles, Manage Messages, Send Messages, Embed Links, Attach Files, Read Message History, Use Slash Commands
+**Medium Servers (100-1000 members):**
+- Full AutoMod deployment
+- Comprehensive ticket categories
+- Advanced role systems
+- Complete event logging
 
-## 3. Essential First Commands
+**Large Servers (1000+ members):**
+- Enterprise-level configurations
+- Multiple moderation teams
+- Advanced analytics
+- Custom integrations
 
-### Check Available Commands
-\`/commands\` - View all 60 available commands organized by category
+### Server Structure Recommendations:
+\`\`\`
+Recommended Channel Structure:
+📋 Information
+├── 📜 rules
+├── 📢 announcements
+└── ❓ faq
 
-### Get Help
-\`/help <command>\` - Get detailed information about any command
+🎫 Support System
+├── 📞 create-ticket (ticket panels)
+├── 🎯 support-{username} (auto-created)
+└── 📊 ticket-logs
 
-### Bot Information
-\`/botinfo\` - View bot statistics and system information
+🔧 Administration
+├── 🚨 mod-logs
+├── 📈 audit-logs
+├── 🤖 bot-commands
+└── 👥 staff-chat
 
-## 4. Basic Configuration
+📊 Statistics (Voice Channels)
+├── 👥 Members: 1,234
+├── 💬 Channels: 56
+└── 🚀 Boosts: 12
+\`\`\`
 
-### Set Up Admin Roles
-\`/modrole add @Admin\` - Add admin roles for management access
-\`/modrole list\` - View configured moderator roles
+## 2. Comprehensive Bot Invitation & Permissions
 
-### Configure Basic AutoMod
-\`/automod-config\` - Access AutoMod settings panel
-- Enable spam protection
-- Set up basic word filtering
-- Configure automated punishments
+### Step 1: Pre-Invitation Checklist
+Before inviting NexGuard, ensure:
+- [ ] You have Administrator permissions on the server
+- [ ] Server has at least basic channel structure
+- [ ] Staff roles are already created
+- [ ] You understand the bot's functionality scope
 
-### Create Your First Ticket Panel
-\`/ticket-panel action:create title:"Support" description:"Click for help"\`
-\`/ticket-panel action:deploy\` - Deploy all ticket panels
+### Step 2: Secure Bot Invitation
+**Primary Invitation Link:**
+https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands
 
-## 5. Testing Your Setup
+**Invitation Process:**
+1. Click the invitation link above
+2. **Carefully** select your target server from dropdown
+3. **Verify** all permissions are checked (see detailed list below)
+4. Click "Authorize" and complete any 2FA requirements
+5. **Immediately** verify bot appearance in member list
 
-### Test AutoMod
-Try sending spam messages to verify AutoMod is working
+### Step 3: Detailed Permission Analysis
+**Administrator Permission (Recommended):**
+- Simplifies setup and prevents permission issues
+- Ensures all features work correctly
+- Allows automatic permission management
+- Recommended for servers under 1000 members
 
-### Test Ticket System
-Click your ticket panel to create a test ticket
-Use \`/close\` to close the ticket
+**Granular Permissions (Enterprise Setup):**
+\`\`\`
+Essential Permissions:
+✓ Manage Server - Server configuration access
+✓ Manage Channels - Ticket creation and organization
+✓ Manage Roles - Role automation and assignments
+✓ Manage Messages - Moderation and message management
+✓ Manage Webhooks - Advanced logging features
+✓ Kick Members - Basic moderation functionality
+✓ Ban Members - Advanced moderation functionality
+✓ Create Instant Invite - Support and analytics
+✓ View Audit Log - Compliance and monitoring
+✓ Priority Speaker - Voice channel management
+✓ Move Members - Voice moderation
+✓ Mute Members - Voice moderation
+✓ Deafen Members - Voice moderation
 
-### Test Moderation
-\`/timeout @user 10m Reason\` - Test timeout functionality
+Text Channel Permissions:
+✓ Send Messages - Basic bot functionality
+✓ Send TTS Messages - Accessibility features
+✓ Manage Messages - Moderation functions
+✓ Embed Links - Rich message formatting
+✓ Attach Files - File sharing and transcripts
+✓ Read Message History - Context and logging
+✓ Mention Everyone - Important notifications
+✓ Use External Emojis - Enhanced user experience
+✓ Add Reactions - Interactive features
+✓ Use Slash Commands - Command interface
+\`\`\`
 
-## 6. Next Steps
+### Step 4: Post-Invitation Verification
+\`\`\`bash
+# Immediate Verification Commands
+/ping                    # Response time and basic connectivity
+/botinfo                 # Bot statistics and system health
+/commands               # Verify all 60 commands loaded
+/permissions            # Check bot permission status
+\`\`\`
 
-### Recommended Setup Order:
-1. Configure AutoMod settings
-2. Set up ticket categories and panels
-3. Add reaction roles
-4. Configure server statistics
-5. Set up event logging
+**Expected Response Times:**
+- /ping: < 100ms (excellent), < 300ms (good), > 500ms (check connection)
+- Command loading: All 60 commands should be visible
+- Role position: NexGuard should appear near top of member list
 
-### Advanced Features to Explore:
-- Server analytics dashboard
-- Custom auto-replies
-- Advanced moderation logs
-- Webhook integrations
+## 3. Initial Setup & Verification Process
 
-### Get Support:
-Join our support server: https://discord.gg/wpjZMPXaRT
+### Step 1: Administrator Role Configuration
+**Critical First Step - Moderator Role Setup:**
+\`\`\`bash
+# Set primary admin roles (run these first)
+/modrole add role:@Administrator
+/modrole add role:@Moderator
+/modrole add role:@Support Staff
+
+# Verify configuration
+/modrole list
+\`\`\`
+
+**Expected Output:**
+\`\`\`
+✅ Configured Moderator Roles:
+🔹 Administrator (ID: 123456789)
+🔹 Moderator (ID: 234567890)
+🔹 Support Staff (ID: 345678901)
+
+Total: 3 roles configured
+Status: Active and functional
+\`\`\`
+
+### Step 2: Essential System Health Checks
+\`\`\`bash
+# Comprehensive system verification
+/settings                # View current server configuration
+/automod-status         # Check AutoMod system health
+/eventlog status        # Verify logging system
+/serverstats health     # Check statistics system
+\`\`\`
+
+### Step 3: Database Connection Verification
+The bot automatically establishes database connections. Verify with:
+\`\`\`bash
+/botinfo                # Should show "Database: Connected"
+\`\`\`
+
+**Connection Indicators:**
+- ✅ Green status: Fully operational
+- ⚠️ Yellow status: Limited functionality
+- ❌ Red status: Critical issue requiring attention
+
+## 4. Essential Configuration Walkthrough
+
+### Phase 1: AutoMod Foundation Setup (5-10 minutes)
+**Basic AutoMod Configuration:**
+\`\`\`bash
+# Access configuration panel
+/automod-config
+
+# Recommended starter settings:
+Spam Protection: ✅ Enabled
+├── Max Messages: 5 per 10 seconds
+├── Action: Timeout 5 minutes
+└── Bypass Roles: @Moderator, @Administrator
+
+Bad Word Filter: ✅ Enabled
+├── Severity: Moderate
+├── Action: Delete + Warn
+└── Custom Words: [add server-specific terms]
+
+Link Protection: ⚠️ Enabled (Whitelist Mode)
+├── Allowed Domains: discord.com, youtube.com, github.com
+├── Action: Delete message
+└── Bypass Roles: @Trusted, @Moderator
+
+Caps Lock Protection: ✅ Enabled
+├── Threshold: 70% caps
+├── Min Length: 10 characters
+└── Action: Delete message
+
+Mention Protection: ✅ Enabled
+├── Max Mentions: 5 per message
+├── Max Role Mentions: 2 per message
+└── Action: Delete + timeout 2 minutes
+\`\`\`
+
+**AutoMod Testing Protocol:**
+\`\`\`bash
+# Test each protection layer (use test channel)
+Test 1: Send 6 messages quickly (spam detection)
+Test 2: Send message with filtered word (word filter)
+Test 3: Send message with 80% caps (caps protection)
+Test 4: Send message mentioning 6+ users (mention protection)
+Test 5: Send unauthorized link (link protection)
+
+# Verify logging in mod-logs channel
+# Ensure bypass roles work correctly
+\`\`\`
+
+### Phase 2: Professional Ticket System Setup (10-15 minutes)
+**Create Comprehensive Ticket Panels:**
+
+**Panel 1: General Support**
+\`\`\`bash
+/ticket-panel action:create
+├── Panel ID: general_support
+├── Title: "🎫 General Support"
+├── Description: "Need help? Click the button below to create a private support ticket. Our team will assist you shortly!"
+├── Button Text: "Create Ticket"
+├── Button Emoji: 🎫
+├── Category: Support Tickets
+├── Max Tickets: 3 per user
+└── Required Role: @Member (optional)
+\`\`\`
+
+**Panel 2: Bug Reports**
+\`\`\`bash
+/ticket-panel action:create
+├── Panel ID: bug_reports
+├── Title: "🐛 Bug Reports"
+├── Description: "Found a bug or technical issue? Report it here for our development team to investigate."
+├── Button Text: "Report Bug"
+├── Button Emoji: 🐛
+├── Category: Bug Reports
+├── Max Tickets: 2 per user
+└── Priority: High
+\`\`\`
+
+**Panel 3: Appeals System**
+\`\`\`bash
+/ticket-panel action:create
+├── Panel ID: appeals
+├── Title: "⚖️ Appeal Center"
+├── Description: "Received a punishment you believe was incorrect? Submit your appeal here for review."
+├── Button Text: "Submit Appeal"
+├── Button Emoji: ⚖️
+├── Category: Appeals
+├── Max Tickets: 1 per user
+└── Staff Required: @Senior Moderator
+\`\`\`
+
+**Deploy All Panels:**
+\`\`\`bash
+/ticket-panel action:deploy
+# Creates interactive panels in specified channels
+# Enables persistent functionality across bot restarts
+\`\`\`
+
+**Ticket System Testing:**
+1. Create test ticket from each panel
+2. Verify category placement and permissions
+3. Test staff commands: /claim, /add, /remove
+4. Test ticket closure and transcript generation
+5. Verify logging and analytics
+
+### Phase 3: Event Logging Configuration (5-10 minutes)
+**Comprehensive Logging Setup:**
+\`\`\`bash
+/eventlog setup channel:#audit-logs
+
+# Configure logging categories:
+Member Events: ✅ Enabled
+├── Joins/Leaves: ✅
+├── Role Changes: ✅
+├── Nickname Updates: ✅
+├── Profile Changes: ✅
+└── Timeout/Ban Events: ✅
+
+Message Events: ✅ Enabled
+├── Deletions: ✅
+├── Edits: ✅
+├── Bulk Deletions: ✅
+├── Pin/Unpin: ✅
+└── Attachment Handling: ✅
+
+Channel Events: ✅ Enabled
+├── Creation/Deletion: ✅
+├── Permission Changes: ✅
+├── Topic Changes: ✅
+├── Name Changes: ✅
+└── Category Moves: ✅
+
+Voice Events: ✅ Enabled
+├── Join/Leave: ✅
+├── Move Between Channels: ✅
+├── Mute/Unmute: ✅
+├── Deafen/Undeafen: ✅
+└── Stream Start/Stop: ✅
+
+Role Events: ✅ Enabled
+├── Creation/Deletion: ✅
+├── Permission Changes: ✅
+├── Name/Color Changes: ✅
+├── Assignment/Removal: ✅
+└── Hierarchy Changes: ✅
+
+Server Events: ✅ Enabled
+├── Settings Changes: ✅
+├── Invite Management: ✅
+├── Emoji/Sticker Changes: ✅
+├── Webhook Changes: ✅
+└── Integration Updates: ✅
+
+Moderation Events: ✅ Enabled
+├── All Punishment Actions: ✅
+├── AutoMod Triggers: ✅
+├── Manual Overrides: ✅
+├── Appeal Submissions: ✅
+└── Staff Actions: ✅
+\`\`\`
+
+### Phase 4: Server Statistics Setup (5 minutes)
+**Create Live Statistics Channels:**
+\`\`\`bash
+# Member statistics
+/serverstats add type:member_count
+├── Channel Name: "👥 Members: {count}"
+├── Category: Server Info
+├── Update Frequency: 5 minutes
+└── Format: Compact
+
+# Channel statistics
+/serverstats add type:channel_count
+├── Channel Name: "💬 Channels: {count}"
+├── Category: Server Info
+└── Include: Text + Voice channels
+
+# Online member count
+/serverstats add type:online_count
+├── Channel Name: "🟢 Online: {count}"
+├── Category: Server Info
+└── Real-time updates
+
+# Server boost level
+/serverstats add type:boost_level
+├── Channel Name: "🚀 Boost Level: {level}"
+├── Category: Server Info
+└── Show boost count
+
+# Role count
+/serverstats add type:role_count
+├── Channel Name: "🏷️ Roles: {count}"
+├── Category: Server Info
+└── Exclude @everyone
+\`\`\`
+
+## 5. Feature Testing & Validation
+
+### Comprehensive Testing Protocol
+
+**AutoMod Validation Tests:**
+\`\`\`bash
+Test Suite 1: Spam Protection
+├── Test A: Send 6 messages in 5 seconds
+├── Expected: 5th+ messages blocked, user timed out
+├── Test B: Verify bypass with moderator role
+└── Expected: Moderator messages pass through
+
+Test Suite 2: Content Filtering
+├── Test A: Send message with blocked words
+├── Expected: Message deleted, user warned
+├── Test B: Test custom word additions
+└── Expected: Custom words filtered correctly
+
+Test Suite 3: Link Protection
+├── Test A: Send unauthorized domain link
+├── Expected: Message deleted immediately
+├── Test B: Send whitelisted domain link
+└── Expected: Message allowed through
+
+Test Suite 4: Behavioral Protection
+├── Test A: Send message with 90% caps
+├── Expected: Message deleted for caps abuse
+├── Test B: Mention 8 users in one message
+└── Expected: Message deleted for mass mentions
+\`\`\`
+
+**Ticket System Validation:**
+\`\`\`bash
+Test Suite 1: Ticket Creation
+├── Test A: Click general support panel
+├── Expected: Private channel created with proper permissions
+├── Test B: Test multiple tickets per user limit
+└── Expected: Limit enforced correctly
+
+Test Suite 2: Staff Management
+├── Test A: Use /claim command as staff
+├── Expected: Ticket claimed, status updated
+├── Test B: Use /add to invite team member
+└── Expected: User gains channel access
+
+Test Suite 3: Closure and Transcripts
+├── Test A: Close ticket with /close
+├── Expected: Transcript generated and saved
+├── Test B: Verify cleanup process
+└── Expected: Channel deleted, logs preserved
+\`\`\`
+
+## 6. Advanced Initial Setup
+
+### Role Hierarchy Optimization
+**Recommended Role Structure:**
+\`\`\`
+Role Hierarchy (Top to Bottom):
+1. 👑 Server Owner
+2. 🔹 NexGuard Bot
+3. 🛡️ Administrator
+4. 🔧 Senior Moderator
+5. 👮 Moderator
+6. 🎫 Support Staff
+7. 👥 Member
+8. 🆕 Newcomer
+9. 🤖 Bots
+10. @everyone
+\`\`\`
+
+### Auto-Role Configuration
+\`\`\`bash
+# New member auto-role assignment
+/autorole add role:@Newcomer
+├── Delay: 5 minutes
+├── Requirements: Account age > 7 days
+├── Verification: None required
+└── Auto-remove after: 24 hours of activity
+
+/autorole add role:@Member verification_required:true
+├── Assigned after: Verification completion
+├── Requirements: Read rules, solve captcha
+├── Benefits: Access to main channels
+└── Permanent assignment
+\`\`\`
+
+## 7. First Week Optimization
+
+### Daily Monitoring Tasks
+**Day 1-3: Initial Monitoring**
+\`\`\`bash
+# Daily health checks
+/botinfo                 # System health
+/automod-status         # Protection effectiveness
+/serverstats health     # Statistics accuracy
+/eventlog summary       # Activity overview
+
+# Performance metrics to track:
+- AutoMod detection rate
+- False positive incidents
+- Ticket response times
+- User engagement with features
+\`\`\`
+
+**Day 4-7: Fine-tuning**
+\`\`\`bash
+# Analyze and adjust
+/analytics overview     # User behavior patterns
+/moderation summary     # Punishment effectiveness
+/tickets analytics      # Support efficiency
+/feedback collect       # User satisfaction
+
+# Common adjustments:
+- AutoMod sensitivity levels
+- Ticket panel descriptions
+- Role assignment timing
+- Logging verbosity levels
+\`\`\`
+
+## 8. Troubleshooting Common Issues
+
+### Issue 1: Commands Not Responding
+**Symptoms:**
+- Slash commands don't appear
+- Bot doesn't respond to commands
+- Error messages about permissions
+
+**Solutions:**
+\`\`\`bash
+# Permission fixes
+/permissions reset      # Reset to default permissions
+/roles reorder         # Fix role hierarchy
+/cache clear           # Clear permission cache
+\`\`\`
+
+### Issue 2: AutoMod False Positives
+**Symptoms:**
+- Legitimate messages being filtered
+- Staff messages being blocked
+- Excessive trigger rates
+
+**Solutions:**
+\`\`\`bash
+# Adjust sensitivity
+/automod-config spam_threshold:7    # Increase from 5
+/automod-config caps_threshold:80   # Increase from 70
+/automod-bypass add role:@Trusted   # Add bypass roles
+\`\`\`
+
+## 9. Next Steps & Advanced Features
+
+### Week 2-4: Advanced Implementation
+
+**Advanced Moderation Workflows:**
+\`\`\`bash
+# Multi-tier moderation system
+/moderation-tiers setup
+├── Tier 1: Auto-warnings (AutoMod)
+├── Tier 2: Staff warnings (Manual)
+├── Tier 3: Timeouts (Progressive)
+├── Tier 4: Kicks (Serious violations)
+└── Tier 5: Bans (Severe violations)
+\`\`\`
+
+**Analytics and Insights:**
+\`\`\`bash
+# Server health monitoring
+/analytics setup
+├── Member activity trends
+├── Channel usage patterns
+├── Command usage statistics
+├── Moderation effectiveness
+├── Support ticket insights
+└── Growth and retention metrics
+\`\`\`
+
+### Continuous Improvement
+
+**Regular Maintenance Schedule:**
+\`\`\`
+Weekly Tasks:
+- Review AutoMod effectiveness
+- Analyze ticket response times
+- Check for false positives
+- Update custom word lists
+- Review staff performance
+
+Monthly Tasks:
+- Comprehensive system health check
+- Update role progressions
+- Review and update policies
+- Analyze long-term trends
+- Plan feature enhancements
+\`\`\`
 
 ---
-© 2025 NexGuard. All rights reserved.`;
+
+## Conclusion
+
+Your NexGuard bot is now professionally configured with enterprise-level functionality. This comprehensive setup provides:
+
+✅ **Complete Protection**: 6-layer AutoMod system with intelligent detection
+✅ **Professional Support**: Multi-category ticket system with transcripts
+✅ **Comprehensive Monitoring**: Full event logging and real-time analytics
+✅ **Intelligent Automation**: Smart role management and auto-responses
+✅ **Scalable Architecture**: Designed to grow with your community
+
+**Success Metrics to Monitor:**
+- AutoMod detection accuracy: >95%
+- Ticket response time: <30 minutes
+- False positive rate: <5%
+- User satisfaction: >90%
+- Staff efficiency: Measurable improvement
+
+**Support Resources:**
+- Documentation: Complete guides for each system
+- Community Discord: Expert assistance and best practices
+- Regular Updates: New features and improvements
+- Professional Support: Priority assistance for complex setups
+
+Your server is now equipped with professional-grade Discord management capabilities. Continue to monitor, optimize, and expand based on your community's unique needs.
+
+© 2025 NexGuard. All rights reserved.
+*Professional Discord Server Management Made Simple*`;
 }
 
 function generateAutoModGuide(): string {
