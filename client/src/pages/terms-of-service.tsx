@@ -36,10 +36,10 @@ export default function TermsOfService() {
                     <div className="flex gap-2 mt-2">
                       <Badge variant="outline" className="text-cyan-400 border-cyan-400">
                         <AlertCircle className="w-3 h-3 mr-1" />
-                        Effective Date: August 15, 2025
+                        Effective Date: July 8, 2025
                       </Badge>
                       <Badge variant="outline" className="text-purple-400 border-purple-400">
-                        Last Updated: August 15, 2025
+                        Last Updated: July 8, 2025
                       </Badge>
                     </div>
                   </CardHeader>
