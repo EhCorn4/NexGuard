@@ -7,6 +7,7 @@ import platform
 import psutil
 import os
 from typing import Optional
+from io import StringIO
 
 logger = logging.getLogger(__name__)
 
