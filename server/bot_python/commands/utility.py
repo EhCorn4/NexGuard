@@ -377,44 +377,31 @@ class UtilityCommands(commands.Cog):
     async def community(self, interaction: discord.Interaction):
         """Advertise NexGuard's community server"""
         embed = discord.Embed(
-            title="🌟 Join the NexGuard Community",
-            description="Connect with other server administrators and get support for NexGuard bot",
+            title="🌟 NexGuard Community",
+            description="Get support, updates, and connect with other admins",
             color=0x00FFFF,
             timestamp=datetime.utcnow()
         )
         
         embed.add_field(
-            name="🏆 What You'll Find",
-            value="• **Expert Support** - Get help from NexGuard developers\n• **Feature Updates** - First to know about new releases\n• **Community Tips** - Learn from experienced admins\n• **Bug Reports** - Direct access to development team",
+            name="🚀 Why Join?",
+            value="**Expert Support** • **Early Updates** • **Active Community**\n**Beta Access** • **Direct Developer Contact** • **100% Free**",
             inline=False
         )
         
         embed.add_field(
-            name="🚀 Server Features",
-            value="• **Active Community** - Connect with fellow server owners\n• **Quick Responses** - Fast support when you need help\n• **Beta Testing** - Early access to new features\n• **Best Practices** - Server management guides and tips",
+            name="🔗 Join Now",
+            value="[**discord.gg/DNxp3Xxw59**](https://discord.gg/DNxp3Xxw59)",
             inline=False
         )
         
         embed.add_field(
-            name="🔗 Join Today",
-            value="[**Click Here to Join**](https://discord.gg/DNxp3Xxw59)\n\n`https://discord.gg/DNxp3Xxw59`",
+            name="📊 Bot Stats",
+            value=f"**{len(self.bot.guilds)}** servers • **{sum(guild.member_count for guild in self.bot.guilds)}** users • **59** commands",
             inline=False
         )
         
-        embed.add_field(
-            name="📊 Current Stats",
-            value=f"**{len(self.bot.guilds)}** servers protected\n**{sum(guild.member_count for guild in self.bot.guilds)}** users secured\n**58** commands available",
-            inline=True
-        )
-        
-        embed.add_field(
-            name="💎 Pro Features",
-            value="All features completely **FREE**\nNo premium subscriptions\nFull access to all commands",
-            inline=True
-        )
-        
-        embed.set_footer(text=f"Invited by {interaction.user.name} | NexGuard Community", icon_url=interaction.user.display_avatar.url)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1234567890/nexguard-logo.png")  # Placeholder
+        embed.set_footer(text=f"Invited by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         
         await interaction.response.send_message(embed=embed)
         
