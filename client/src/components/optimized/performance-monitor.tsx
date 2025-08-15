@@ -57,8 +57,8 @@ export function usePerformanceMonitor() {
         if (navigation) {
           setMetrics(prev => ({
             ...prev,
-            pageLoadTime: navigation.loadEventEnd - navigation.navigationStart,
-            firstContentfulPaint: navigation.domContentLoadedEventEnd - navigation.navigationStart
+            pageLoadTime: navigation.loadEventEnd - navigation.fetchStart,
+            firstContentfulPaint: navigation.domContentLoadedEventEnd - navigation.fetchStart
           }));
         }
       }

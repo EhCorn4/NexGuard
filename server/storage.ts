@@ -321,6 +321,10 @@ export class MemStorage implements IStorage {
       education: "Computer Science",
       email: "crweston2004@gmail.com",
       discord: "ehcorn",
+      website: null,
+      githubUrl: null,
+      twitterUrl: null,
+      linkedinUrl: null,
       yearsOfExperience: 5,
     });
 
@@ -456,7 +460,7 @@ export class MemStorage implements IStorage {
       isOnline: true,
       guildsCount: 0,
       usersCount: 0,
-      commandsExecuted: 0,
+
       uptime: "0s",
       lastRestart: new Date(),
       version: "2.3.2",
@@ -1102,6 +1106,8 @@ export class MemStorage implements IStorage {
       priority: ticket.priority ?? 'medium',
       assignedTo: ticket.assignedTo ?? null,
       assignedBy: ticket.assignedBy ?? null,
+      claimedBy: ticket.claimedBy ?? null,
+      claimedAt: ticket.claimedAt ?? null,
       discordCategoryId: ticket.discordCategoryId ?? null,
       tags: ticket.tags ?? [],
       slaDeadline: ticket.slaDeadline ?? null,
