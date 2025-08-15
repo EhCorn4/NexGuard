@@ -11,9 +11,11 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging (prevent duplicate handlers)
 logger = logging.getLogger(__name__)
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
+logger.setLevel(logging.INFO)
 
 class NexGuardBot(commands.Bot):
     def __init__(self):
@@ -388,7 +390,15 @@ class NexGuardBot(commands.Bot):
                 """, True, len(self.guilds), sum(guild.member_count for guild in self.guilds), 
                 uptime_str, datetime.utcnow())
                 
-                logger.info(f"📊 Bot status updated: Online=True, Guilds={len(self.guilds)}, Users={sum(guild.member_count for guild in self.guilds)}")
+                # Reduce logging frequency for status updates to prevent spam
+                if hasattr(self, '_last_status_log'):
+                    time_since_last = datetime.utcnow() - self._last_status_log
+                    if time_since_last.total_seconds() >= 120:  # Log only every 2 minutes
+                        logger.info(f"📊 Bot status updated: Online=True, Guilds={len(self.guilds)}, Users={sum(guild.member_count for guild in self.guilds)}")
+                        self._last_status_log = datetime.utcnow()
+                else:
+                    logger.info(f"📊 Bot status updated: Online=True, Guilds={len(self.guilds)}, Users={sum(guild.member_count for guild in self.guilds)}")
+                    self._last_status_log = datetime.utcnow()
         except Exception as e:
             logger.error(f"Failed to update bot status: {e}")
     
