@@ -1904,12 +1904,76 @@ export function registerRoutes(app: Express): Server {
         content = `# ${guide.title}\n\nError generating guide content. Please try again later.`;
       }
 
-      // Serve as formatted text file with comprehensive content
-      const textFilename = guide.filename.replace('.pdf', '.txt');
-      
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="${textFilename}"`);
-      res.send(content);
+      // Generate PDF with comprehensive content
+      const doc = new PDFDocument({ margin: 50 });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => {
+        const result = Buffer.concat(chunks);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${guide.filename}"`);
+        res.send(result);
+      });
+
+      // Add title
+      doc.fontSize(22).fillColor('#00CED1').text(guide.title, { align: 'center' });
+      doc.moveDown();
+
+      // Parse and add content
+      const lines = content.split('\n');
+      for (const line of lines) {
+        // Check if we need a new page
+        if (doc.y > doc.page.height - 80) {
+          doc.addPage();
+        }
+
+        if (line.startsWith('# ')) {
+          // Skip main title as we already added it
+          continue;
+        } else if (line.startsWith('## ')) {
+          // Section headers
+          doc.moveDown(0.5);
+          doc.fontSize(16).fillColor('#2D3748').text(line.substring(3));
+          doc.moveDown(0.3);
+        } else if (line.startsWith('### ')) {
+          // Subsection headers
+          doc.moveDown(0.3);
+          doc.fontSize(14).fillColor('#4A5568').text(line.substring(4));
+          doc.moveDown(0.2);
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          // Bullet points
+          doc.fontSize(11).fillColor('#4A5568').text('• ' + line.substring(2), { 
+            indent: 20,
+            paragraphGap: 3
+          });
+        } else if (line.startsWith('```')) {
+          // Skip code block markers and add some spacing
+          doc.moveDown(0.3);
+        } else if (line.trim() && !line.startsWith('#') && !line.includes('```')) {
+          // Regular text
+          doc.fontSize(11).fillColor('#4A5568').text(line, {
+            paragraphGap: 2
+          });
+        } else if (line.trim() === '') {
+          // Empty lines
+          doc.moveDown(0.2);
+        }
+      }
+
+      // Add footer
+      const pageRange = doc.bufferedPageRange();
+      for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+        doc.switchToPage(i);
+        doc.fontSize(8).fillColor('#A0AEC0').text(
+          `© 2025 NexGuard - Page ${i - pageRange.start + 1} of ${pageRange.count}`,
+          50,
+          doc.page.height - 30,
+          { align: 'center' }
+        );
+      }
+
+      doc.end();
       
     } catch (error) {
       console.error("Error serving guide:", error);
