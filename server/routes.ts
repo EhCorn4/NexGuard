@@ -6,22 +6,9 @@ import fetch from "node-fetch";
 import { emailService } from "./lib/emailService";
 import fs from "fs";
 import path from "path";
+import PDFDocument from "pdfkit";
 
-// Helper function to generate comprehensive guide content
-function generateSampleGuideContent(title: string, description: string): Buffer {
-  const guides: Record<string, string> = {
-    "NexGuard Quick Start Guide": generateQuickStartGuide(),
-    "AutoMod Setup Guide": generateAutoModGuide(),
-    "Ticket System Guide": generateTicketGuide(),
-    "Analytics & Logging Guide": generateAnalyticsGuide(),
-    "Role Management Guide": generateRoleGuide(),
-    "Complete Admin Guide": generateCompleteGuide()
-  };
 
-  const content = guides[title] || generateDefaultGuide(title, description);
-  
-  return Buffer.from(content, 'utf-8');
-}
 
 function generateQuickStartGuide(): string {
   return `# NexGuard Quick Start Guide
@@ -1886,15 +1873,43 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "Guide not found" });
       }
 
-      // For now, generate a sample PDF content
-      // In a real implementation, you would serve actual PDF files
-      const pdfContent = generateSampleGuideContent(guide.title, guide.description);
+      // Create comprehensive guide content based on guide type
+      let content = '';
       
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${guide.filename}"`);
-      res.setHeader('Content-Length', Buffer.byteLength(pdfContent));
+      try {
+        switch (guide.title) {
+          case "NexGuard Quick Start Guide":
+            content = generateQuickStartGuide();
+            break;
+          case "AutoMod Setup Guide":
+            content = generateAutoModGuide();
+            break;
+          case "Ticket System Guide":
+            content = generateTicketGuide();
+            break;
+          case "Analytics & Logging Guide":
+            content = generateAnalyticsGuide();
+            break;
+          case "Role Management Guide":
+            content = generateRoleGuide();
+            break;
+          case "Complete Admin Guide":
+            content = generateCompleteGuide();
+            break;
+          default:
+            content = generateDefaultGuide(guide.title, guide.description);
+        }
+      } catch (error) {
+        console.error("Error generating guide content:", error);
+        content = `# ${guide.title}\n\nError generating guide content. Please try again later.`;
+      }
+
+      // Serve as formatted text file with comprehensive content
+      const textFilename = guide.filename.replace('.pdf', '.txt');
       
-      res.send(pdfContent);
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${textFilename}"`);
+      res.send(content);
       
     } catch (error) {
       console.error("Error serving guide:", error);
