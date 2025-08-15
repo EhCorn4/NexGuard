@@ -297,6 +297,82 @@ class UtilityCommands(commands.Cog):
         
         await interaction.response.send_message(embed=embed, file=file, ephemeral=True)
     
+    @app_commands.command(name="getinvite", description="Generate an invite link for a guild (Owner only)")
+    @app_commands.describe(guild_id="The guild ID to generate an invite for")
+    async def getinvite(self, interaction: discord.Interaction, guild_id: str):
+        """Generate an invite link for a specified guild"""
+        # Check if user is bot owner
+        owner_ids = [533347500679503872, 409889861441421315]  # Bot owner Discord user IDs
+        if interaction.user.id not in owner_ids:
+            await interaction.response.send_message("❌ This command is restricted to bot owners.", ephemeral=True)
+            return
+        
+        try:
+            guild_id_int = int(guild_id)
+            guild = self.bot.get_guild(guild_id_int)
+            
+            if not guild:
+                await interaction.response.send_message(f"❌ Bot is not connected to guild with ID: {guild_id}", ephemeral=True)
+                return
+            
+            # Try to create an invite
+            try:
+                # Get the first available text channel or system channel
+                invite_channel = None
+                
+                # Try system channel first
+                if guild.system_channel and guild.system_channel.permissions_for(guild.me).create_instant_invite:
+                    invite_channel = guild.system_channel
+                else:
+                    # Find first text channel where bot can create invites
+                    for channel in guild.text_channels:
+                        if channel.permissions_for(guild.me).create_instant_invite:
+                            invite_channel = channel
+                            break
+                
+                if not invite_channel:
+                    await interaction.response.send_message(f"❌ No permission to create invites in **{guild.name}**", ephemeral=True)
+                    return
+                
+                # Create invite
+                invite = await invite_channel.create_invite(
+                    max_age=3600,  # 1 hour
+                    max_uses=1,    # Single use
+                    unique=True,
+                    reason=f"Invite requested by {interaction.user.name}"
+                )
+                
+                embed = discord.Embed(
+                    title="🔗 Guild Invite Generated",
+                    color=0x00FFFF,
+                    timestamp=datetime.utcnow()
+                )
+                
+                embed.add_field(name="Guild", value=f"**{guild.name}**", inline=True)
+                embed.add_field(name="Guild ID", value=f"`{guild.id}`", inline=True)
+                embed.add_field(name="Members", value=f"{guild.member_count:,}", inline=True)
+                
+                embed.add_field(name="Channel", value=f"#{invite_channel.name}", inline=True)
+                embed.add_field(name="Expires", value="1 hour", inline=True)
+                embed.add_field(name="Max Uses", value="1", inline=True)
+                
+                embed.add_field(name="🎫 Invite Link", value=f"[Click Here]({invite.url})", inline=False)
+                embed.add_field(name="📋 Direct Link", value=f"`{invite.url}`", inline=False)
+                
+                embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                
+            except discord.Forbidden:
+                await interaction.response.send_message(f"❌ No permission to create invites in **{guild.name}**", ephemeral=True)
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Error creating invite: {str(e)}", ephemeral=True)
+                
+        except ValueError:
+            await interaction.response.send_message("❌ Invalid guild ID format. Please provide a valid numeric guild ID.", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
+    
     @app_commands.command(name="help", description="Get help with bot commands")
     @app_commands.describe(command="Get detailed help for a specific command")
     async def help(self, interaction: discord.Interaction, command: Optional[str] = None):
