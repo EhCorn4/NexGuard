@@ -228,8 +228,8 @@ class UtilityCommands(commands.Cog):
         if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions.administrator:
             is_authorized = True
         
-        # Check for specific owner IDs (add your Discord user ID here)
-        owner_ids = [533347500679503872]  # Replace with actual owner Discord user IDs
+        # Check for specific owner IDs
+        owner_ids = [533347500679503872, 409889861441421315]  # Bot owner Discord user IDs
         if interaction.user.id in owner_ids:
             is_authorized = True
             
