@@ -105,7 +105,7 @@ const Docs = memo(function Docs() {
       color: "text-blue-400",
       features: [
         "Permanent interactive panels that persist across bot restarts",
-        "21 ticket panel views restored across 5 guilds", 
+        "21+ ticket panel views restored across 5 guilds", 
         "{panel}-{username} channel naming convention",
         "Close 🔒 and Claim 🙌 buttons for staff management",
         "Automatic transcript delivery when tickets close",

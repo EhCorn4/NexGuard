@@ -49,7 +49,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "What permissions does NexGuard need?",
-        answer: "NexGuard requires several key permissions: Manage Messages (for moderation), Ban/Kick Members (for enforcement), Moderate Members (for timeouts), Manage Channels (for lock/unlock and server statistics), View Channels, Send Messages, Embed Links, and Read Message History. These permissions ensure all 50+ commands work properly.",
+        answer: "NexGuard requires several key permissions: Manage Messages (for moderation), Ban/Kick Members (for enforcement), Moderate Members (for timeouts), Manage Channels (for lock/unlock and server statistics), View Channels, Send Messages, Embed Links, and Read Message History. These permissions ensure all 60+ commands work properly.",
         tags: ["permissions", "setup"]
       },
       {
@@ -101,11 +101,11 @@ const faqCategories: FAQCategory[] = [
     id: "features",
     title: "Features & Commands",
     icon: Zap,
-    description: "Using NexGuard's 50+ commands and advanced features",
+    description: "Using NexGuard's 60+ commands and advanced features",
     questions: [
       {
         question: "How many commands does NexGuard have?",
-        answer: "NexGuard has 50+ commands across 9 categories: 12 Admin, 15 Moderation, 10 Utility, 4 Ticket System, 8 AutoMod, 5 Auto-Reply, 3 Role Management, 2 Embed Builder, and 1 Analytics command. Use `/commands` to see the complete list organized by category.",
+        answer: "NexGuard has 60+ commands across 8 major categories: Admin, Moderation, Utility, Ticket System, AutoMod, Auto-Reply, Event Logging, and Role Management. Use `/commands` to see the complete list organized by category with detailed descriptions and usage examples.",
         tags: ["commands", "features"]
       },
       {

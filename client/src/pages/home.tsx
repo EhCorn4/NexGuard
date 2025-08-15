@@ -43,7 +43,7 @@ const Home = memo(function Home() {
     <>
       <SEOHead 
         title="Home"
-        description="NexGuard - Professional Discord bot with advanced moderation, ticket system, analytics, and comprehensive server management. Protecting 205+ users across 11+ servers."
+        description="NexGuard - Professional Discord bot with advanced moderation, ticket system, analytics, and comprehensive server management. Protecting 457+ users across 17+ servers."
         keywords="discord bot, moderation bot, discord moderation, server management, discord utilities, ticket system, automod, discord analytics"
         image="/nexguard-banner.png"
         type="website"
@@ -76,7 +76,7 @@ const Home = memo(function Home() {
           </p>
           
           <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            The ultimate Discord moderation and quality-of-life bot with 50+ commands, professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection. Keep your server safe, organized, and thriving with enterprise-grade automation.
+            The ultimate Discord moderation and quality-of-life bot with 60+ commands, professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection. Keep your server safe, organized, and thriving with enterprise-grade automation.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

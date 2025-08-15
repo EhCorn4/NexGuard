@@ -5671,7 +5671,6 @@ All rights reserved.
 *Professional Discord Server Management Made Simple*
 *Enterprise-Grade • Secure • Scalable • Supported*`;
 }
-}
 
 function generateDefaultGuide(title: string, description: string): string {
   return `# ${title}
