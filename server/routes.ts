@@ -4,6 +4,91 @@ import { storage } from "./storage";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import fetch from "node-fetch";
 import { emailService } from "./lib/emailService";
+import fs from "fs";
+import path from "path";
+
+// Helper function to generate sample PDF content
+function generateSampleGuideContent(title: string, description: string): Buffer {
+  // This creates a simple PDF-like content for demonstration
+  // In a real implementation, you would use a PDF library like pdfkit or serve actual PDF files
+  const content = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 200
+>>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+(${title}) Tj
+0 -20 Td
+(${description}) Tj
+0 -40 Td
+(This is a sample guide document for NexGuard Discord Bot.) Tj
+0 -20 Td
+(For the complete guide, please visit https://nexguard.org/docs) Tj
+0 -40 Td
+(Created: ${new Date().toLocaleDateString()}) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000079 00000 n 
+0000000173 00000 n 
+0000000301 00000 n 
+0000000380 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+456
+%%EOF`;
+
+  return Buffer.from(content, 'utf-8');
+}
 
 export function registerRoutes(app: Express): Server {
   // News endpoints
@@ -453,6 +538,172 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching channel analytics:", error);
       res.status(500).json({ error: "Failed to fetch channel analytics" });
+    }
+  });
+
+  // Guide download endpoints
+  app.get("/api/guides/download/:guideType", async (req, res) => {
+    try {
+      const { guideType } = req.params;
+      
+      // Define available guides with their metadata
+      const guides = {
+        quickstart: {
+          filename: "NexGuard_Quick_Start_Guide.pdf",
+          title: "NexGuard Quick Start Guide",
+          description: "Essential setup steps for new users"
+        },
+        automod: {
+          filename: "NexGuard_AutoMod_Setup_Guide.pdf", 
+          title: "AutoMod Setup Guide",
+          description: "Configure advanced automated moderation"
+        },
+        tickets: {
+          filename: "NexGuard_Ticket_System_Guide.pdf",
+          title: "Ticket System Guide", 
+          description: "Professional support ticket configuration"
+        },
+        analytics: {
+          filename: "NexGuard_Analytics_Logging_Guide.pdf",
+          title: "Analytics & Logging Guide",
+          description: "Server statistics and event logging setup"
+        },
+        roles: {
+          filename: "NexGuard_Role_Management_Guide.pdf",
+          title: "Role Management Guide",
+          description: "Configure reaction roles and permissions"
+        },
+        complete: {
+          filename: "NexGuard_Complete_Admin_Guide.pdf",
+          title: "Complete Admin Guide",
+          description: "Comprehensive guide covering all features"
+        }
+      };
+
+      const guide = guides[guideType as keyof typeof guides];
+      if (!guide) {
+        return res.status(404).json({ error: "Guide not found" });
+      }
+
+      // For now, generate a sample PDF content
+      // In a real implementation, you would serve actual PDF files
+      const pdfContent = generateSampleGuideContent(guide.title, guide.description);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${guide.filename}"`);
+      res.setHeader('Content-Length', Buffer.byteLength(pdfContent));
+      
+      res.send(pdfContent);
+      
+    } catch (error) {
+      console.error("Error serving guide:", error);
+      res.status(500).json({ error: "Failed to serve guide" });
+    }
+  });
+
+  app.get("/api/guides/download/templates/:templateType", async (req, res) => {
+    try {
+      const { templateType } = req.params;
+      
+      const templates = {
+        autoreply: {
+          filename: "autoreply_templates.json",
+          content: {
+            version: "2.3.2",
+            description: "AutoReply templates for common Discord server responses",
+            templates: [
+              {
+                id: "welcome",
+                name: "Welcome Message Template",
+                trigger: "welcome",
+                response: "Welcome to {guild.name}, {user.mention}! Please read our rules in #rules channel.",
+                enabled: true
+              },
+              {
+                id: "faq_help",
+                name: "FAQ Help Response", 
+                trigger: "how to get help",
+                response: "For support, please create a ticket using `/ticket create` or check our FAQ at https://nexguard.org/faq",
+                enabled: true
+              },
+              {
+                id: "rules_reminder",
+                name: "Rules Reminder",
+                trigger: "rules",
+                response: "Please remember to follow our server rules. You can view them in #rules channel.",
+                enabled: true
+              }
+            ]
+          }
+        },
+        automod: {
+          filename: "automod_config_templates.json",
+          content: {
+            version: "2.3.2", 
+            description: "AutoMod configuration templates for different server types",
+            configs: [
+              {
+                id: "gaming_server",
+                name: "Gaming Server Configuration",
+                settings: {
+                  spam_protection: {
+                    enabled: true,
+                    max_messages: 5,
+                    time_window: 10,
+                    punishment: "timeout"
+                  },
+                  bad_words: {
+                    enabled: true,
+                    action: "delete",
+                    notify_mods: true
+                  },
+                  caps_limit: {
+                    enabled: true,
+                    percentage: 70,
+                    action: "warn"
+                  }
+                }
+              },
+              {
+                id: "professional_server", 
+                name: "Professional/Business Server",
+                settings: {
+                  spam_protection: {
+                    enabled: true,
+                    max_messages: 3,
+                    time_window: 15,
+                    punishment: "timeout"
+                  },
+                  link_filtering: {
+                    enabled: true,
+                    whitelist_only: true,
+                    allowed_domains: ["company.com", "linkedin.com"]
+                  },
+                  profanity_filter: {
+                    enabled: true,
+                    strictness: "high",
+                    action: "delete_and_warn"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      };
+
+      const template = templates[templateType as keyof typeof templates];
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${template.filename}"`);
+      
+      res.json(template.content);
+      
+    } catch (error) {
+      console.error("Error serving template:", error);
+      res.status(500).json({ error: "Failed to serve template" });
     }
   });
 

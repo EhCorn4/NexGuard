@@ -15,7 +15,7 @@ import {
   Search, Book, Terminal, Settings, Shield, Ticket, Zap, HelpCircle, AlertCircle, 
   ChevronDown, ChevronRight, Copy, ExternalLink, Star, Users, Bot, MessageSquare,
   Activity, Lock, Sparkles, Database, BarChart3, Webhook, Globe,
-  Headphones, Calendar, Timer, Gamepad2, Crown, CheckCircle2, ArrowRight
+  Headphones, Calendar, Timer, Gamepad2, Crown, CheckCircle2, ArrowRight, Download
 } from "lucide-react";
 import type { Command } from "@shared/schema";
 import { memo } from "react";
@@ -258,7 +258,7 @@ const Docs = memo(function Docs() {
         />
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
               Overview
@@ -274,6 +274,10 @@ const Docs = memo(function Docs() {
             <TabsTrigger value="features" className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               Features
+            </TabsTrigger>
+            <TabsTrigger value="guides" className="flex items-center gap-2">
+              <Book className="w-4 h-4" />
+              Guides
             </TabsTrigger>
             <TabsTrigger value="support" className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4" />
@@ -670,6 +674,373 @@ const Docs = memo(function Docs() {
                   </Card>
                 );
               })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="guides">
+            <div className="space-y-6">
+              <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-2xl">
+                    <GradientText>Downloadable Guides</GradientText>
+                  </CardTitle>
+                  <CardDescription>
+                    Comprehensive PDF guides and documentation for NexGuard setup and advanced usage
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Quick Start Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-500/20 rounded-lg">
+                            <Zap className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Quick Start Guide</CardTitle>
+                            <p className="text-sm text-gray-400">Essential setup steps</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Complete setup guide from bot invitation to first commands. Perfect for new users.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>12</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>2.3 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/quickstart', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* AutoMod Setup Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-yellow-500/20 rounded-lg">
+                            <Sparkles className="w-5 h-5 text-yellow-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">AutoMod Setup</CardTitle>
+                            <p className="text-sm text-gray-400">Advanced moderation</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Configure spam detection, word filtering, and automated punishments with examples.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>18</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>4.1 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/automod', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Ticket System Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-500/20 rounded-lg">
+                            <Ticket className="w-5 h-5 text-blue-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Ticket System</CardTitle>
+                            <p className="text-sm text-gray-400">Professional support</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Create interactive ticket panels, configure categories, and manage support workflows.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>22</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>5.7 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/tickets', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Analytics & Logging Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-cyan-500/20 rounded-lg">
+                            <BarChart3 className="w-5 h-5 text-cyan-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Analytics & Logging</CardTitle>
+                            <p className="text-sm text-gray-400">Data insights</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Setup server statistics, event logging, and analytics dashboards for data-driven decisions.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>15</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>3.2 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/analytics', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Role Management Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-pink-500/20 rounded-lg">
+                            <Crown className="w-5 h-5 text-pink-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Role Management</CardTitle>
+                            <p className="text-sm text-gray-400">Permissions & roles</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Configure reaction roles, auto-roles, and permission hierarchies for organized servers.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>14</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>2.8 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/roles', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Complete Admin Guide */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 hover:border-[hsl(var(--nexguard-cyan))]/50 transition-colors">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-500/20 rounded-lg">
+                            <Settings className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Complete Admin Guide</CardTitle>
+                            <p className="text-sm text-gray-400">Everything included</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-300 mb-4">
+                          Comprehensive guide covering all NexGuard features, best practices, and troubleshooting.
+                        </p>
+                        <div className="space-y-2 text-xs text-gray-400 mb-4">
+                          <div className="flex justify-between">
+                            <span>Pages:</span>
+                            <span>85</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Size:</span>
+                            <span>18.4 MB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Updated:</span>
+                            <span>Jan 2025</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full hover:bg-[hsl(var(--nexguard-cyan))]/10"
+                          onClick={() => window.open('/api/guides/download/complete', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Additional Resources */}
+              <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Book className="w-5 h-5" />
+                    Additional Resources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Video Tutorials */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-white">Video Tutorials</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-500/20 rounded-lg">
+                              <Globe className="w-4 h-4 text-red-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">Initial Setup Walkthrough</p>
+                              <p className="text-xs text-gray-400">15 min tutorial</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-500/20 rounded-lg">
+                              <Ticket className="w-4 h-4 text-blue-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">Ticket System Deep Dive</p>
+                              <p className="text-xs text-gray-400">25 min tutorial</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Templates & Examples */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-white">Templates & Examples</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-500/20 rounded-lg">
+                              <MessageSquare className="w-4 h-4 text-purple-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">AutoReply Templates</p>
+                              <p className="text-xs text-gray-400">JSON config files</p>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => window.open('/api/guides/download/templates/autoreply', '_blank')}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-yellow-500/20 rounded-lg">
+                              <Sparkles className="w-4 h-4 text-yellow-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">AutoMod Configurations</p>
+                              <p className="text-xs text-gray-400">Ready-to-use configs</p>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => window.open('/api/guides/download/templates/automod', '_blank')}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
