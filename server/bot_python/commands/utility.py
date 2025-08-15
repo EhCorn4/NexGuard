@@ -408,6 +408,113 @@ class UtilityCommands(commands.Cog):
         # Log command usage
         await self.bot.log_command_usage(interaction, "community")
     
+    @app_commands.command(name="broadcast-community", description="Send community invite to all servers (Owner only)")
+    async def broadcast_community(self, interaction: discord.Interaction):
+        """Broadcast community message to all connected servers"""
+        # Check if user is bot owner
+        owner_ids = [533347500679503872, 409889861441421315]  # Bot owner Discord user IDs
+        if interaction.user.id not in owner_ids:
+            await interaction.response.send_message("❌ This command is restricted to bot owners.", ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        guilds = self.bot.guilds
+        success_count = 0
+        failed_count = 0
+        results = []
+        
+        # Community embed to send
+        embed = discord.Embed(
+            title="🌟 NexGuard Community",
+            description="Get support, updates, and connect with other admins",
+            color=0x00FFFF,
+            timestamp=datetime.utcnow()
+        )
+        
+        embed.add_field(
+            name="🚀 Why Join?",
+            value="**Expert Support** • **Early Updates** • **Active Community**\n**Beta Access** • **Direct Developer Contact** • **100% Free**",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔗 Join Now",
+            value="[**discord.gg/DNxp3Xxw59**](https://discord.gg/DNxp3Xxw59)",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📊 Bot Stats",
+            value=f"**{len(self.bot.guilds)}** servers • **{sum(guild.member_count for guild in self.bot.guilds)}** users • **59** commands",
+            inline=False
+        )
+        
+        embed.set_footer(text="NexGuard Community Announcement")
+        
+        for guild in guilds:
+            try:
+                # Find suitable channel
+                target_channel = None
+                
+                # Priority order for channel selection
+                channel_names = ['general', 'announcements', 'chat', 'main', 'lobby', 'welcome']
+                
+                # Try to find channel by name
+                for name in channel_names:
+                    for channel in guild.text_channels:
+                        if name in channel.name.lower() and channel.permissions_for(guild.me).send_messages:
+                            target_channel = channel
+                            break
+                    if target_channel:
+                        break
+                
+                # If no preferred channel found, use first available text channel
+                if not target_channel:
+                    for channel in guild.text_channels:
+                        if channel.permissions_for(guild.me).send_messages:
+                            target_channel = channel
+                            break
+                
+                if target_channel:
+                    await target_channel.send(embed=embed)
+                    success_count += 1
+                    results.append(f"✅ **{guild.name}** → #{target_channel.name}")
+                else:
+                    failed_count += 1
+                    results.append(f"❌ **{guild.name}** → No permission")
+                    
+            except Exception as e:
+                failed_count += 1
+                results.append(f"❌ **{guild.name}** → {str(e)[:50]}")
+        
+        # Create result embed
+        result_embed = discord.Embed(
+            title="📢 Community Broadcast Complete",
+            description=f"Sent to **{success_count}** servers, **{failed_count}** failed",
+            color=0x00FF00 if failed_count == 0 else 0xFFFF00,
+            timestamp=datetime.utcnow()
+        )
+        
+        # Split results into chunks for multiple fields
+        chunk_size = 10
+        result_chunks = [results[i:i + chunk_size] for i in range(0, len(results), chunk_size)]
+        
+        for i, chunk in enumerate(result_chunks):
+            field_name = f"📋 Results {i*chunk_size + 1}-{min((i+1)*chunk_size, len(results))}"
+            result_embed.add_field(
+                name=field_name,
+                value="\n".join(chunk),
+                inline=False
+            )
+        
+        result_embed.set_footer(text=f"Broadcast by {interaction.user.name}")
+        
+        await interaction.followup.send(embed=result_embed, ephemeral=True)
+        
+        # Log command usage
+        await self.bot.log_command_usage(interaction, "broadcast-community", {"success": success_count, "failed": failed_count})
+    
     @app_commands.command(name="help", description="Get help with bot commands")
     @app_commands.describe(command="Get detailed help for a specific command")
     async def help(self, interaction: discord.Interaction, command: Optional[str] = None):
