@@ -961,41 +961,6 @@ const Docs = memo(function Docs() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Video Tutorials */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-white">Video Tutorials</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-red-500/20 rounded-lg">
-                              <Globe className="w-4 h-4 text-red-400" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">Initial Setup Walkthrough</p>
-                              <p className="text-xs text-gray-400">15 min tutorial</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/20 rounded-lg">
-                              <Ticket className="w-4 h-4 text-blue-400" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">Ticket System Deep Dive</p>
-                              <p className="text-xs text-gray-400">25 min tutorial</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Templates & Examples */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-white">Templates & Examples</h3>
