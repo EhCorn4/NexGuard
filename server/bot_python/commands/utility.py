@@ -217,12 +217,27 @@ class UtilityCommands(commands.Cog):
         
         await interaction.response.send_message(embed=embed)
     
-    @app_commands.command(name="guildlist", description="List all guilds the bot is connected to (Owner only)")
+    @app_commands.command(name="guildlist", description="List all guilds the bot is connected to (Admin only)")
     async def guildlist(self, interaction: discord.Interaction):
         """List all guilds the bot is connected to"""
-        # Check if user is bot owner or has admin permissions
-        if interaction.user.id != 533347500679503872:  # Bot owner ID
-            await interaction.response.send_message("❌ This command is restricted to the bot owner.", ephemeral=True)
+        # Check if user has admin permissions or is bot owner
+        is_authorized = False
+        
+        # Check for administrator permissions
+        if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions.administrator:
+            is_authorized = True
+        
+        # Check for specific owner IDs (add your Discord user ID here)
+        owner_ids = [533347500679503872]  # Replace with actual owner Discord user IDs
+        if interaction.user.id in owner_ids:
+            is_authorized = True
+            
+        # Allow if user has manage server permission
+        if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions.manage_guild:
+            is_authorized = True
+        
+        if not is_authorized:
+            await interaction.response.send_message("❌ This command requires administrator permissions.", ephemeral=True)
             return
         
         guilds = self.bot.guilds
