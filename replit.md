@@ -52,6 +52,13 @@ Preferred communication style: Simple, everyday language.
 - **APIs**: OpenAI (for AI assistant, currently disabled)
 - **Payment**: PayPal (for donations)
 
+## Documentation
+
+- **TICKET_PANEL_GUIDE.md**: Complete guide for creating and managing ticket panels
+- **CHANGELOG.md**: Detailed change history and version notes
+- **ticket_rename_announcement.md**: Discord announcement for new rename feature
+- **ticket_fixes_announcement.md**: Documentation of recent ticket system improvements
+
 ## Recent Updates
 
 ### August 1, 2025: Major Ticket System Overhaul
@@ -68,11 +75,13 @@ Preferred communication style: Simple, everyday language.
 - Fixed "This command can only be used in ticket channels" error for all valid ticket channels
 - Ticket system now recognizes any channel with dash format (panel-username) or NexGuard control buttons
 
-### August 14, 2025: New Ticket Rename Command
+### August 14, 2025: Enhanced Documentation and Features
 - **ADDED**: `/rename` command for ticket channels with smart permissions
 - **FEATURE**: Staff and ticket creators can rename channels with format preservation
 - **ENHANCED**: Professional logging system for all rename operations
 - **VALIDATION**: Channel name validation with duplicate prevention and character filtering
+- **DOCUMENTATION**: Complete Ticket Panel Guide (TICKET_PANEL_GUIDE.md) with comprehensive setup instructions
+- **UPDATED**: `/help` command now displays all 56 commands across 8 categories
 - Command count increased to 56 with comprehensive ticket management capabilities
 
 ### Current System Status
