@@ -66,6 +66,14 @@ async function seedDatabase() {
     // Insert news updates
     await db.insert(newsUpdates).values([
       {
+        title: "🔒 Enhanced Privacy: Author Information Removed",
+        content: "We've comprehensively removed all author/creator information from Discord bot embeds to enhance user privacy. Commands now focus purely on functional information without revealing who performed each action.",
+        category: "SECURITY",
+        publishedAt: new Date("2025-08-17"),
+        likes: 89,
+        comments: 16
+      },
+      {
         title: "AI-Powered Spam Detection",
         content: "Our new machine learning algorithm can now detect sophisticated spam patterns with 99.2% accuracy, providing better protection for your server.",
         category: "NEW FEATURE",
