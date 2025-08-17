@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def replace_placeholders(text: Optional[str], interaction: discord.Interaction, ticket_id: Optional[str] = None) -> str:
     """Replace placeholder variables in text and handle newlines properly"""
     if not text:
-        return text
+        return ""
     
     replacements = {
         '{user.mention}': interaction.user.mention,
@@ -97,17 +97,19 @@ class TicketButton(discord.ui.Button):
             # Get category if specified
             category = None
             if panel.get('category_id') and interaction.guild:
-                channel = interaction.guild.get_channel(int(panel['category_id']))
-                if isinstance(channel, discord.CategoryChannel):
-                    category = channel
+                category_channel = interaction.guild.get_channel(int(panel['category_id']))
+                if isinstance(category_channel, discord.CategoryChannel):
+                    category = category_channel
             
             overwrites = {}
             if interaction.guild:
                 overwrites = {
                     interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
                     interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
                 }
+                # Add user permissions for Member type
+                if isinstance(interaction.user, discord.Member):
+                    overwrites[interaction.user] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
             
             # Add support team permissions
             if panel.get('support_team_ids'):
@@ -325,17 +327,16 @@ class CloseTicketModal(discord.ui.Modal):
             transcript_data, participants = await self.generate_transcript(interaction.channel)
             
             # Send closing message
-            embed = discord.Embed(
-                description=f"🔒 **Ticket Closed**\n\nClosed by {interaction.user.mention}",
-                color=0x5865F2
-            )
+            embed_desc = f"🔒 **Ticket Closed**\n\nClosed by {interaction.user.mention}"
             if self.reason.value:
-                embed.description += f"\n\n**Reason:** {self.reason.value}"
+                embed_desc += f"\n\n**Reason:** {self.reason.value}"
             
             if delay > 0:
-                embed.description += f"\n\n⏰ Channel will be deleted in {delay} seconds."
+                embed_desc += f"\n\n⏰ Channel will be deleted in {delay} seconds."
             else:
-                embed.description += f"\n\n⏰ Channel will be deleted immediately."
+                embed_desc += f"\n\n⏰ Channel will be deleted immediately."
+                
+            embed = discord.Embed(description=embed_desc, color=0x5865F2)
             
             await interaction.followup.send(embed=embed)
             
@@ -348,9 +349,10 @@ class CloseTicketModal(discord.ui.Modal):
                 await asyncio.sleep(delay)
                 
             try:
-                channel_name = interaction.channel.name
-                await interaction.channel.delete(reason=f"Ticket closed by {interaction.user.display_name}")
-                logger.info(f"Ticket channel '{channel_name}' deleted successfully")
+                if isinstance(interaction.channel, discord.TextChannel):
+                    channel_name = interaction.channel.name
+                    await interaction.channel.delete(reason=f"Ticket closed by {interaction.user.display_name}")
+                    logger.info(f"Ticket channel '{channel_name}' deleted successfully")
             except Exception as delete_error:
                 logger.error(f"Failed to delete ticket channel: {delete_error}")
                 
@@ -424,7 +426,8 @@ class CloseTicketModal(discord.ui.Modal):
                             )
                             await user.send(embed=embed, file=file)
                         else:
-                            embed.description += f"\n\n```\n{readable_transcript[:1800]}\n```"
+                            current_desc = embed.description or ""
+                            embed.description = current_desc + f"\n\n```\n{readable_transcript[:1800]}\n```"
                             await user.send(embed=embed)
                             
                 except Exception as e:
@@ -465,17 +468,17 @@ class TicketsCog(commands.Cog):
         self, 
         interaction: discord.Interaction,
         action: str,
-        panel_id: str = None,
-        title: str = None,
-        category: discord.CategoryChannel = None,
-        roles: str = None,
-        channel: discord.TextChannel = None,
-        panel_embed_header: str = None,
-        panel_embed_title: str = None,
-        panel_embed_description: str = None,
-        ticket_embed_header: str = None,
-        ticket_embed_title: str = None,
-        ticket_embed_description: str = None
+        panel_id: Optional[str] = None,
+        title: Optional[str] = None,
+        category: Optional[discord.CategoryChannel] = None,
+        roles: Optional[str] = None,
+        channel: Optional[discord.TextChannel] = None,
+        panel_embed_header: Optional[str] = None,
+        panel_embed_title: Optional[str] = None,
+        panel_embed_description: Optional[str] = None,
+        ticket_embed_header: Optional[str] = None,
+        ticket_embed_title: Optional[str] = None,
+        ticket_embed_description: Optional[str] = None
     ):
         """Manage ticket panels"""
         
@@ -899,6 +902,10 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
+            if not isinstance(interaction.channel, discord.TextChannel):
+                await interaction.followup.send("❌ This command can only be used in text channels.", ephemeral=True)
+                return
+                
             # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
@@ -973,10 +980,11 @@ class TicketsCog(commands.Cog):
                         transcript.write(f"    📎 Attachment: {attachment.filename} ({attachment.url})\n")
             
             transcript.seek(0)
-            transcript_file = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+            transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+            transcript_file = discord.File(transcript_bytes, filename=f"transcript-{channel_name}.txt")
             
             # Update database
-            if hasattr(self.bot, 'db_pool') and self.bot.db_pool:
+            if hasattr(self.bot, 'db_pool') and getattr(self.bot, 'db_pool', None):
                 async with self.bot.db_pool.acquire() as conn:
                     await conn.execute("""
                         UPDATE tickets 
@@ -1007,7 +1015,8 @@ class TicketsCog(commands.Cog):
                         if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
                             try:
                                 transcript.seek(0)
-                                user_transcript = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+                                user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+                                user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
                                 await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
                             except:
                                 pass
@@ -1038,6 +1047,10 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
+            if not isinstance(interaction.channel, discord.TextChannel):
+                await interaction.followup.send("❌ This command can only be used in text channels.", ephemeral=True)
+                return
+                
             # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
@@ -1110,6 +1123,9 @@ class TicketsCog(commands.Cog):
                     try:
                         # Create transcript
                         transcript = StringIO()
+                        if not isinstance(button_interaction.channel, discord.TextChannel):
+                            await button_interaction.followup.send("❌ Cannot generate transcript for this channel type.", ephemeral=True)
+                            return
                         channel_name = button_interaction.channel.name
                         transcript.write(f"Ticket Transcript - {channel_name}\n")
                         transcript.write(f"Closed by: {button_interaction.user} ({button_interaction.user.id})\n")
@@ -1133,11 +1149,12 @@ class TicketsCog(commands.Cog):
                                     transcript.write(f"    📎 Attachment: {attachment.filename} ({attachment.url})\n")
                         
                         transcript.seek(0)
-                        transcript_file = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+                        transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+                        transcript_file = discord.File(transcript_bytes, filename=f"transcript-{channel_name}.txt")
                         
                         # Update database if available
                         bot = button_interaction.client
-                        if hasattr(bot, 'db_pool') and bot.db_pool:
+                        if hasattr(bot, 'db_pool') and getattr(bot, 'db_pool', None):
                             async with bot.db_pool.acquire() as conn:
                                 await conn.execute("""
                                     UPDATE tickets 
@@ -1161,25 +1178,28 @@ class TicketsCog(commands.Cog):
                         # Send transcript to ticket creator (try to get from channel name)
                         try:
                             # Extract username from channel name (format: panel-username)
-                            if "-" in channel_name:
+                            if channel_name and "-" in channel_name:
                                 username = channel_name.split("-", 1)[1]
                                 # Try to find user by username
-                                for member in button_interaction.guild.members:
-                                    if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
-                                        try:
-                                            transcript.seek(0)
-                                            user_transcript = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
-                                            await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
-                                        except:
-                                            pass
-                                        break
+                                if button_interaction.guild:
+                                    for member in button_interaction.guild.members:
+                                        if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
+                                            try:
+                                                transcript.seek(0)
+                                                user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+                                                user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
+                                                await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
+                                            except:
+                                                pass
+                                            break
                         except:
                             pass
                         
                         # Delete channel after delay
-                        await button_interaction.channel.send("🗑️ This channel will be deleted in 10 seconds...")
-                        await asyncio.sleep(10)
-                        await button_interaction.channel.delete()
+                        if isinstance(button_interaction.channel, discord.TextChannel):
+                            await button_interaction.channel.send("🗑️ This channel will be deleted in 10 seconds...")
+                            await asyncio.sleep(10)
+                            await button_interaction.channel.delete()
                         
                     except Exception as e:
                         logger.error(f"Error approving and closing ticket: {e}")
@@ -1187,8 +1207,13 @@ class TicketsCog(commands.Cog):
                     
                 @discord.ui.button(label="Deny Request", style=discord.ButtonStyle.gray, emoji="❌")
                 async def deny_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
-                    if not (button_interaction.user.guild_permissions.manage_messages or 
-                           any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in button_interaction.user.roles)):
+                    if isinstance(button_interaction.user, discord.Member):
+                        has_permission = (button_interaction.user.guild_permissions.manage_messages or 
+                                       any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in button_interaction.user.roles))
+                    else:
+                        has_permission = False
+                        
+                    if not has_permission:
                         await button_interaction.response.send_message("❌ You don't have permission to manage tickets.", ephemeral=True)
                         return
                     
@@ -1223,6 +1248,10 @@ class TicketsCog(commands.Cog):
                 await interaction.followup.send("❌ This command can only be used in a server.", ephemeral=True)
                 return
             
+            if not isinstance(interaction.channel, discord.TextChannel):
+                await interaction.followup.send("❌ This command can only be used in text channels.", ephemeral=True)
+                return
+                
             # Enhanced ticket channel detection - very flexible approach
             channel_name = interaction.channel.name
             is_ticket_channel = False
@@ -1272,8 +1301,13 @@ class TicketsCog(commands.Cog):
                 return
             
             # Check permissions
-            if not (interaction.user.guild_permissions.manage_messages or 
-                   any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles)):
+            if isinstance(interaction.user, discord.Member):
+                has_permission = (interaction.user.guild_permissions.manage_messages or 
+                               any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in interaction.user.roles))
+            else:
+                has_permission = False
+                
+            if not has_permission:
                 await interaction.followup.send("❌ You don't have permission to add users to tickets.", ephemeral=True)
                 return
             
