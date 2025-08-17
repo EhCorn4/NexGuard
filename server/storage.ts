@@ -94,6 +94,16 @@ export class MemStorage implements IStorage {
 
   private initializeData() {
     // Initialize news updates spanning past 2 months
+    this.newsUpdates.set(39, {
+      id: 39,
+      title: "🔒 Enhanced Privacy: Author Information Removed",
+      content: "We've comprehensively removed all author/creator information from Discord bot embeds to enhance user privacy. Commands now focus purely on functional information without revealing who performed each action.",
+      category: "SECURITY",
+      publishedAt: new Date('2025-08-17T18:30:00Z'),
+      likes: 89,
+      comments: 16,
+    });
+
     this.newsUpdates.set(1, {
       id: 1,
       title: "📊 Live Server Statistics Channels - Real-Time Community Insights",
