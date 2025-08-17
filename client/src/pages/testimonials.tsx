@@ -19,7 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 const testimonialFormSchema = insertTestimonialSchema.extend({
-  rating: z.number().min(1).max(5)
+  rating: z.number().min(1).max(5),
+  websiteUrl: z.string().url().optional().or(z.literal(""))
 });
 
 export default function Testimonials() {
@@ -36,7 +37,8 @@ export default function Testimonials() {
       username: "",
       serverName: "",
       content: "",
-      rating: 5
+      rating: 5,
+      websiteUrl: ""
     }
   });
 
@@ -189,6 +191,23 @@ export default function Testimonials() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="websiteUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-300">Website URL (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://your-server-website.com"
+                            className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="flex justify-end space-x-3">
                     <Button
                       type="button"
@@ -215,38 +234,80 @@ export default function Testimonials() {
         <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials?.map((testimonial, index) => (
             <StaggerItem key={testimonial.id} index={index}>
-              <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Quote className="w-5 h-5 text-cyan-400" />
-                    <div className="flex">
-                      {renderStars(testimonial.rating)}
+              {testimonial.websiteUrl ? (
+                <a
+                  href={testimonial.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-all duration-200 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-cyan-500/10 cursor-pointer">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Quote className="w-5 h-5 text-cyan-400" />
+                          <div className="flex">
+                            {renderStars(testimonial.rating)}
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                          {testimonial.serverName}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg font-semibold text-white">
+                        {testimonial.username}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300 leading-relaxed mb-4">
+                        {testimonial.content}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>
+                          {new Date(testimonial.createdAt).toLocaleDateString()}
+                        </span>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Verified User</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </a>
+              ) : (
+                <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Quote className="w-5 h-5 text-cyan-400" />
+                        <div className="flex">
+                          {renderStars(testimonial.rating)}
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                        {testimonial.serverName}
+                      </Badge>
                     </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/30">
-                    {testimonial.serverName}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg font-semibold text-white">
-                  {testimonial.username}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-300 leading-relaxed mb-4">
-                  {testimonial.content}
-                </p>
-                <div className="flex items-center justify-between text-sm text-gray-400">
-                  <span>
-                    {new Date(testimonial.createdAt).toLocaleDateString()}
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Verified User</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                    <CardTitle className="text-lg font-semibold text-white">
+                      {testimonial.username}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-300 leading-relaxed mb-4">
+                      {testimonial.content}
+                    </p>
+                    <div className="flex items-center justify-between text-sm text-gray-400">
+                      <span>
+                        {new Date(testimonial.createdAt).toLocaleDateString()}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Verified User</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </StaggerItem>
           ))}
         </StaggerContainer>

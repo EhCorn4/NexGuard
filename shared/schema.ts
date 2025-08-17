@@ -54,6 +54,7 @@ export const testimonials = pgTable("testimonials", {
   content: text("content").notNull(),
   rating: integer("rating").notNull(), // 1-5 stars
   isApproved: boolean("is_approved").default(false).notNull(),
+  websiteUrl: text("website_url"), // Optional URL to make testimonial clickable
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
