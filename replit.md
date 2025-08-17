@@ -100,6 +100,7 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Critical server syntax error in routes.ts preventing startup - server fully operational
 - **UPDATED**: All PDF guide dates updated to August 2025 from dynamic date generation
 - **ENHANCED**: "Approve & Close" button in `/request-close` command now automatically closes tickets with full transcript generation
+- **UPDATED**: Default ticket close time changed to 10 seconds for "Approve & Close" button
 
 ### Current System Status
 - Bot online across 17 guilds protecting 457 users

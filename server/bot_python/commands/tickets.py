@@ -1177,9 +1177,8 @@ class TicketsCog(commands.Cog):
                             pass
                         
                         # Delete channel after delay
-                        await asyncio.sleep(5)
-                        await button_interaction.channel.send("🗑️ This channel will be deleted in 5 seconds...")
-                        await asyncio.sleep(5)
+                        await button_interaction.channel.send("🗑️ This channel will be deleted in 10 seconds...")
+                        await asyncio.sleep(10)
                         await button_interaction.channel.delete()
                         
                     except Exception as e:
