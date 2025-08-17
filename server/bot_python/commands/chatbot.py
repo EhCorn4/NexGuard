@@ -117,7 +117,7 @@ class ChatBot(commands.Cog):
                 value=ai_response,
                 inline=False
             )
-            embed.set_footer(text=f"Chat with {interaction.user.display_name}")
+            embed.set_footer(text="AI Chat Assistant")
             
             await interaction.followup.send(embed=embed)
             

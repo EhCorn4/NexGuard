@@ -208,7 +208,7 @@ class AutoReply(commands.Cog):
                 rule_name = rule['rule_name'] or f"Rule #{rule['id']}"
                 embed.add_field(
                     name=f"{rule_name} - {status}",
-                    value=f"**Keywords:** {rule['trigger'][:50]}{'...' if len(rule['trigger']) > 50 else ''}\n**Match:** {rule['trigger_type']}\n**Created by:** {rule['created_by_name']}",
+                    value=f"**Keywords:** {rule['trigger'][:50]}{'...' if len(rule['trigger']) > 50 else ''}\n**Match:** {rule['trigger_type']}",
                     inline=False
                 )
             

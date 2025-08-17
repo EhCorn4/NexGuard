@@ -465,8 +465,8 @@ class AdminCommands(commands.Cog):
             )
             
             embed.set_footer(
-                text=f"Requested by {interaction.user.name} • Server ID: {interaction.guild.id}",
-                icon_url=interaction.user.display_avatar.url
+                text=f"Server ID: {interaction.guild.id}",
+                icon_url=None
             )
             
             await interaction.followup.send(embed=embed, ephemeral=True)
@@ -532,7 +532,7 @@ class AdminCommands(commands.Cog):
                 )
                 embed.add_field(name="Role", value=role.mention, inline=True)
                 embed.add_field(name="Status", value="✅ Enabled", inline=True)
-                embed.set_footer(text=f"Set by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Admin Role Configuration", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -557,7 +557,7 @@ class AdminCommands(commands.Cog):
                     color=0x00FF00,
                     timestamp=datetime.utcnow()
                 )
-                embed.set_footer(text=f"Enabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Automod Command Enabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -574,7 +574,7 @@ class AdminCommands(commands.Cog):
                     color=0xFF4444,
                     timestamp=datetime.utcnow()
                 )
-                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Automod Command Disabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -591,7 +591,7 @@ class AdminCommands(commands.Cog):
                     color=0xFF4444,
                     timestamp=datetime.utcnow()
                 )
-                embed.set_footer(text=f"Removed by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Admin Role Removed", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -627,7 +627,7 @@ class AdminCommands(commands.Cog):
                 if role_id and enabled:
                     embed.add_field(name="Bot Can Assign", value="✅ Yes" if role_obj and role_obj.position < interaction.guild.me.top_role.position else "❌ No", inline=True)
                 
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Auto-Role Configuration", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -897,7 +897,7 @@ class AdminCommands(commands.Cog):
                     inline=False
                 )
                 
-                embed.set_footer(text=f"Set up by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Join Message Setup Complete", icon_url=None)
                 
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 
@@ -975,7 +975,7 @@ class AdminCommands(commands.Cog):
                         inline=True
                     )
                 
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Error Log Configuration", icon_url=None)
                 
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 
@@ -1050,7 +1050,7 @@ class AdminCommands(commands.Cog):
                         inline=False
                     )
                 
-                embed.set_footer(text=f"Cleaned up by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Join Message Cleanup Complete", icon_url=None)
                 
                 await interaction.followup.send(embed=embed, ephemeral=True)
                 

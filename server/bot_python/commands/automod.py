@@ -1116,7 +1116,7 @@ class AutoModCog(commands.Cog):
                           f"**Bypass:** Users with Manage Messages permission",
                     inline=False
                 )
-                embed.set_footer(text=f"Configured by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Caps Filter Enabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -1133,7 +1133,7 @@ class AutoModCog(commands.Cog):
                     color=COLORS['WARNING'],
                     timestamp=datetime.utcnow()
                 )
-                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Caps Filter Disabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -1180,7 +1180,7 @@ class AutoModCog(commands.Cog):
                         inline=False
                     )
                 
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Caps Filter Settings", icon_url=None)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             
             # Log command usage
@@ -1237,7 +1237,7 @@ class AutoModCog(commands.Cog):
                           f"**Bypass:** Users with Manage Messages permission",
                     inline=False
                 )
-                embed.set_footer(text=f"Configured by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Mention Limits Enabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -1254,7 +1254,7 @@ class AutoModCog(commands.Cog):
                     color=COLORS['WARNING'],
                     timestamp=datetime.utcnow()
                 )
-                embed.set_footer(text=f"Disabled by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Mention Limits Disabled", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
                 
@@ -1302,7 +1302,7 @@ class AutoModCog(commands.Cog):
                         inline=False
                     )
                 
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="AutoMod Mention Limits Settings", icon_url=None)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
             
             # Log command usage

@@ -103,7 +103,7 @@ class EmbedHelpCommands(commands.Cog):
             inline=True
         )
         
-        embed.set_footer(text="NexGuard v2.3.2 | Need more help? Use /help", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="NexGuard v2.3.2 | Need more help? Use /help", icon_url=None)
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
     
@@ -118,7 +118,7 @@ class EmbedHelpCommands(commands.Cog):
             timestamp=datetime.utcnow()
         )
         
-        example_embed.set_author(name="Server Admin", icon_url=interaction.user.display_avatar.url)
+        example_embed.set_author(name="Server Admin", icon_url=None)
         example_embed.add_field(name="🔥 What's New", value="• New channels added\n• Updated rules\n• Fun events coming soon!", inline=False)
         example_embed.add_field(name="👥 Members", value="1,500+", inline=True)
         example_embed.add_field(name="⭐ Rating", value="5/5 Stars", inline=True)

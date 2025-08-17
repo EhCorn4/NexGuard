@@ -1106,7 +1106,7 @@ class TicketsCog(commands.Cog):
                 color=0xffa500
             )
             request_embed.add_field(name="Reason", value=reason, inline=False)
-            request_embed.add_field(name="Requested by", value=f"{interaction.user} ({interaction.user.id})", inline=True)
+            request_embed.add_field(name="Request Type", value="New Ticket Panel", inline=True)
             request_embed.add_field(name="Requested at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
             request_embed.set_footer(text="Staff can use /close to close this ticket")
             
@@ -1332,11 +1332,10 @@ class TicketsCog(commands.Cog):
             # Create notification embed
             add_embed = discord.Embed(
                 title="✅ User Added to Ticket",
-                description=f"{user.mention} has been added to this ticket by {interaction.user.mention}",
+                description=f"{user.mention} has been added to this ticket.",
                 color=0x00ff00
             )
             add_embed.add_field(name="Added User", value=f"{user} ({user.id})", inline=True)
-            add_embed.add_field(name="Added by", value=f"{interaction.user} ({interaction.user.id})", inline=True)
             add_embed.add_field(name="Added at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
             
             await interaction.followup.send(embed=add_embed)

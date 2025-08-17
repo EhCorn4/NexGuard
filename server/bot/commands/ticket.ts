@@ -140,7 +140,6 @@ export const ticketCommands = [
             { name: 'Priority', value: `${priorityEmojis[priority]} ${priority.toUpperCase()}`, inline: true },
             { name: 'Status', value: '🟢 Open', inline: true },
             { name: 'SLA Deadline', value: `<t:${Math.floor(slaDeadline.getTime() / 1000)}:R>`, inline: true },
-            { name: 'Created by', value: interaction.user.tag, inline: true },
             { name: 'Description', value: description, inline: false },
           ],
           footer: {
@@ -316,7 +315,6 @@ export const ticketCommands = [
                 description: `Ticket has been assigned to ${assignUser}`,
                 color: 0x00FF00,
                 fields: [
-                  { name: 'Assigned by', value: interaction.user.tag, inline: true },
                   { name: 'Reason', value: assignReason, inline: true },
                   { name: 'Status', value: '🔄 In Progress', inline: true }
                 ],
@@ -369,7 +367,6 @@ export const ticketCommands = [
                 description: `Ticket status changed to ${statusEmojis[newStatus]} ${newStatus.toUpperCase()}`,
                 color: 0x00FF00,
                 fields: [
-                  { name: 'Updated by', value: interaction.user.tag, inline: true },
                   { name: 'Reason', value: statusReason, inline: true },
                   { name: 'Previous Status', value: ticket.status, inline: true }
                 ],
@@ -408,7 +405,6 @@ export const ticketCommands = [
                 description: `Ticket priority changed to ${priorityEmojis[newPriority]} ${newPriority.toUpperCase()}`,
                 color: 0x00FF00,
                 fields: [
-                  { name: 'Updated by', value: interaction.user.tag, inline: true },
                   { name: 'Reason', value: priorityReason, inline: true },
                   { name: 'Previous Priority', value: ticket.priority, inline: true }
                 ],
@@ -437,7 +433,6 @@ export const ticketCommands = [
                 description: noteContent,
                 color: 0x0099FF,
                 fields: [
-                  { name: 'Added by', value: interaction.user.tag, inline: true },
                   { name: 'Visibility', value: 'Internal Only', inline: true }
                 ],
                 timestamp: new Date().toISOString(),
@@ -482,7 +477,6 @@ export const ticketCommands = [
                 description: `Ticket escalated to ${escalationLevels[newEscalationLevel]} and priority set to URGENT`,
                 color: 0xFF0000,
                 fields: [
-                  { name: 'Escalated by', value: interaction.user.tag, inline: true },
                   { name: 'Escalation Level', value: `Level ${newEscalationLevel}`, inline: true },
                   { name: 'Reason', value: escalateReason, inline: false }
                 ],
@@ -521,7 +515,7 @@ export const ticketCommands = [
                   { name: 'Priority', value: `${priorityEmojis2[ticket.priority]} ${ticket.priority.toUpperCase()}`, inline: true },
                   { name: 'Assigned To', value: assignedUser, inline: true },
                   { name: 'Escalation Level', value: `Level ${escalationLevel}`, inline: true },
-                  { name: 'Created by', value: `<@${ticket.userId}>`, inline: true },
+
                   { name: 'Created at', value: `<t:${Math.floor(ticket.createdAt.getTime() / 1000)}:F>`, inline: true },
                   { name: 'Last Updated', value: `<t:${Math.floor(ticket.updatedAt.getTime() / 1000)}:R>`, inline: true },
                   { name: 'Description', value: ticket.description || 'No description provided', inline: false }
@@ -813,7 +807,7 @@ export const ticketCommands = [
             { name: 'Category', value: ticket.category, inline: true },
             { name: 'Priority', value: `${priorityEmoji} ${ticket.priority}`, inline: true },
             { name: 'Status', value: `${statusEmoji} ${ticket.status}`, inline: true },
-            { name: 'Created by', value: ticket.username, inline: true },
+
             { name: 'User ID', value: ticket.userId, inline: true },
             { name: 'Created at', value: new Date(ticket.createdAt).toLocaleString(), inline: true },
             { name: 'Updated at', value: new Date(ticket.updatedAt).toLocaleString(), inline: true },

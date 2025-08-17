@@ -76,7 +76,7 @@ class UtilityCommands(commands.Cog):
         roles = [role.mention for role in user.roles[1:]]  # Skip @everyone
         embed.add_field(name=f"Roles ({len(roles)})", value=" ".join(roles) if roles else "None", inline=False)
         
-        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="User Information", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
         
@@ -176,7 +176,7 @@ class UtilityCommands(commands.Cog):
         embed.set_image(url=user.display_avatar.url)
         embed.add_field(name="Download Links", value=f"[PNG]({user.display_avatar.with_format('png').url}) | [JPG]({user.display_avatar.with_format('jpg').url}) | [WEBP]({user.display_avatar.with_format('webp').url})", inline=False)
         
-        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="Avatar Image", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
         
@@ -214,7 +214,7 @@ class UtilityCommands(commands.Cog):
         embed.add_field(name="Memory Usage", value=f"{memory.percent}%", inline=True)
         embed.add_field(name="Disk Usage", value=f"{disk.percent}%", inline=True)
         
-        embed.set_footer(text=f"NexGuard v2.3.2 | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="NexGuard v2.3.2", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
     
@@ -293,7 +293,7 @@ class UtilityCommands(commands.Cog):
         # Send embed and file
         file = discord.File(StringIO(file_content), filename=f"nexguard_guilds_{datetime.utcnow().strftime('%Y%m%d')}.txt")
         
-        embed.set_footer(text=f"Requested by {interaction.user.name} | See attached file for complete list", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="See attached file for complete list", icon_url=None)
         
         await interaction.response.send_message(embed=embed, file=file, ephemeral=True)
     
@@ -359,7 +359,7 @@ class UtilityCommands(commands.Cog):
                 embed.add_field(name="🎫 Invite Link", value=f"[Click Here]({invite.url})", inline=False)
                 embed.add_field(name="📋 Direct Link", value=f"`{invite.url}`", inline=False)
                 
-                embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Guild Invite", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 
@@ -401,7 +401,7 @@ class UtilityCommands(commands.Cog):
             inline=False
         )
         
-        embed.set_footer(text=f"Invited by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="NexGuard Community", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
         
@@ -508,7 +508,7 @@ class UtilityCommands(commands.Cog):
                 inline=False
             )
         
-        result_embed.set_footer(text=f"Broadcast by {interaction.user.name}")
+        result_embed.set_footer(text="Broadcast Message")
         
         await interaction.followup.send(embed=result_embed, ephemeral=True)
         
@@ -579,7 +579,7 @@ class UtilityCommands(commands.Cog):
             inline=False
         )
         
-        embed.set_footer(text=f"NexGuard v2.3.2 | Total: 60 Commands | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="NexGuard v2.3.2 | Total: 60 Commands", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
         
@@ -703,7 +703,7 @@ class UtilityCommands(commands.Cog):
                     inline=False
                 )
                 
-                embed.set_footer(text=f"Use /commands to see all commands | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+                embed.set_footer(text="Use /commands to see all commands", icon_url=None)
                 
                 await interaction.response.send_message(embed=embed)
             else:
@@ -741,7 +741,7 @@ class UtilityCommands(commands.Cog):
                 inline=False
             )
             
-            embed.set_footer(text=f"NexGuard v2.3.2 | Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text="NexGuard v2.3.2", icon_url=None)
             
             await interaction.response.send_message(embed=embed)
     
@@ -764,7 +764,7 @@ class UtilityCommands(commands.Cog):
         )
         
         embed.add_field(name="Started", value=discord.utils.format_dt(self.bot.bot_start_time, "F"), inline=False)
-        embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="Bot Uptime", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
     
@@ -825,9 +825,9 @@ class UtilityCommands(commands.Cog):
             embed.set_author(name=processed_author, icon_url=author_icon)
         
         if processed_footer:
-            embed.set_footer(text=processed_footer, icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text=processed_footer, icon_url=None)
         else:
-            embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text="Custom Embed", icon_url=None)
         
         # Send to specified channel or current channel
         target_channel = channel or interaction.channel
@@ -910,12 +910,12 @@ class UtilityCommands(commands.Cog):
             embed.set_image(url=image)
         
         if author:
-            embed.set_author(name=author, icon_url=interaction.user.display_avatar.url)
+            embed.set_author(name=author, icon_url=None)
         
         if footer:
-            embed.set_footer(text=footer, icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text=footer, icon_url=None)
         else:
-            embed.set_footer(text=f"Created by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text="Custom Embed Builder", icon_url=None)
         
         # Create view with buttons if provided
         view = None
@@ -992,7 +992,7 @@ class EmbedButton(discord.ui.Button):
             color=0x00FFFF,
             timestamp=datetime.utcnow()
         )
-        embed.set_footer(text=f"Clicked by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="Button Interaction", icon_url=None)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):

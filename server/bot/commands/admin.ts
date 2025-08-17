@@ -846,7 +846,6 @@ export const adminCommands = [
             color: 0x00FF00,
             fields: [
               { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
-              { name: 'Added by', value: interaction.user.tag, inline: true },
               { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
             ],
             timestamp: new Date().toISOString(),
@@ -881,7 +880,6 @@ export const adminCommands = [
             color: 0xFF0000,
             fields: [
               { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
-              { name: 'Removed by', value: interaction.user.tag, inline: true },
               { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
             ],
             timestamp: new Date().toISOString(),

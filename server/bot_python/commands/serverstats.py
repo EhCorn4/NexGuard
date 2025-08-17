@@ -156,7 +156,7 @@ class ServerStatsCog(commands.Cog):
                 inline=False
             )
             
-            embed.set_footer(text="NexGuard Server Statistics", icon_url=interaction.user.display_avatar.url)
+            embed.set_footer(text="NexGuard Server Statistics", icon_url=None)
             
             await interaction.response.send_message(embed=embed)
 
@@ -331,7 +331,7 @@ class ServerStatsCog(commands.Cog):
                     inline=True
                 )
         
-        embed.set_footer(text="Updates every 5 minutes", icon_url=interaction.user.display_avatar.url)
+        embed.set_footer(text="Updates every 5 minutes", icon_url=None)
         
         await interaction.response.send_message(embed=embed)
 

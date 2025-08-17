@@ -112,6 +112,16 @@ Preferred communication style: Simple, everyday language.
 - **PERMISSIONS**: Admin-only command with proper permission checks and error handling
 - **INTEGRATION**: Full compatibility with existing `/eventlog` command system
 
+### August 17, 2025: Comprehensive Author Information Removal
+- **MODIFIED**: Systematically removed all author/creator information from Discord bot embeds
+- **SCOPE**: Comprehensive changes across both TypeScript and Python Discord bot implementations
+- **REMOVED**: All "Added by", "Created by", "Requested by", "Set by", "Enabled by", "Disabled by", "Removed by", "Set up by", "Cleaned up by", "Configured by", "Broadcast by", "Clicked by" fields from embeds
+- **REMOVED**: All user avatar displays and user mentions in embed footers that showed interaction.user information
+- **ENHANCED**: Embeds now focus purely on functional information without revealing who performed actions
+- **PRIVACY**: Improved user privacy by anonymizing all Discord bot embed interactions
+- **CONSISTENCY**: Standardized embed behavior across all 61+ bot commands and administrative functions
+- **MAINTAINED**: All essential functionality and information while removing personal identification data
+
 ### Current System Status
 - Bot online across 16 guilds protecting 490+ users
 - 61 commands fully operational with enhanced logging automation

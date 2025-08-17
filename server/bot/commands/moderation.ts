@@ -565,7 +565,6 @@ export const moderationCommands = [
             color: 0x00FF00,
             fields: [
               { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
-              { name: 'Added by', value: interaction.user.tag, inline: true },
               { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
             ],
             timestamp: new Date().toISOString(),
@@ -601,7 +600,6 @@ export const moderationCommands = [
             color: 0xFF0000,
             fields: [
               { name: 'Role', value: `${role.name} (${role.id})`, inline: true },
-              { name: 'Removed by', value: interaction.user.tag, inline: true },
               { name: 'Total Mod Roles', value: `${moderatorRoles.length}`, inline: true },
             ],
             timestamp: new Date().toISOString(),
@@ -1540,7 +1538,6 @@ export const moderationCommands = [
                 color: 0x00FF00,
                 fields: [
                   { name: 'User', value: `${banToRemove.username} (${banToRemove.userId})`, inline: true },
-                  { name: 'Removed by', value: interaction.user.tag, inline: true },
                   { name: 'Reason', value: removeReason, inline: false }
                 ],
                 timestamp: new Date().toISOString(),
@@ -1762,7 +1759,6 @@ export const moderationCommands = [
                 color: 0x00FF00,
                 fields: [
                   { name: 'User', value: `${warningToRemove.username} (${warningToRemove.userId})`, inline: true },
-                  { name: 'Removed by', value: interaction.user.tag, inline: true },
                   { name: 'Original Reason', value: warningToRemove.reason, inline: false },
                   { name: 'Removal Reason', value: removeReason, inline: false }
                 ],

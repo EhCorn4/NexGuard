@@ -52,7 +52,7 @@ export const utilityCommands = [
           { name: 'Roles', value: member.roles.cache.filter(role => role.name !== '@everyone').map(role => role.name).join(', ') || 'None', inline: false },
         ],
         footer: {
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'User Information',
         },
         timestamp: new Date().toISOString(),
       };
@@ -90,7 +90,7 @@ export const utilityCommands = [
           { name: 'Emojis', value: guild.emojis.cache.size.toString(), inline: true },
         ],
         footer: {
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'Server Information',
         },
         timestamp: new Date().toISOString(),
       };
@@ -121,7 +121,7 @@ export const utilityCommands = [
           url: user.displayAvatarURL({ size: 1024 }),
         },
         footer: {
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'Avatar Image',
         },
         timestamp: new Date().toISOString(),
       };
@@ -245,7 +245,7 @@ export const utilityCommands = [
           },
         ],
         footer: {
-          text: `Requested by ${interaction.user.tag}`,
+          text: 'Bot Uptime',
         },
         timestamp: new Date().toISOString(),
       };
@@ -367,7 +367,7 @@ export const utilityCommands = [
             { name: 'AI Response', value: randomResponse, inline: false },
           ],
           footer: {
-            text: `Asked by ${interaction.user.tag}`,
+            text: 'AI Assistant Response',
           },
           timestamp: new Date().toISOString(),
         };
@@ -610,7 +610,7 @@ export const utilityCommands = [
             { name: '🤖 Bot Version', value: '2.3.2', inline: true },
           ],
           footer: {
-            text: `Requested by ${interaction.user.tag}`,
+            text: 'Bot Statistics',
           },
           timestamp: new Date().toISOString(),
         };
