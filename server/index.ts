@@ -39,9 +39,28 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    console.log('🔄 Initializing NexGuard Discord Bot Management System...');
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Check for critical environment variables
+    const criticalEnvVars = ['DATABASE_URL'];
+    const missingCritical = criticalEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingCritical.length > 0) {
+      console.error('❌ Missing critical environment variables:');
+      missingCritical.forEach(varName => {
+        console.error(`   - ${varName}`);
+      });
+      console.error('🛑 Server startup aborted. Please configure these variables.');
+      process.exit(1);
+    }
+    
+    console.log('📋 Registering API routes...');
+    const server = await registerRoutes(app);
+    console.log('✅ API routes registered successfully');
 
-  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+    app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
@@ -75,54 +94,108 @@ app.use((req, res, next) => {
   // Start the Python Discord bot
   let pythonBot: any = null;
   
-  function startPythonBot() {
+  const startPythonBot = () => {
     console.log('🚀 Starting Python NexGuard Bot...');
-    pythonBot = spawn('python', ['server/bot_python/run.py'], {
+    
+    // Check for required environment variables
+    const requiredEnvVars = ['DISCORD_BOT_TOKEN', 'DATABASE_URL'];
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.error('❌ Missing required environment variables for Python bot:');
+      missingVars.forEach(varName => {
+        console.error(`   - ${varName}`);
+      });
+      console.error('Bot startup aborted. Please configure these variables in your deployment secrets.');
+      return;
+    }
+    
+    // Use python3 in production environments where python might not be available
+    const pythonCommand = process.env.NODE_ENV === 'production' ? 'python3' : 'python';
+    
+    pythonBot = spawn(pythonCommand, ['server/bot_python/run.py'], {
       stdio: 'inherit',
       env: process.env
     });
     
     pythonBot.on('close', (code: number) => {
-      console.log(`Python bot process exited with code ${code}`);
+      console.log(`🤖 Python bot process exited with code ${code}`);
       if (code !== 0) {
-        console.log('Restarting Python bot in 5 seconds...');
+        console.log('⚠️  Bot crashed. Restarting in 5 seconds...');
         setTimeout(startPythonBot, 5000);
+      } else {
+        console.log('✅ Python bot shut down gracefully');
       }
     });
     
     pythonBot.on('error', (error: Error) => {
-      console.error('Python bot error:', error);
+      console.error('❌ Python bot startup error:');
+      console.error('   Error:', error.message);
+      console.error('   Stack:', error.stack);
+      console.error('⚠️  Retrying bot startup in 10 seconds...');
+      setTimeout(startPythonBot, 10000);
     });
   }
   
   startPythonBot();
 
-  // ALWAYS serve the app on port 5000
+  // Use PORT environment variable for deployment compatibility, default to 5000
   // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // It is the only port that is not firewalled in development.
+  const port = parseInt(process.env.PORT || "5000", 10);
+  
+  // Add error handling for server startup
+  server.on('error', (error: any) => {
+    console.error('=== Server Startup Error ===');
+    console.error('Error Code:', error.code);
+    console.error('Error Message:', error.message);
+    console.error('Port:', port);
+    console.error('Host: 0.0.0.0');
+    console.error('Stack:', error.stack);
+    console.error('===========================');
+    
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use. Please try a different port or stop the conflicting process.`);
+    }
+    
+    process.exit(1);
+  });
+  
   server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
+    console.log(`🚀 NexGuard Discord Bot Management Server started successfully!`);
+    console.log(`📍 Server listening on: http://0.0.0.0:${port}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🗄️  Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+    console.log(`🤖 Discord Bot: Starting...`);
     log(`serving on port ${port}`);
   });
 
-  // Graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log('\n🛑 Shutting down gracefully...');
-    if (pythonBot) {
-      pythonBot.kill('SIGINT');
-    }
-    process.exit(0);
-  });
+    // Graceful shutdown handlers
+    process.on('SIGINT', async () => {
+      console.log('\n🛑 Shutting down gracefully...');
+      if (pythonBot) {
+        pythonBot.kill('SIGINT');
+      }
+      process.exit(0);
+    });
 
-  process.on('SIGTERM', async () => {
-    console.log('\n🛑 Shutting down gracefully...');
-    if (pythonBot) {
-      pythonBot.kill('SIGTERM');
-    }
-    process.exit(0);
-  });
+    process.on('SIGTERM', async () => {
+      console.log('\n🛑 Shutting down gracefully...');
+      if (pythonBot) {
+        pythonBot.kill('SIGTERM');
+      }
+      process.exit(0);
+    });
+    
+  } catch (error) {
+    console.error('❌ Critical error during server initialization:');
+    console.error('Error:', error);
+    console.error('Stack:', error instanceof Error ? error.stack : 'No stack trace available');
+    console.error('🛑 Server startup failed');
+    process.exit(1);
+  }
 })();
