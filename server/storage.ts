@@ -94,6 +94,26 @@ export class MemStorage implements IStorage {
 
   private initializeData() {
     // Initialize news updates spanning past 2 months
+    this.newsUpdates.set(41, {
+      id: 41,
+      title: "🎫 Advanced Ticket System Revolution",
+      content: "Complete ticket system overhaul with interactive panels, automatic transcript delivery, custom embeds, and persistent views. Features {panel}-{username} channel naming, Close/Claim buttons, and comprehensive category management across Discord servers.",
+      category: "FEATURED",
+      publishedAt: new Date('2025-08-17T19:00:00Z'),
+      likes: 234,
+      comments: 52,
+    });
+
+    this.newsUpdates.set(40, {
+      id: 40,
+      title: "🔍 Comprehensive Event Logging System",
+      content: "Advanced server monitoring with 7 specialized logging categories: member events, message tracking, voice activity, channel/role changes, and moderation actions. Professional Discord embeds with configurable channels per event type.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-08-17T18:45:00Z'),
+      likes: 167,
+      comments: 38,
+    });
+
     this.newsUpdates.set(39, {
       id: 39,
       title: "🔒 Enhanced Privacy: Author Information Removed",
