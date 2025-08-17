@@ -99,6 +99,7 @@ Preferred communication style: Simple, everyday language.
 - **REVERTED**: Legal document dates back to July 8, 2025 (Privacy Policy, Terms of Service)
 - **FIXED**: Critical server syntax error in routes.ts preventing startup - server fully operational
 - **UPDATED**: All PDF guide dates updated to August 2025 from dynamic date generation
+- **ENHANCED**: "Approve & Close" button in `/request-close` command now automatically closes tickets with full transcript generation
 
 ### Current System Status
 - Bot online across 17 guilds protecting 457 users

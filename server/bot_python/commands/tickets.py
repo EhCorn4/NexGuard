@@ -1104,15 +1104,87 @@ class TicketsCog(commands.Cog):
                 
                 @discord.ui.button(label="Approve & Close", style=discord.ButtonStyle.red, emoji="✅")
                 async def approve_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
-                    if not (button_interaction.user.guild_permissions.manage_messages or 
-                           any(role.name.lower() in ['support', 'staff', 'moderator', 'admin'] for role in button_interaction.user.roles)):
-                        await button_interaction.response.send_message("❌ You don't have permission to close tickets.", ephemeral=True)
-                        return
-                    
-                    # Use the close ticket functionality
+                    # Allow anyone to close the ticket (matching the /close command behavior)
                     await button_interaction.response.defer()
-                    # Simulate calling close command
-                    await interaction.channel.send(f"✅ Ticket closure approved by {button_interaction.user.mention}")
+                    
+                    try:
+                        # Create transcript
+                        transcript = StringIO()
+                        channel_name = button_interaction.channel.name
+                        transcript.write(f"Ticket Transcript - {channel_name}\n")
+                        transcript.write(f"Closed by: {button_interaction.user} ({button_interaction.user.id})\n")
+                        transcript.write(f"Closed at: {datetime.now()}\n")
+                        transcript.write(f"Reason: Ticket closure request approved\n")
+                        transcript.write("-" * 50 + "\n\n")
+                        
+                        # Get recent messages for transcript
+                        messages = [message async for message in button_interaction.channel.history(limit=100)]
+                        messages.reverse()
+                        
+                        for message in messages:
+                            timestamp = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                            author = f"{message.author} ({message.author.id})"
+                            content = message.content or "[No text content]"
+                            transcript.write(f"[{timestamp}] {author}: {content}\n")
+                            
+                            # Include attachments
+                            if message.attachments:
+                                for attachment in message.attachments:
+                                    transcript.write(f"    📎 Attachment: {attachment.filename} ({attachment.url})\n")
+                        
+                        transcript.seek(0)
+                        transcript_file = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+                        
+                        # Update database if available
+                        bot = button_interaction.client
+                        if hasattr(bot, 'db_pool') and bot.db_pool:
+                            async with bot.db_pool.acquire() as conn:
+                                await conn.execute("""
+                                    UPDATE tickets 
+                                    SET status = 'closed', closed_by = $1, closed_at = NOW(), close_reason = $2
+                                    WHERE channel_id = $3 AND status = 'open'
+                                """, str(button_interaction.user.id), "Ticket closure request approved", str(button_interaction.channel.id))
+                        
+                        # Create close embed
+                        close_embed = discord.Embed(
+                            title="🔒 Ticket Closed",
+                            description=f"✅ Ticket closure approved and closed by {button_interaction.user.mention}",
+                            color=0xff0000
+                        )
+                        close_embed.add_field(name="Reason", value="Ticket closure request approved", inline=False)
+                        close_embed.add_field(name="Closed by", value=f"{button_interaction.user} ({button_interaction.user.id})", inline=True)
+                        close_embed.add_field(name="Closed at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
+                        close_embed.set_footer(text="Transcript will be sent to participants")
+                        
+                        await button_interaction.followup.send(embed=close_embed, file=transcript_file)
+                        
+                        # Send transcript to ticket creator (try to get from channel name)
+                        try:
+                            # Extract username from channel name (format: panel-username)
+                            if "-" in channel_name:
+                                username = channel_name.split("-", 1)[1]
+                                # Try to find user by username
+                                for member in button_interaction.guild.members:
+                                    if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
+                                        try:
+                                            transcript.seek(0)
+                                            user_transcript = discord.File(transcript, filename=f"transcript-{channel_name}.txt")
+                                            await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
+                                        except:
+                                            pass
+                                        break
+                        except:
+                            pass
+                        
+                        # Delete channel after delay
+                        await asyncio.sleep(5)
+                        await button_interaction.channel.send("🗑️ This channel will be deleted in 5 seconds...")
+                        await asyncio.sleep(5)
+                        await button_interaction.channel.delete()
+                        
+                    except Exception as e:
+                        logger.error(f"Error approving and closing ticket: {e}")
+                        await button_interaction.followup.send("❌ Failed to close ticket.", ephemeral=True)
                     
                 @discord.ui.button(label="Deny Request", style=discord.ButtonStyle.gray, emoji="❌")
                 async def deny_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
