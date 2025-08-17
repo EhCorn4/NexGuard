@@ -803,7 +803,7 @@ class AdminCommands(commands.Cog):
                         await interaction.followup.send(f"❌ Failed to create Bot Logs category: {e}", ephemeral=True)
                         return
                 
-                # Create or find log channels
+                # Create or find log channels and configure them with eventlog system
                 for channel_name, db_column, description in log_channels:
                     try:
                         # Check if channel already exists
@@ -813,9 +813,9 @@ class AdminCommands(commands.Cog):
                                 existing_channel = channel
                                 break
                         
+                        target_channel = None
                         if existing_channel:
-                            # Update database with existing channel
-                            await self.bot.update_guild_config(guild_id, **{db_column: str(existing_channel.id)})
+                            target_channel = existing_channel
                             created_channels.append(f"✅ Found existing: {existing_channel.mention}")
                         else:
                             # Create new channel
@@ -825,30 +825,59 @@ class AdminCommands(commands.Cog):
                                 topic=description,
                                 reason="NexGuard bot logs setup"
                             )
-                            
-                            # Update database with new channel
-                            await self.bot.update_guild_config(guild_id, **{db_column: str(new_channel.id)})
+                            target_channel = new_channel
                             created_channels.append(f"🆕 Created: {new_channel.mention}")
+                        
+                        # Configure the channel using eventlog system (same as /eventlog command)
+                        if target_channel:
+                            # Extract log type from db_column (remove _log_channel_id suffix)
+                            log_type = db_column.replace('_log_channel_id', '').replace('_', '')
+                            
+                            # Use the same database operation as /eventlog command
+                            async with self.bot.db_pool.acquire() as conn:
+                                await conn.execute(f"""
+                                    INSERT INTO guild_settings (guild_id, {log_type}_log_channel_id)
+                                    VALUES ($1, $2)
+                                    ON CONFLICT (guild_id) DO UPDATE SET
+                                    {log_type}_log_channel_id = EXCLUDED.{log_type}_log_channel_id
+                                """, str(guild.id), target_channel.id)
+                            
+                            created_channels.append(f"⚙️ Configured {log_type} logging to {target_channel.mention}")
                             
                     except discord.Forbidden:
                         setup_errors.append(f"❌ No permission to create {channel_name}")
                     except Exception as e:
-                        setup_errors.append(f"❌ Failed to create {channel_name}: {str(e)[:50]}")
+                        setup_errors.append(f"❌ Failed to create/configure {channel_name}: {str(e)[:50]}")
+                
+                # Count successful configurations
+                config_count = len([ch for ch in created_channels if "⚙️ Configured" in ch])
                 
                 # Create success embed
                 embed = discord.Embed(
                     title="🎉 Bot Logs Setup Complete!",
-                    description="Successfully configured comprehensive logging system",
+                    description=f"Successfully configured comprehensive logging system using **eventlog integration**\n\n✅ **{config_count}/7** log types configured automatically",
                     color=0x00FF00,
                     timestamp=datetime.utcnow()
                 )
                 
                 if created_channels:
-                    embed.add_field(
-                        name="📁 Channels Configured",
-                        value="\n".join(created_channels),
-                        inline=False
-                    )
+                    # Split into channels and configurations for better readability
+                    channel_actions = [ch for ch in created_channels if not ch.startswith("⚙️")]
+                    config_actions = [ch for ch in created_channels if ch.startswith("⚙️")]
+                    
+                    if channel_actions:
+                        embed.add_field(
+                            name="📁 Channels & Category",
+                            value="\n".join(channel_actions),
+                            inline=False
+                        )
+                    
+                    if config_actions:
+                        embed.add_field(
+                            name="⚙️ EventLog Configurations",
+                            value="\n".join(config_actions),
+                            inline=False
+                        )
                 
                 if setup_errors:
                     embed.add_field(
@@ -859,7 +888,13 @@ class AdminCommands(commands.Cog):
                 
                 embed.add_field(
                     name="✨ What's Next?",
-                    value="Your bot will now automatically log all events to their respective channels. You can customize individual log channels using `/setlogchannel` if needed.",
+                    value="Your bot will now automatically log all events to their respective channels. Use `/eventlog view` to see all configurations, or `/eventlog set` to modify individual log channels.",
+                    inline=False
+                )
+                
+                embed.add_field(
+                    name="🔗 Integration",
+                    value="This setup fully integrates with the `/eventlog` command system for seamless log management.",
                     inline=False
                 )
                 
