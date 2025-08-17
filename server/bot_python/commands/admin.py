@@ -830,19 +830,18 @@ class AdminCommands(commands.Cog):
                         
                         # Configure the channel using eventlog system (same as /eventlog command)
                         if target_channel:
-                            # Extract log type from db_column (remove _log_channel_id suffix)
-                            log_type = db_column.replace('_log_channel_id', '').replace('_', '')
-                            
-                            # Use the same database operation as /eventlog command
+                            # Use the exact same database operation as /eventlog command
                             async with self.bot.db_pool.acquire() as conn:
                                 await conn.execute(f"""
-                                    INSERT INTO guild_settings (guild_id, {log_type}_log_channel_id)
+                                    INSERT INTO guild_settings (guild_id, {db_column})
                                     VALUES ($1, $2)
                                     ON CONFLICT (guild_id) DO UPDATE SET
-                                    {log_type}_log_channel_id = EXCLUDED.{log_type}_log_channel_id
+                                    {db_column} = EXCLUDED.{db_column}
                                 """, str(guild.id), target_channel.id)
                             
-                            created_channels.append(f"⚙️ Configured {log_type} logging to {target_channel.mention}")
+                            # Extract log type name for display (remove _log_channel_id suffix)
+                            log_type_display = db_column.replace('_log_channel_id', '').replace('_', ' ').title()
+                            created_channels.append(f"⚙️ Configured {log_type_display} logging to {target_channel.mention}")
                             
                     except discord.Forbidden:
                         setup_errors.append(f"❌ No permission to create {channel_name}")
@@ -1012,17 +1011,21 @@ class AdminCommands(commands.Cog):
                 except Exception as e:
                     cleanup_errors.append(f"❌ Failed to delete category: {str(e)[:50]}")
                 
-                # Clear database configuration
+                # Clear database configuration using the same approach as eventlog
                 try:
-                    await self.bot.update_guild_config(guild_id, 
-                        general_log_channel_id=None,
-                        member_log_channel_id=None,
-                        message_log_channel_id=None,
-                        voice_log_channel_id=None,
-                        channel_log_channel_id=None,
-                        role_log_channel_id=None,
-                        moderation_log_channel_id=None
-                    )
+                    async with self.bot.db_pool.acquire() as conn:
+                        await conn.execute("""
+                            UPDATE guild_settings 
+                            SET general_log_channel_id = NULL,
+                                member_log_channel_id = NULL,
+                                message_log_channel_id = NULL,
+                                voice_log_channel_id = NULL,
+                                channel_log_channel_id = NULL,
+                                role_log_channel_id = NULL,
+                                moderation_log_channel_id = NULL
+                            WHERE guild_id = $1
+                        """, str(guild.id))
+                    deleted_channels.append("🗑️ Cleared all eventlog configurations")
                 except Exception as e:
                     cleanup_errors.append(f"❌ Database cleanup error: {str(e)[:50]}")
                 
