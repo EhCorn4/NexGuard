@@ -739,5 +739,296 @@ class AdminCommands(commands.Cog):
             except:
                 pass
 
+    @app_commands.command(name="botlogs", description="Automatically set up all bot logging channels and configure them")
+    @app_commands.describe(
+        action="Action to perform with bot logs setup"
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="setup", value="setup"),
+        app_commands.Choice(name="view", value="view"),
+        app_commands.Choice(name="cleanup", value="cleanup")
+    ])
+    async def botlogs(self, interaction: discord.Interaction, action: str = "setup"):
+        """Automatically set up all bot logging channels and configure them"""
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ You need Administrator permissions to use this command.", ephemeral=True)
+            return
+        
+        try:
+            guild = interaction.guild
+            guild_id = str(guild.id)
+            
+            if action == "setup":
+                # Defer the response as this will take some time
+                await interaction.response.defer(ephemeral=True)
+                
+                # Check if bot has necessary permissions
+                bot_member = guild.get_member(self.bot.user.id)
+                if not bot_member.guild_permissions.manage_channels:
+                    await interaction.followup.send("❌ I need 'Manage Channels' permission to set up logging channels.", ephemeral=True)
+                    return
+                
+                # Define all log channel types and their descriptions
+                log_channels = [
+                    ("general-logs", "general_log_channel_id", "📋 General bot events and command usage"),
+                    ("member-logs", "member_log_channel_id", "👥 Member joins, leaves, and profile updates"),
+                    ("message-logs", "message_log_channel_id", "💬 Message edits, deletions, and events"),
+                    ("voice-logs", "voice_log_channel_id", "🔊 Voice channel joins, leaves, and events"),
+                    ("channel-logs", "channel_log_channel_id", "🏗️ Channel creation, deletion, and modifications"),
+                    ("role-logs", "role_log_channel_id", "🎭 Role creation, deletion, and permission changes"),
+                    ("moderation-logs", "moderation_log_channel_id", "🛡️ Moderation actions and automod events")
+                ]
+                
+                created_channels = []
+                setup_errors = []
+                
+                # Check if "Bot Logs" category exists, create if not
+                category = None
+                for cat in guild.categories:
+                    if cat.name.lower() == "bot logs":
+                        category = cat
+                        break
+                
+                if not category:
+                    try:
+                        category = await guild.create_category(
+                            "Bot Logs",
+                            reason="NexGuard bot logs setup"
+                        )
+                        created_channels.append(f"📁 Created category: **{category.name}**")
+                    except discord.Forbidden:
+                        await interaction.followup.send("❌ I don't have permission to create categories.", ephemeral=True)
+                        return
+                    except Exception as e:
+                        await interaction.followup.send(f"❌ Failed to create Bot Logs category: {e}", ephemeral=True)
+                        return
+                
+                # Create or find log channels
+                for channel_name, db_column, description in log_channels:
+                    try:
+                        # Check if channel already exists
+                        existing_channel = None
+                        for channel in guild.text_channels:
+                            if channel.name == channel_name and channel.category == category:
+                                existing_channel = channel
+                                break
+                        
+                        if existing_channel:
+                            # Update database with existing channel
+                            await self.bot.update_guild_config(guild_id, **{db_column: str(existing_channel.id)})
+                            created_channels.append(f"✅ Found existing: {existing_channel.mention}")
+                        else:
+                            # Create new channel
+                            new_channel = await guild.create_text_channel(
+                                channel_name,
+                                category=category,
+                                topic=description,
+                                reason="NexGuard bot logs setup"
+                            )
+                            
+                            # Update database with new channel
+                            await self.bot.update_guild_config(guild_id, **{db_column: str(new_channel.id)})
+                            created_channels.append(f"🆕 Created: {new_channel.mention}")
+                            
+                    except discord.Forbidden:
+                        setup_errors.append(f"❌ No permission to create {channel_name}")
+                    except Exception as e:
+                        setup_errors.append(f"❌ Failed to create {channel_name}: {str(e)[:50]}")
+                
+                # Create success embed
+                embed = discord.Embed(
+                    title="🎉 Bot Logs Setup Complete!",
+                    description="Successfully configured comprehensive logging system",
+                    color=0x00FF00,
+                    timestamp=datetime.utcnow()
+                )
+                
+                if created_channels:
+                    embed.add_field(
+                        name="📁 Channels Configured",
+                        value="\n".join(created_channels),
+                        inline=False
+                    )
+                
+                if setup_errors:
+                    embed.add_field(
+                        name="⚠️ Setup Issues",
+                        value="\n".join(setup_errors),
+                        inline=False
+                    )
+                
+                embed.add_field(
+                    name="✨ What's Next?",
+                    value="Your bot will now automatically log all events to their respective channels. You can customize individual log channels using `/setlogchannel` if needed.",
+                    inline=False
+                )
+                
+                embed.set_footer(text=f"Set up by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                
+                # Log command usage
+                parameters = {"action": action, "channels_created": len(created_channels), "errors": len(setup_errors)}
+                await self.bot.log_command_usage(interaction, "botlogs", parameters)
+                
+            elif action == "view":
+                await interaction.response.defer(ephemeral=True)
+                
+                # Get current log channel configuration
+                config = await self.bot.get_guild_config(guild_id)
+                
+                log_channels_config = [
+                    ("General Logs", config.get('general_log_channel_id'), "📋"),
+                    ("Member Logs", config.get('member_log_channel_id'), "👥"),
+                    ("Message Logs", config.get('message_log_channel_id'), "💬"),
+                    ("Voice Logs", config.get('voice_log_channel_id'), "🔊"),
+                    ("Channel Logs", config.get('channel_log_channel_id'), "🏗️"),
+                    ("Role Logs", config.get('role_log_channel_id'), "🎭"),
+                    ("Moderation Logs", config.get('moderation_log_channel_id'), "🛡️")
+                ]
+                
+                embed = discord.Embed(
+                    title="📋 Bot Logs Configuration",
+                    description="Current logging channel setup",
+                    color=0x00FFFF,
+                    timestamp=datetime.utcnow()
+                )
+                
+                configured_channels = []
+                missing_channels = []
+                
+                for log_type, channel_id, emoji in log_channels_config:
+                    if channel_id:
+                        channel = guild.get_channel(int(channel_id))
+                        if channel:
+                            configured_channels.append(f"{emoji} **{log_type}:** {channel.mention}")
+                        else:
+                            missing_channels.append(f"{emoji} **{log_type}:** ⚠️ Channel not found (ID: {channel_id})")
+                    else:
+                        missing_channels.append(f"{emoji} **{log_type}:** ❌ Not configured")
+                
+                if configured_channels:
+                    embed.add_field(
+                        name="✅ Configured Channels",
+                        value="\n".join(configured_channels),
+                        inline=False
+                    )
+                
+                if missing_channels:
+                    embed.add_field(
+                        name="❌ Missing/Issues",
+                        value="\n".join(missing_channels),
+                        inline=False
+                    )
+                
+                # Check if Bot Logs category exists
+                bot_logs_category = None
+                for category in guild.categories:
+                    if category.name.lower() == "bot logs":
+                        bot_logs_category = category
+                        break
+                
+                if bot_logs_category:
+                    embed.add_field(
+                        name="📁 Category",
+                        value=f"✅ **Bot Logs** category exists ({len(bot_logs_category.channels)} channels)",
+                        inline=True
+                    )
+                else:
+                    embed.add_field(
+                        name="📁 Category", 
+                        value="❌ **Bot Logs** category not found",
+                        inline=True
+                    )
+                
+                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                
+            elif action == "cleanup":
+                await interaction.response.defer(ephemeral=True)
+                
+                # Find and remove Bot Logs category and its channels
+                bot_logs_category = None
+                for category in guild.categories:
+                    if category.name.lower() == "bot logs":
+                        bot_logs_category = category
+                        break
+                
+                if not bot_logs_category:
+                    await interaction.followup.send("❌ No 'Bot Logs' category found to cleanup.", ephemeral=True)
+                    return
+                
+                deleted_channels = []
+                cleanup_errors = []
+                
+                # Delete all channels in the category
+                for channel in bot_logs_category.channels:
+                    try:
+                        await channel.delete(reason="Bot logs cleanup")
+                        deleted_channels.append(f"🗑️ Deleted: #{channel.name}")
+                    except Exception as e:
+                        cleanup_errors.append(f"❌ Failed to delete #{channel.name}: {str(e)[:50]}")
+                
+                # Delete the category
+                try:
+                    await bot_logs_category.delete(reason="Bot logs cleanup")
+                    deleted_channels.append(f"📁 Deleted category: **{bot_logs_category.name}**")
+                except Exception as e:
+                    cleanup_errors.append(f"❌ Failed to delete category: {str(e)[:50]}")
+                
+                # Clear database configuration
+                try:
+                    await self.bot.update_guild_config(guild_id, 
+                        general_log_channel_id=None,
+                        member_log_channel_id=None,
+                        message_log_channel_id=None,
+                        voice_log_channel_id=None,
+                        channel_log_channel_id=None,
+                        role_log_channel_id=None,
+                        moderation_log_channel_id=None
+                    )
+                except Exception as e:
+                    cleanup_errors.append(f"❌ Database cleanup error: {str(e)[:50]}")
+                
+                embed = discord.Embed(
+                    title="🧹 Bot Logs Cleanup Complete",
+                    description="Removed bot logs setup",
+                    color=0xFF4444,
+                    timestamp=datetime.utcnow()
+                )
+                
+                if deleted_channels:
+                    embed.add_field(
+                        name="🗑️ Removed",
+                        value="\n".join(deleted_channels),
+                        inline=False
+                    )
+                
+                if cleanup_errors:
+                    embed.add_field(
+                        name="⚠️ Cleanup Issues",
+                        value="\n".join(cleanup_errors),
+                        inline=False
+                    )
+                
+                embed.set_footer(text=f"Cleaned up by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+                
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                
+                # Log command usage
+                parameters = {"action": action, "channels_deleted": len(deleted_channels), "errors": len(cleanup_errors)}
+                await self.bot.log_command_usage(interaction, "botlogs", parameters)
+                
+        except Exception as e:
+            logger.error(f"Error with botlogs command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ Failed to process bot logs command. Please try again.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ Failed to process bot logs command. Please try again.", ephemeral=True)
+            except:
+                pass
+
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))
