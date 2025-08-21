@@ -62,7 +62,7 @@ export class ChangelogPublisher {
       const embed = this.createChangelogEmbed(changelog);
       
       await channel.send({
-        content: `🚀 **NexGuard Update - Version ${changelog.version}**\n\n@everyone`,
+        content: `🚀 **NexGuard Update - Version ${changelog.version}**\n\n@everyone\n\n<@&1389988181453181018>`,
         embeds: [embed]
       });
 
