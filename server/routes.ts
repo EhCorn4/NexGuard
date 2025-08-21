@@ -1,12 +1,89 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 import fetch from "node-fetch";
 import { emailService } from "./lib/emailService";
+import { EmbedBuilder } from 'discord.js';
 import fs from "fs";
 import path from "path";
 import PDFDocument from "pdfkit";
+
+// Discord changelog publishing function
+async function publishChangelogToDiscord(changelog: Changelog): Promise<boolean> {
+  try {
+    const targetChannelId = '1389986013404991498';
+    const roleToMention = '1389988181453181018';
+    
+    // Create embed data
+    const embedColor = {
+      'major': 0x00ff00,    // Green
+      'minor': 0x0099ff,    // Blue  
+      'patch': 0x999999,    // Gray
+      'hotfix': 0xff9900    // Orange
+    }[changelog.type] || 0x0099ff;
+
+    const embedData = {
+      title: `🚀 ${changelog.title}`,
+      description: changelog.description,
+      color: embedColor,
+      fields: [
+        {
+          name: "📋 Changes",
+          value: changelog.changes.map((change, index) => `${index + 1}. ${change}`).join('\n'),
+          inline: false
+        },
+        {
+          name: "📊 Release Type",
+          value: changelog.type.toUpperCase(),
+          inline: true
+        },
+        {
+          name: "📅 Release Date", 
+          value: new Date(changelog.releaseDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          inline: true
+        }
+      ],
+      footer: {
+        text: `NexGuard v${changelog.version} • Professional Discord Bot Management`,
+        icon_url: "https://cdn.discordapp.com/app-icons/1389775821794705429/4c6281aafae9b5e9e4d6b0e3b8a8a8a8.png"
+      },
+      timestamp: new Date(changelog.releaseDate).toISOString()
+    };
+
+    // Send webhook request to Discord bot
+    const webhookResponse = await fetch('http://localhost:5001/send-changelog', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        channel_id: targetChannelId,
+        content: `🚀 **NexGuard Update - Version ${changelog.version}**\n\n<@&${roleToMention}>`,
+        embed: embedData
+      })
+    });
+
+    if (webhookResponse.ok) {
+      console.log(`✅ Changelog v${changelog.version} published to Discord successfully`);
+      return true;
+    } else {
+      const errorText = await webhookResponse.text();
+      console.error(`❌ Failed to publish changelog to Discord: ${errorText}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error publishing changelog to Discord:', error);
+    return false;
+  }
+}
 
 
 
@@ -6068,33 +6145,44 @@ export function registerRoutes(app: Express): Server {
   // Changelog Publishing API Endpoints
   app.post("/api/changelog/publish/latest", async (req, res) => {
     try {
-      // Send request to bot to publish latest changelog
-      const botResponse = await fetch('http://localhost:3001/publish-changelog-latest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      // Get latest unpublished changelog and publish directly to Discord
+      const [latestChangelog] = await db.select()
+        .from(changelogs)
+        .where(eq(changelogs.isPublished, false))
+        .orderBy(desc(changelogs.releaseDate))
+        .limit(1);
 
-      if (botResponse.ok) {
-        const result = await botResponse.json();
+      if (!latestChangelog) {
+        return res.json({
+          success: false,
+          message: "No unpublished changelog found"
+        });
+      }
+
+      // Create Discord embed and send to channel
+      const success = await publishChangelogToDiscord(latestChangelog);
+      
+      if (success) {
+        // Mark as published
+        await db.update(changelogs)
+          .set({ isPublished: true })
+          .where(eq(changelogs.id, latestChangelog.id));
+          
         res.json({
           success: true,
           message: "Latest changelog published successfully to Discord",
-          data: result
+          data: { version: latestChangelog.version, title: latestChangelog.title }
         });
       } else {
-        const error = await botResponse.text();
         res.status(500).json({
-          error: "Failed to publish changelog",
-          details: error
+          error: "Failed to publish changelog to Discord"
         });
       }
     } catch (error) {
       console.error("Error publishing latest changelog:", error);
       res.status(500).json({ 
         error: "Internal server error",
-        message: "Failed to communicate with bot service"
+        message: "Failed to publish changelog"
       });
     }
   });
@@ -6103,33 +6191,45 @@ export function registerRoutes(app: Express): Server {
     try {
       const { version } = req.params;
       
-      const botResponse = await fetch('http://localhost:3001/publish-changelog-version', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ version })
-      });
+      // Get changelog by version
+      const [changelog] = await db.select()
+        .from(changelogs)
+        .where(eq(changelogs.version, version))
+        .limit(1);
 
-      if (botResponse.ok) {
-        const result = await botResponse.json();
+      if (!changelog) {
+        return res.status(404).json({
+          error: "Changelog not found",
+          message: `No changelog found for version ${version}`
+        });
+      }
+
+      // Publish to Discord
+      const success = await publishChangelogToDiscord(changelog);
+      
+      if (success) {
+        // Mark as published if not already
+        if (!changelog.isPublished) {
+          await db.update(changelogs)
+            .set({ isPublished: true })
+            .where(eq(changelogs.id, changelog.id));
+        }
+        
         res.json({
           success: true,
           message: `Changelog v${version} published successfully to Discord`,
-          data: result
+          data: { version: changelog.version, title: changelog.title }
         });
       } else {
-        const error = await botResponse.text();
         res.status(500).json({
-          error: "Failed to publish changelog",
-          details: error
+          error: "Failed to publish changelog to Discord"
         });
       }
     } catch (error) {
       console.error(`Error publishing changelog v${req.params.version}:`, error);
       res.status(500).json({ 
         error: "Internal server error",
-        message: "Failed to communicate with bot service"
+        message: "Failed to publish changelog"
       });
     }
   });
@@ -6155,33 +6255,41 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      const botResponse = await fetch('http://localhost:3001/publish-changelog-custom', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ version, title, description, changes, type })
-      });
+      // Create new changelog entry
+      const [newChangelog] = await db.insert(changelogs).values({
+        version,
+        title,
+        description,
+        changes: Array.isArray(changes) ? changes : [changes],
+        type,
+        releaseDate: new Date(),
+        isPublished: false
+      }).returning();
 
-      if (botResponse.ok) {
-        const result = await botResponse.json();
+      // Publish to Discord
+      const success = await publishChangelogToDiscord(newChangelog);
+      
+      if (success) {
+        // Mark as published
+        await db.update(changelogs)
+          .set({ isPublished: true })
+          .where(eq(changelogs.id, newChangelog.id));
+        
         res.json({
           success: true,
           message: `Custom changelog v${version} created and published successfully to Discord`,
-          data: result
+          data: { version: newChangelog.version, title: newChangelog.title }
         });
       } else {
-        const error = await botResponse.text();
         res.status(500).json({
-          error: "Failed to publish custom changelog",
-          details: error
+          error: "Failed to publish custom changelog to Discord"
         });
       }
     } catch (error) {
       console.error("Error publishing custom changelog:", error);
       res.status(500).json({ 
         error: "Internal server error",
-        message: "Failed to communicate with bot service"
+        message: "Failed to publish custom changelog"
       });
     }
   });
