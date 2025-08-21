@@ -6192,6 +6192,51 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/changelog/create-and-publish", async (req, res) => {
+    try {
+      const { version, title, description, changes, type } = req.body;
+
+      // Validate required fields
+      if (!version || !title || !description || !changes) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          required: ["version", "title", "description", "changes"]
+        });
+      }
+
+      // Note: Type validation removed as database doesn't have type column
+
+      // Create new changelog entry
+      const [newChangelog] = await db.insert(changelogs).values({
+        version,
+        title,
+        description,
+        changes: Array.isArray(changes) ? changes : [changes]
+      }).returning();
+
+      // Publish to Discord
+      const success = await publishChangelogToDiscord(newChangelog);
+      
+      if (success) {
+        res.json({
+          success: true,
+          message: `Custom changelog v${version} created and published successfully to Discord`,
+          data: { version: newChangelog.version, title: newChangelog.title }
+        });
+      } else {
+        res.status(500).json({
+          error: "Failed to publish custom changelog to Discord"
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing custom changelog:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to publish custom changelog"
+      });
+    }
+  });
+
   app.post("/api/changelog/publish/:version", async (req, res) => {
     try {
       const { version } = req.params;
@@ -6229,58 +6274,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ 
         error: "Internal server error",
         message: "Failed to publish changelog"
-      });
-    }
-  });
-
-  app.post("/api/changelog/publish/custom", async (req, res) => {
-    try {
-      const { version, title, description, changes, type } = req.body;
-
-      // Validate required fields
-      if (!version || !title || !description || !changes || !type) {
-        return res.status(400).json({
-          error: "Missing required fields",
-          required: ["version", "title", "description", "changes", "type"]
-        });
-      }
-
-      // Validate type
-      const validTypes = ['major', 'minor', 'patch', 'hotfix'];
-      if (!validTypes.includes(type)) {
-        return res.status(400).json({
-          error: "Invalid type",
-          validTypes
-        });
-      }
-
-      // Create new changelog entry
-      const [newChangelog] = await db.insert(changelogs).values({
-        version,
-        title,
-        description,
-        changes: Array.isArray(changes) ? changes : [changes]
-      }).returning();
-
-      // Publish to Discord
-      const success = await publishChangelogToDiscord(newChangelog);
-      
-      if (success) {
-        res.json({
-          success: true,
-          message: `Custom changelog v${version} created and published successfully to Discord`,
-          data: { version: newChangelog.version, title: newChangelog.title }
-        });
-      } else {
-        res.status(500).json({
-          error: "Failed to publish custom changelog to Discord"
-        });
-      }
-    } catch (error) {
-      console.error("Error publishing custom changelog:", error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to publish custom changelog"
       });
     }
   });

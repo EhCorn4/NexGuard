@@ -330,9 +330,8 @@ export const changelogs = pgTable("changelogs", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   changes: text("changes").array().notNull(),
-  type: text("type").notNull(), // "major", "minor", "patch", "hotfix"
-  releaseDate: timestamp("release_date").defaultNow().notNull(),
-  isPublished: boolean("is_published").default(false).notNull(),
+  release_date: timestamp("release_date").defaultNow().notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const autoReplies = pgTable("auto_replies", {
