@@ -6065,6 +6065,138 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Changelog Publishing API Endpoints
+  app.post("/api/changelog/publish/latest", async (req, res) => {
+    try {
+      // Send request to bot to publish latest changelog
+      const botResponse = await fetch('http://localhost:3001/publish-changelog-latest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (botResponse.ok) {
+        const result = await botResponse.json();
+        res.json({
+          success: true,
+          message: "Latest changelog published successfully to Discord",
+          data: result
+        });
+      } else {
+        const error = await botResponse.text();
+        res.status(500).json({
+          error: "Failed to publish changelog",
+          details: error
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing latest changelog:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to communicate with bot service"
+      });
+    }
+  });
+
+  app.post("/api/changelog/publish/:version", async (req, res) => {
+    try {
+      const { version } = req.params;
+      
+      const botResponse = await fetch('http://localhost:3001/publish-changelog-version', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ version })
+      });
+
+      if (botResponse.ok) {
+        const result = await botResponse.json();
+        res.json({
+          success: true,
+          message: `Changelog v${version} published successfully to Discord`,
+          data: result
+        });
+      } else {
+        const error = await botResponse.text();
+        res.status(500).json({
+          error: "Failed to publish changelog",
+          details: error
+        });
+      }
+    } catch (error) {
+      console.error(`Error publishing changelog v${req.params.version}:`, error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to communicate with bot service"
+      });
+    }
+  });
+
+  app.post("/api/changelog/publish/custom", async (req, res) => {
+    try {
+      const { version, title, description, changes, type } = req.body;
+
+      // Validate required fields
+      if (!version || !title || !description || !changes || !type) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          required: ["version", "title", "description", "changes", "type"]
+        });
+      }
+
+      // Validate type
+      const validTypes = ['major', 'minor', 'patch', 'hotfix'];
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({
+          error: "Invalid type",
+          validTypes
+        });
+      }
+
+      const botResponse = await fetch('http://localhost:3001/publish-changelog-custom', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ version, title, description, changes, type })
+      });
+
+      if (botResponse.ok) {
+        const result = await botResponse.json();
+        res.json({
+          success: true,
+          message: `Custom changelog v${version} created and published successfully to Discord`,
+          data: result
+        });
+      } else {
+        const error = await botResponse.text();
+        res.status(500).json({
+          error: "Failed to publish custom changelog",
+          details: error
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing custom changelog:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to communicate with bot service"
+      });
+    }
+  });
+
+  // Changelog API endpoints
+  app.get("/api/changelogs", async (req, res) => {
+    try {
+      const changelogData = await storage.getChangelogs();
+      res.json(changelogData);
+    } catch (error) {
+      console.error("Error fetching changelogs:", error);
+      res.status(500).json({ error: "Failed to fetch changelogs" });
+    }
+  });
+
   app.get("/api/bot/tickets", async (req, res) => {
     try {
       const tickets = await storage.getTickets();

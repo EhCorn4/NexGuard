@@ -459,6 +459,7 @@ export class MemStorage implements IStorage {
       content: "NexGuard has been instrumental in managing our 500+ member roleplay community. The moderation tools are top-notch and the support is excellent!",
       rating: 5,
       isApproved: true,
+      websiteUrl: null,
       createdAt: new Date('2024-01-12'),
     });
 
@@ -469,6 +470,7 @@ export class MemStorage implements IStorage {
       content: "The ticket system alone makes NexGuard worth it. Our support workflow has never been smoother.",
       rating: 5,
       isApproved: true,
+      websiteUrl: null,
       createdAt: new Date('2024-01-08'),
     });
 
@@ -479,6 +481,7 @@ export class MemStorage implements IStorage {
       content: "Great bot with reliable uptime and responsive support. Highly recommend for any serious Discord community.",
       rating: 4,
       isApproved: true,
+      websiteUrl: null,
       createdAt: new Date('2024-01-05'),
     });
 

@@ -1,7 +1,10 @@
 import { Client, GatewayIntentBits, Collection, REST, Routes } from 'discord.js';
 import { storage } from '../storage';
 import { db } from '../db';
-import { commands, guilds } from '@shared/schema';
+import { commands, guilds, botStatus } from '@shared/schema';
+import { eq } from 'drizzle-orm';
+import express from 'express';
+import { ChangelogPublisher } from '../lib/changelogPublisher';
 
 // Import command handlers
 import { adminCommands } from './commands/admin';
@@ -13,6 +16,8 @@ class NexGuardBot {
   public client: Client;
   public commands: Collection<string, any>;
   private startTime: number;
+  private changelogPublisher: ChangelogPublisher | null = null;
+  private httpServer: express.Application;
 
   constructor() {
     this.client = new Client({
@@ -28,12 +33,16 @@ class NexGuardBot {
 
     this.commands = new Collection();
     this.startTime = Date.now();
+    this.httpServer = express();
     this.setupEventHandlers();
+    this.setupHTTPServer();
   }
 
   private setupEventHandlers() {
     this.client.once('ready', () => {
       console.log(`✅ NexGuard Bot is online as ${this.client.user?.tag}`);
+      this.changelogPublisher = new ChangelogPublisher(this.client);
+      console.log('📝 Changelog publisher initialized');
       this.updateBotStatus();
       this.registerCommands();
       
@@ -180,21 +189,23 @@ class NexGuardBot {
 
   private async handleWelcomeMessage(member: any) {
     try {
-      // Get welcome settings from database
-      const settings = await storage.getGuildSettings(member.guild.id);
-      const welcomeSettings = settings.welcome || {};
+      // Get guild settings from database
+      const [guildData] = await db.select().from(guilds).where(eq(guilds.id, member.guild.id)).limit(1);
+      if (!guildData || !guildData.welcomeEnabled) {
+        return;
+      }
       
-      if (!welcomeSettings.enabled || !welcomeSettings.channelId) {
+      if (!guildData.welcomeChannelId) {
         return;
       }
 
-      const channel = member.guild.channels.cache.get(welcomeSettings.channelId);
+      const channel = member.guild.channels.cache.get(guildData.welcomeChannelId);
       if (!channel) {
         return;
       }
 
       // Replace placeholders in welcome message
-      let welcomeMessage = welcomeSettings.message || 'Welcome to {server}, {user}!';
+      let welcomeMessage = guildData.welcomeMessage || 'Welcome to {server}, {user}!';
       welcomeMessage = welcomeMessage
         .replace(/{user}/g, `<@${member.id}>`)
         .replace(/{server}/g, member.guild.name)
@@ -233,7 +244,7 @@ class NexGuardBot {
       };
 
       // Send welcome message based on type
-      if (welcomeSettings.type === 'embed') {
+      if (guildData.welcomeEmbed) {
         await channel.send({ embeds: [embed] });
       } else {
         await channel.send(welcomeMessage);
@@ -301,22 +312,150 @@ class NexGuardBot {
     }
   }
 
+  private setupHTTPServer() {
+    this.httpServer.use(express.json());
+    
+    // Publish latest changelog
+    this.httpServer.post('/publish-changelog-latest', async (req, res) => {
+      if (!this.changelogPublisher) {
+        return res.status(503).json({
+          error: 'Changelog publisher not initialized',
+          message: 'Bot is not ready yet'
+        });
+      }
+
+      try {
+        const success = await this.changelogPublisher.publishLatestChangelog();
+        if (success) {
+          res.json({
+            success: true,
+            message: 'Latest changelog published successfully'
+          });
+        } else {
+          res.status(404).json({
+            error: 'No unpublished changelog found'
+          });
+        }
+      } catch (error) {
+        console.error('Error publishing latest changelog:', error);
+        res.status(500).json({
+          error: 'Failed to publish changelog',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    });
+
+    // Publish specific version changelog
+    this.httpServer.post('/publish-changelog-version', async (req, res) => {
+      if (!this.changelogPublisher) {
+        return res.status(503).json({
+          error: 'Changelog publisher not initialized',
+          message: 'Bot is not ready yet'
+        });
+      }
+
+      const { version } = req.body;
+      if (!version) {
+        return res.status(400).json({
+          error: 'Version is required'
+        });
+      }
+
+      try {
+        const success = await this.changelogPublisher.publishChangelogByVersion(version);
+        if (success) {
+          res.json({
+            success: true,
+            message: `Changelog v${version} published successfully`
+          });
+        } else {
+          res.status(404).json({
+            error: `Changelog for version ${version} not found`
+          });
+        }
+      } catch (error) {
+        console.error(`Error publishing changelog v${version}:`, error);
+        res.status(500).json({
+          error: 'Failed to publish changelog',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    });
+
+    // Publish custom changelog
+    this.httpServer.post('/publish-changelog-custom', async (req, res) => {
+      if (!this.changelogPublisher) {
+        return res.status(503).json({
+          error: 'Changelog publisher not initialized',
+          message: 'Bot is not ready yet'
+        });
+      }
+
+      const { version, title, description, changes, type } = req.body;
+      
+      if (!version || !title || !description || !changes || !type) {
+        return res.status(400).json({
+          error: 'All fields are required',
+          required: ['version', 'title', 'description', 'changes', 'type']
+        });
+      }
+
+      try {
+        const success = await this.changelogPublisher.publishCustomChangelog({
+          version,
+          title,
+          description,
+          changes,
+          type
+        });
+        
+        if (success) {
+          res.json({
+            success: true,
+            message: `Custom changelog v${version} created and published successfully`
+          });
+        } else {
+          res.status(500).json({
+            error: 'Failed to create and publish custom changelog'
+          });
+        }
+      } catch (error) {
+        console.error('Error publishing custom changelog:', error);
+        res.status(500).json({
+          error: 'Failed to publish custom changelog',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    });
+
+    // Health check endpoint
+    this.httpServer.get('/health', (req, res) => {
+      res.json({
+        status: 'ok',
+        bot: this.client.user?.tag || 'Not ready',
+        changelogPublisher: this.changelogPublisher ? 'Ready' : 'Not ready'
+      });
+    });
+
+    const PORT = process.env.BOT_HTTP_PORT || 3001;
+    this.httpServer.listen(PORT, () => {
+      console.log(`📡 Bot HTTP server listening on port ${PORT}`);
+    });
+  }
+
   public async stop() {
     console.log('🛑 Stopping NexGuard Bot...');
     
     // Update bot status to offline
-    await db.insert(botStatus).values({
-      id: 1,
+    await storage.updateBotStatus({
       isOnline: false,
-      updatedAt: new Date(),
-    }).onConflictDoUpdate({
-      target: botStatus.id,
-      set: {
-        isOnline: false,
-        updatedAt: new Date(),
-      }
+      guildsCount: 0,
+      usersCount: 0,
+      uptime: '0s',
+      version: '2.3.2',
+      lastRestart: new Date(),
     });
-
+    
     this.client.destroy();
   }
 }

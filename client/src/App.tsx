@@ -28,6 +28,7 @@ const WebhookTest = lazy(() => import("@/pages/webhook-test"));
 const Docs = lazy(() => import("@/pages/docs"));
 const Analytics = lazy(() => import("@/pages/analytics"));
 const Donate = lazy(() => import("@/pages/donate"));
+const ChangelogManager = lazy(() => import("@/pages/changelog-manager"));
 // Dashboard functionality removed
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
@@ -129,6 +130,13 @@ function Router() {
                 <PageTransition key="donate">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
                     <Donate />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/changelog-manager" component={() => (
+                <PageTransition key="changelog-manager">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={3}>
+                    <ChangelogManager />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
