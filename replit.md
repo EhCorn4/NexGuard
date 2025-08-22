@@ -6,6 +6,15 @@ NexGuard is a comprehensive Discord bot paired with a professional website to sh
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**Discord Announcement Style Preference:**
+- Use comprehensive feature announcement format (not simple changelog style)
+- Include sections: What's New, Key Features, How to Use, Requirements, Benefits, Integration Notes, Perfect For
+- Add clear command examples with code blocks
+- Use emoji headers and professional formatting
+- End with call-to-action and role mention
+- Structure like detailed feature documentation rather than brief changelog entries
+- Reference example: botlogs feature announcement format
+
 ## System Architecture
 
 ### Frontend
