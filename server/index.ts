@@ -98,13 +98,8 @@ app.use((req, res, next) => {
   // Check Python availability
   const checkPythonAvailability = () => {
     return new Promise<boolean>((resolve) => {
-      // Skip Python bot in deployment environments where Python runtime may not be available
-      if (process.env.NODE_ENV === 'production' && process.env.REPLIT_DEPLOYMENT) {
-        console.log('⚠️  Skipping Python bot startup in deployment environment');
-        console.log('   Python runtime not available in current deployment configuration');
-        resolve(false);
-        return;
-      }
+      // Python runtime is available in Replit VM deployments with python-3.11 module
+      // Removed deployment environment restriction to allow Discord bot in production
       
       const pythonCommand = process.env.NODE_ENV === 'production' ? 'python3' : 'python';
       const testProcess = spawn(pythonCommand, ['--version'], { 
