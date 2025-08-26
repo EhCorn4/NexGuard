@@ -1,6 +1,6 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, guilds, commands, tickets, moderationLogs, changelogs, botStatus, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type Guild, type Command, type InsertCommand, type Ticket, type InsertTicket, type ModerationLog, type InsertModerationLog, type Changelog, type InsertChangelog, type BotStatus, type InsertBotStatus } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, guilds, commands, tickets, moderationLogs, changelogs, botStatus, serverAnalytics, messageAnalytics, commandAnalytics, userActivity, channelAnalytics, type User, type InsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type Guild, type Command, type InsertCommand, type Ticket, type InsertTicket, type ModerationLog, type InsertModerationLog, type Changelog, type InsertChangelog, type BotStatus, type InsertBotStatus } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, count, sum, avg, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -1431,30 +1431,64 @@ export class DatabaseStorage implements IStorage {
       // Get bot status for current server and user counts
       const botStatus = await this.getBotStatus();
       
-      // For now, use bot status data and return real metrics
-      // In the future, this could be enhanced with database analytics when available
+      // Get total messages from last 24 hours
+      const totalMessages = await db
+        .select({ count: count() })
+        .from(messageAnalytics)
+        .where(gte(messageAnalytics.timestamp, sql`NOW() - INTERVAL '24 hours'`));
+      
+      // Get total commands from last 24 hours
+      const totalCommands = await db
+        .select({ count: count() })
+        .from(commandAnalytics)
+        .where(gte(commandAnalytics.timestamp, sql`NOW() - INTERVAL '24 hours'`));
+      
+      // Get active users from last 24 hours
+      const activeUsers = await db
+        .select({ count: sql`COUNT(DISTINCT ${userActivity.userId})` })
+        .from(userActivity)
+        .where(gte(userActivity.lastActive, sql`NOW() - INTERVAL '24 hours'`));
+      
+      // Get top channels by message count
+      const topChannels = await db
+        .select({
+          name: channelAnalytics.channelName,
+          messages: sum(channelAnalytics.messageCount)
+        })
+        .from(channelAnalytics)
+        .where(gte(channelAnalytics.lastActivity, sql`NOW() - INTERVAL '24 hours'`))
+        .groupBy(channelAnalytics.channelName)
+        .orderBy(desc(sum(channelAnalytics.messageCount)))
+        .limit(3);
+      
+      // Get top commands
+      const topCommands = await db
+        .select({
+          name: commandAnalytics.commandName,
+          count: count()
+        })
+        .from(commandAnalytics)
+        .where(gte(commandAnalytics.timestamp, sql`NOW() - INTERVAL '24 hours'`))
+        .groupBy(commandAnalytics.commandName)
+        .orderBy(desc(count()))
+        .limit(3);
+      
       return {
         totalServers: botStatus?.guildsCount || 0,
         totalUsers: botStatus?.usersCount || 0,
-        totalMessages: 0, // Database analytics not yet integrated
-        totalCommands: 0, // Database analytics not yet integrated  
-        activeUsers: Math.floor((botStatus?.usersCount || 0) * 0.15), // Estimate 15% active
-        topChannels: [
-          { name: "general", messages: 0 },
-          { name: "announcements", messages: 0 },
-          { name: "support", messages: 0 }
-        ],
-        topCommands: [
-          { name: "help", count: 0 },
-          { name: "ping", count: 0 },
-          { name: "userinfo", count: 0 }
-        ]
+        totalMessages: totalMessages[0]?.count || 0,
+        totalCommands: totalCommands[0]?.count || 0,
+        activeUsers: activeUsers[0]?.count || 0,
+        topChannels: topChannels || [],
+        topCommands: topCommands || []
       };
     } catch (error) {
       console.error('Error fetching analytics overview:', error);
+      // Fallback to bot status only
+      const botStatus = await this.getBotStatus();
       return {
-        totalServers: 0,
-        totalUsers: 0,
+        totalServers: botStatus?.guildsCount || 0,
+        totalUsers: botStatus?.usersCount || 0,
         totalMessages: 0,
         totalCommands: 0,
         activeUsers: 0,
@@ -1465,22 +1499,61 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getServerAnalytics(guildId: string, timeRange: string): Promise<any> {
-    const hours = timeRange === "7d" ? 168 : timeRange === "30d" ? 720 : 24;
-    const data = [];
-    
-    for (let i = hours; i >= 0; i--) {
-      const time = new Date(Date.now() - i * 60 * 60 * 1000);
-      data.push({
-        timestamp: time.toISOString(),
-        memberCount: 167 + Math.floor(Math.random() * 10),
-        onlineMembers: 45 + Math.floor(Math.random() * 20),
-        messagesPerHour: Math.floor(Math.random() * 50),
-        commandsExecuted: Math.floor(Math.random() * 15),
-        voiceMembers: Math.floor(Math.random() * 8)
-      });
+    try {
+      const hours = timeRange === "7d" ? 168 : timeRange === "30d" ? 720 : 24;
+      const timeFilter = sql`NOW() - INTERVAL '${sql.raw(hours.toString())} hours'`;
+      
+      // Get server analytics data for the time range
+      const serverData = await db
+        .select({
+          timestamp: serverAnalytics.timestamp,
+          memberCount: serverAnalytics.memberCount,
+          onlineMembers: serverAnalytics.onlineMembers,
+          messagesPerHour: serverAnalytics.messagesPerHour,
+          commandsExecuted: serverAnalytics.commandsExecuted,
+          voiceMembers: serverAnalytics.voiceMembers
+        })
+        .from(serverAnalytics)
+        .where(and(
+          gte(serverAnalytics.timestamp, timeFilter),
+          guildId !== "demo-guild" ? eq(serverAnalytics.guildId, guildId) : sql`true`
+        ))
+        .orderBy(serverAnalytics.timestamp);
+      
+      // Get summary stats
+      const summary = await db
+        .select({
+          totalMembers: avg(serverAnalytics.memberCount),
+          peakOnline: sql`MAX(${serverAnalytics.onlineMembers})`,
+          avgMessages: avg(serverAnalytics.messagesPerHour)
+        })
+        .from(serverAnalytics)
+        .where(and(
+          gte(serverAnalytics.timestamp, timeFilter),
+          guildId !== "demo-guild" ? eq(serverAnalytics.guildId, guildId) : sql`true`
+        ));
+      
+      const data = serverData.map(row => ({
+        timestamp: row.timestamp.toISOString(),
+        memberCount: row.memberCount || 0,
+        onlineMembers: row.onlineMembers || 0,
+        messagesPerHour: row.messagesPerHour || 0,
+        commandsExecuted: row.commandsExecuted || 0,
+        voiceMembers: row.voiceMembers || 0
+      }));
+      
+      return {
+        data,
+        summary: {
+          totalMembers: Math.floor(summary[0]?.totalMembers || 0),
+          peakOnline: summary[0]?.peakOnline || 0,
+          avgMessages: Math.floor(summary[0]?.avgMessages || 0)
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching server analytics:', error);
+      return { data: [], summary: { totalMembers: 0, peakOnline: 0, avgMessages: 0 } };
     }
-    
-    return { data, summary: { totalMembers: 167, peakOnline: 65, avgMessages: 25 } };
   }
 
   async getMessageAnalytics(guildId: string, timeRange: string): Promise<any> {
