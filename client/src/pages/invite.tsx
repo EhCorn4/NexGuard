@@ -13,6 +13,23 @@ const Invite = memo(function Invite() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch live bot status
+  const { data: botStatus } = useQuery({
+    queryKey: ['/api/bot/status'],
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Type-safe bot status data
+  const safeGuildsCount = (botStatus as any)?.guildsCount || 0;
+  const safeUsersCount = (botStatus as any)?.usersCount || 0;
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
   const discordInviteUrl = config?.discordInviteUrl || "https://discord.com/oauth2/authorize?client_id=1389775821794705429";
   const supportServerUrl = config?.supportServerUrl || "https://discord.gg/wpjZMPXaRT";
 
@@ -23,17 +40,17 @@ const Invite = memo(function Invite() {
         <div className="max-w-6xl mx-auto text-center">
           <PageHeader 
             title="Ready to Protect Your Server?"
-            description="Join 17+ servers already using NexGuard's 61+ commands with professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection to maintain order and enhance their community experience."
+            description={`Join ${safeGuildsCount}+ servers already using NexGuard's 61+ commands with professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection to maintain order and enhance their community experience.`}
           />
           
           {/* Bot Stats Section */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">639+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">{formatNumber(safeUsersCount)}+</div>
               <div className="text-gray-400 text-sm">Active Users</div>
             </div>
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">17+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">{safeGuildsCount}+</div>
               <div className="text-gray-400 text-sm">Servers Protected</div>
             </div>
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">

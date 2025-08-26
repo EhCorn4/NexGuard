@@ -31,6 +31,17 @@ const Features = memo(function Features() {
     queryKey: ["/api/features"],
   });
 
+  // Fetch live bot status
+  const { data: botStatus } = useQuery({
+    queryKey: ['/api/bot/status'],
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Type-safe bot status data
+  const safeGuildsCount = (botStatus as any)?.guildsCount || 0;
+  const safeUsersCount = (botStatus as any)?.usersCount || 0;
+  const safeIsOnline = (botStatus as any)?.isOnline || false;
+
   if (error) {
     return (
       <div className="min-h-screen bg-[hsl(var(--nexguard-darker))] pt-24 px-4">
@@ -52,18 +63,20 @@ const Features = memo(function Features() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
           title="Bot Features"
-          description="NexGuard offers comprehensive Discord bot functionality with 60+ slash commands, professional ticket system with direct management commands, live server statistics channels, reaction roles, comprehensive event logging, advanced automod protection, and real-time analytics to enhance your server management experience."
+          description={`NexGuard offers comprehensive Discord bot functionality with 61+ slash commands, professional ticket system with direct management commands, live server statistics channels, reaction roles, comprehensive event logging, advanced automod protection, and real-time analytics to enhance your server management experience across ${safeGuildsCount}+ servers.`}
         />
         
         {/* Bot Status Section */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-6 py-3">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-300">Bot Online & Ready</span>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${safeIsOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
+            <span className="text-sm text-gray-300">{safeIsOnline ? 'Bot Online & Ready' : 'Bot Offline'}</span>
             <div className="w-px h-4 bg-slate-600"></div>
             <span className="text-sm text-[hsl(var(--nexguard-cyan))]">61 Commands</span>
             <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">17+ Servers</span>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">{safeGuildsCount}+ Servers</span>
+            <div className="w-px h-4 bg-slate-600"></div>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">{safeUsersCount}+ Users</span>
           </div>
         </div>
         
