@@ -1003,26 +1003,38 @@ class TicketsCog(commands.Cog):
             close_embed.add_field(name="Closed at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
             close_embed.set_footer(text="Transcript will be sent to participants")
             
-            await interaction.followup.send(embed=close_embed, file=transcript_file)
+            await interaction.followup.send(embed=close_embed)
             
-            # Send transcript to ticket creator (try to get from channel name or database)
+            # Send transcript to all participants via DM
             try:
-                # Extract username from channel name (format: panel-username)
-                if "-" in channel_name:
-                    username = channel_name.split("-", 1)[1]
-                    # Try to find user by username
-                    for member in interaction.guild.members:
-                        if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
-                            try:
-                                transcript.seek(0)
-                                user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
-                                user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
-                                await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
-                            except:
-                                pass
-                            break
-            except:
-                pass
+                participants = set()
+                
+                # Find all human participants 
+                async for message in interaction.channel.history(limit=1000):
+                    if not message.author.bot:
+                        participants.add(message.author.id)
+                
+                # Send transcript file to each participant via DM
+                for user_id in participants:
+                    try:
+                        user = interaction.client.get_user(user_id)
+                        if user:
+                            transcript.seek(0)
+                            user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+                            user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
+                            
+                            embed = discord.Embed(
+                                title=f"📋 Ticket Transcript - {channel_name}",
+                                description="Complete transcript of your ticket conversation.",
+                                color=0x5865F2
+                            )
+                            
+                            await user.send(embed=embed, file=user_transcript)
+                    except Exception as e:
+                        logger.warning(f"Could not send transcript to user {user_id}: {e}")
+                        
+            except Exception as e:
+                logger.error(f"Error sending transcripts via DM: {e}")
             
             # Delete channel after delay
             await asyncio.sleep(5)
@@ -1173,27 +1185,39 @@ class TicketsCog(commands.Cog):
                         close_embed.add_field(name="Closed at", value=f"<t:{int(datetime.now().timestamp())}:F>", inline=True)
                         close_embed.set_footer(text="Transcript will be sent to participants")
                         
-                        await button_interaction.followup.send(embed=close_embed, file=transcript_file)
+                        await button_interaction.followup.send(embed=close_embed)
                         
-                        # Send transcript to ticket creator (try to get from channel name)
+                        # Send transcript to all participants via DM
                         try:
-                            # Extract username from channel name (format: panel-username)
-                            if channel_name and "-" in channel_name:
-                                username = channel_name.split("-", 1)[1]
-                                # Try to find user by username
-                                if button_interaction.guild:
-                                    for member in button_interaction.guild.members:
-                                        if member.name.lower() == username.lower() or member.display_name.lower() == username.lower():
-                                            try:
-                                                transcript.seek(0)
-                                                user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
-                                                user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
-                                                await member.send(f"Your ticket `{channel_name}` has been closed. Here's the transcript:", file=user_transcript)
-                                            except:
-                                                pass
-                                            break
-                        except:
-                            pass
+                            participants = set()
+                            
+                            # Find all human participants 
+                            if isinstance(button_interaction.channel, discord.TextChannel):
+                                async for message in button_interaction.channel.history(limit=1000):
+                                    if not message.author.bot:
+                                        participants.add(message.author.id)
+                            
+                            # Send transcript file to each participant via DM
+                            for user_id in participants:
+                                try:
+                                    user = button_interaction.client.get_user(user_id)
+                                    if user:
+                                        transcript.seek(0)
+                                        user_transcript_bytes = BytesIO(transcript.getvalue().encode('utf-8'))
+                                        user_transcript = discord.File(user_transcript_bytes, filename=f"transcript-{channel_name}.txt")
+                                        
+                                        embed = discord.Embed(
+                                            title=f"📋 Ticket Transcript - {channel_name}",
+                                            description="Complete transcript of your ticket conversation.",
+                                            color=0x5865F2
+                                        )
+                                        
+                                        await user.send(embed=embed, file=user_transcript)
+                                except Exception as e:
+                                    logger.warning(f"Could not send transcript to user {user_id}: {e}")
+                                    
+                        except Exception as e:
+                            logger.error(f"Error sending transcripts via DM: {e}")
                         
                         # Delete channel after delay
                         if isinstance(button_interaction.channel, discord.TextChannel):
