@@ -7,7 +7,7 @@ import platform
 import psutil
 import os
 from typing import Optional
-from io import StringIO
+from io import StringIO, BytesIO
 
 logger = logging.getLogger(__name__)
 
@@ -241,14 +241,24 @@ class UtilityCommands(commands.Cog):
             await interaction.response.send_message("❌ This command requires administrator permissions.", ephemeral=True)
             return
         
+        # Get live data from bot's current connections
         guilds = self.bot.guilds
         guild_count = len(guilds)
         total_users = sum(guild.member_count for guild in guilds if guild.member_count)
         
-        # Create embed with guild information
+        # Calculate additional live metrics
+        online_members = 0
+        large_guilds = 0
+        for guild in guilds:
+            if hasattr(guild, 'presence_count'):
+                online_members += guild.presence_count or 0
+            if guild.member_count and guild.member_count >= 1000:
+                large_guilds += 1
+        
+        # Create embed with live guild information
         embed = discord.Embed(
-            title="🌐 NexGuard Guild List",
-            description=f"Connected to **{guild_count}** guilds protecting **{total_users:,}** users",
+            title="🔴 LIVE Guild Status | NexGuard",
+            description=f"🌐 **Real-time data** from {guild_count} connected guilds\n💡 Protecting **{total_users:,}** total users across all servers\n⚡ Data refreshed: <t:{int(datetime.utcnow().timestamp())}:R>",
             color=0x00FFFF,
             timestamp=datetime.utcnow()
         )
@@ -260,19 +270,34 @@ class UtilityCommands(commands.Cog):
         for i, chunk in enumerate(guild_chunks):
             guild_info = []
             for guild in chunk:
-                guild_info.append(f"**{guild.name}**\n`ID: {guild.id}`\nMembers: {guild.member_count:,}")
+                # Add live status indicators
+                status_indicator = "🟢" if guild.member_count and guild.member_count > 0 else "🔴"
+                large_guild_indicator = " 🏢" if guild.member_count and guild.member_count >= 1000 else ""
+                boost_indicator = f" ⭐{guild.premium_subscription_count}" if hasattr(guild, 'premium_subscription_count') and guild.premium_subscription_count > 0 else ""
+                
+                guild_info.append(f"{status_indicator} **{guild.name}**{large_guild_indicator}{boost_indicator}\n`ID: {guild.id}`\n👥 {guild.member_count:,} members")
             
-            field_name = f"📋 Guilds {i*chunk_size + 1}-{min((i+1)*chunk_size, guild_count)}"
+            field_name = f"📋 Live Data: Guilds {i*chunk_size + 1}-{min((i+1)*chunk_size, guild_count)}"
             embed.add_field(
                 name=field_name,
                 value="\n\n".join(guild_info),
                 inline=True
             )
         
-        # Add summary field
+        # Add live metrics summary field
+        avg_users = total_users//guild_count if guild_count > 0 else 0
+        
         embed.add_field(
-            name="📊 Summary",
-            value=f"**Total Guilds:** {guild_count}\n**Total Users:** {total_users:,}\n**Average Users/Guild:** {total_users//guild_count if guild_count > 0 else 0}",
+            name="📊 Live Metrics Summary",
+            value=f"🌐 **Total Guilds:** {guild_count}\n👥 **Total Users:** {total_users:,}\n📈 **Average Users/Guild:** {avg_users:,}\n🏢 **Large Guilds (1000+):** {large_guilds}\n🔴 **Real-time Status:** All data live from Discord API",
+            inline=False
+        )
+        
+        # Add bot status field for context
+        bot_uptime = "Connected" if self.bot.is_ready() else "Connecting"
+        embed.add_field(
+            name="🤖 Bot Status",
+            value=f"⚡ **Status:** {bot_uptime}\n🔄 **Last Updated:** Just now\n📡 **Connection:** Active to all guilds\n💡 Use this command again for refreshed data",
             inline=False
         )
         
@@ -280,20 +305,34 @@ class UtilityCommands(commands.Cog):
         guild_ids_text = "\n".join([f"{guild.name}: {guild.id}" for guild in guilds])
         guild_ids_simple = ", ".join([str(guild.id) for guild in guilds])
         
-        # Create downloadable file
-        file_content = f"NexGuard Guild List - {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        file_content += "=" * 60 + "\n\n"
+        # Create downloadable file with live data snapshot
+        file_content = f"🔴 LIVE NexGuard Guild Data - {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
+        file_content += "=" * 80 + "\n\n"
+        file_content += "📊 LIVE METRICS SUMMARY:\n"
         file_content += f"Total Guilds: {guild_count}\n"
-        file_content += f"Total Users: {total_users:,}\n\n"
-        file_content += "Guild Details:\n" + "-" * 30 + "\n"
-        file_content += guild_ids_text + "\n\n"
-        file_content += "Guild IDs Only (comma-separated):\n" + "-" * 40 + "\n"
+        file_content += f"Total Users: {total_users:,}\n"
+        file_content += f"Average Users/Guild: {avg_users:,}\n"
+        file_content += f"Large Guilds (1000+ members): {large_guilds}\n"
+        file_content += f"Data Timestamp: {datetime.utcnow().isoformat()} UTC\n\n"
+        file_content += "🌐 DETAILED GUILD LIST:\n" + "-" * 50 + "\n"
+        
+        # Enhanced guild details with live data
+        for guild in guilds:
+            status = "ACTIVE" if guild.member_count and guild.member_count > 0 else "INACTIVE"
+            large_status = " (LARGE GUILD)" if guild.member_count and guild.member_count >= 1000 else ""
+            boosts = f" | Boosts: {guild.premium_subscription_count}" if hasattr(guild, 'premium_subscription_count') and guild.premium_subscription_count > 0 else ""
+            
+            file_content += f"{guild.name}: {guild.id} | Members: {guild.member_count:,} | Status: {status}{large_status}{boosts}\n"
+        
+        file_content += "\n" + "🆔 GUILD IDS ONLY (comma-separated):\n" + "-" * 50 + "\n"
         file_content += guild_ids_simple
+        file_content += f"\n\n🔄 This data was captured live at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')} and reflects real-time Discord API data."
         
         # Send embed and file
-        file = discord.File(StringIO(file_content), filename=f"nexguard_guilds_{datetime.utcnow().strftime('%Y%m%d')}.txt")
+        file_bytes = BytesIO(file_content.encode('utf-8'))
+        file = discord.File(file_bytes, filename=f"nexguard_guilds_{datetime.utcnow().strftime('%Y%m%d')}.txt")
         
-        embed.set_footer(text="See attached file for complete list", icon_url=None)
+        embed.set_footer(text="🔴 LIVE DATA | See attached file for complete real-time snapshot", icon_url=None)
         
         await interaction.response.send_message(embed=embed, file=file, ephemeral=True)
     
