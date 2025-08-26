@@ -225,7 +225,7 @@ class UtilityCommands(commands.Cog):
         is_authorized = False
         
         # Check for administrator permissions
-        if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions.administrator:
+        if hasattr(interaction.user, 'guild_permissions') and hasattr(interaction.user.guild_permissions, 'administrator') and interaction.user.guild_permissions.administrator:
             is_authorized = True
         
         # Check for specific owner IDs
@@ -234,7 +234,7 @@ class UtilityCommands(commands.Cog):
             is_authorized = True
             
         # Allow if user has manage server permission
-        if hasattr(interaction.user, 'guild_permissions') and interaction.user.guild_permissions.manage_guild:
+        if hasattr(interaction.user, 'guild_permissions') and hasattr(interaction.user.guild_permissions, 'manage_guild') and interaction.user.guild_permissions.manage_guild:
             is_authorized = True
         
         if not is_authorized:
