@@ -1130,7 +1130,11 @@ class TicketsCog(commands.Cog):
                 @discord.ui.button(label="Approve & Close", style=discord.ButtonStyle.red, emoji="✅")
                 async def approve_close(self, button_interaction: discord.Interaction, button: discord.ui.Button):
                     # Allow anyone to close the ticket (matching the /close command behavior)
-                    await button_interaction.response.defer()
+                    try:
+                        await button_interaction.response.defer()
+                    except discord.errors.NotFound:
+                        # Interaction already timed out
+                        return
                     
                     try:
                         # Create transcript
@@ -1241,9 +1245,12 @@ class TicketsCog(commands.Cog):
                         await button_interaction.response.send_message("❌ You don't have permission to manage tickets.", ephemeral=True)
                         return
                     
-                    await button_interaction.response.send_message(f"❌ Ticket closure request denied by {button_interaction.user.mention}")
-                    self.clear_items()
-                    await button_interaction.edit_original_response(view=self)
+                    # Disable the buttons and update the view
+                    for item in self.children:
+                        item.disabled = True
+                    
+                    await button_interaction.response.edit_message(view=self)
+                    await button_interaction.followup.send(f"❌ Ticket closure request denied by {button_interaction.user.mention}")
             
             # Ping support roles
             support_mentions = []
