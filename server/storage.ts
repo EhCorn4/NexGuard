@@ -1427,23 +1427,41 @@ export class DatabaseStorage implements IStorage {
 
   // Analytics methods implementation for DatabaseStorage
   async getAnalyticsOverview(): Promise<any> {
-    return {
-      totalServers: 9,
-      totalUsers: 167,
-      totalMessages: 1250,
-      totalCommands: 430,
-      activeUsers: 85,
-      topChannels: [
-        { name: "general", messages: 245 },
-        { name: "announcements", messages: 123 },
-        { name: "support", messages: 89 }
-      ],
-      topCommands: [
-        { name: "help", count: 45 },
-        { name: "ping", count: 32 },
-        { name: "userinfo", count: 28 }
-      ]
-    };
+    try {
+      // Get bot status for current server and user counts
+      const botStatus = await this.getBotStatus();
+      
+      // For now, use bot status data and return real metrics
+      // In the future, this could be enhanced with database analytics when available
+      return {
+        totalServers: botStatus?.guildsCount || 0,
+        totalUsers: botStatus?.usersCount || 0,
+        totalMessages: 0, // Database analytics not yet integrated
+        totalCommands: 0, // Database analytics not yet integrated  
+        activeUsers: Math.floor((botStatus?.usersCount || 0) * 0.15), // Estimate 15% active
+        topChannels: [
+          { name: "general", messages: 0 },
+          { name: "announcements", messages: 0 },
+          { name: "support", messages: 0 }
+        ],
+        topCommands: [
+          { name: "help", count: 0 },
+          { name: "ping", count: 0 },
+          { name: "userinfo", count: 0 }
+        ]
+      };
+    } catch (error) {
+      console.error('Error fetching analytics overview:', error);
+      return {
+        totalServers: 0,
+        totalUsers: 0,
+        totalMessages: 0,
+        totalCommands: 0,
+        activeUsers: 0,
+        topChannels: [],
+        topCommands: []
+      };
+    }
   }
 
   async getServerAnalytics(guildId: string, timeRange: string): Promise<any> {
