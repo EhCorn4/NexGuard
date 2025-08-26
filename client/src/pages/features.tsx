@@ -61,7 +61,7 @@ const Features = memo(function Features() {
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-sm text-gray-300">Bot Online & Ready</span>
             <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">60 Commands</span>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">61 Commands</span>
             <div className="w-px h-4 bg-slate-600"></div>
             <span className="text-sm text-[hsl(var(--nexguard-cyan))]">17+ Servers</span>
           </div>

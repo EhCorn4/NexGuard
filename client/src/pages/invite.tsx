@@ -23,21 +23,21 @@ const Invite = memo(function Invite() {
         <div className="max-w-6xl mx-auto text-center">
           <PageHeader 
             title="Ready to Protect Your Server?"
-            description="Join 11+ servers already using NexGuard's 50+ commands with professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection to maintain order and enhance their community experience."
+            description="Join 17+ servers already using NexGuard's 61+ commands with professional ticket system, live server statistics channels, reaction roles, universal logging, and advanced automod protection to maintain order and enhance their community experience."
           />
           
           {/* Bot Stats Section */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">201+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">639+</div>
               <div className="text-gray-400 text-sm">Active Users</div>
             </div>
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">11+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">17+</div>
               <div className="text-gray-400 text-sm">Servers Protected</div>
             </div>
             <div className="bg-[hsl(var(--nexguard-darker))]/60 backdrop-blur-sm border border-[hsl(var(--nexguard-cyan))]/20 rounded-lg p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">50+</div>
+              <div className="text-3xl font-bold text-[hsl(var(--nexguard-cyan))]">61+</div>
               <div className="text-gray-400 text-sm">Slash Commands</div>
             </div>
           </div>
