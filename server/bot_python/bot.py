@@ -82,6 +82,7 @@ class NexGuardBot(commands.Bot):
             'server.bot_python.commands.serverstats',
             'server.bot_python.commands.reactionroles',
             'server.bot_python.commands.webhook',
+            'server.bot_python.commands.bot_stats_embed',
             # 'server.bot_python.commands.chatbot'  # AI Chatbot system - DISABLED
         ]
         
