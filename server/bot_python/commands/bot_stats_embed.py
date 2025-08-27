@@ -274,19 +274,7 @@ class BotStatsEmbedCog(commands.Cog):
                 inline=True
             )
             
-            # Command Statistics
-            embed.add_field(
-                name="⚡ Commands Today",
-                value=f"**{commands_today:,}** executed",
-                inline=True
-            )
-            
-            # Total Commands
-            embed.add_field(
-                name="📊 Total Commands",
-                value=f"**{total_commands:,}** all-time",
-                inline=True
-            )
+
             
             # Latency
             latency_ms = round(self.bot.latency * 1000, 1)
