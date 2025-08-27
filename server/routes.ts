@@ -6294,9 +6294,16 @@ export function registerRoutes(app: Express): Server {
     try {
       const { version } = req.params;
       
-      // Get changelog by version
-      const [changelog] = await db.select()
-        .from(changelogs)
+      // Get changelog by version - only select existing columns
+      const [changelog] = await db.select({
+        id: changelogs.id,
+        version: changelogs.version,
+        title: changelogs.title,
+        description: changelogs.description,
+        changes: changelogs.changes,
+        release_date: changelogs.release_date,
+        created_at: changelogs.created_at
+      }).from(changelogs)
         .where(eq(changelogs.version, version))
         .limit(1);
 
