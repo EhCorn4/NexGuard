@@ -315,6 +315,17 @@ class BotStatsEmbedCog(commands.Cog):
                 inline=True
             )
             
+            # Disk Usage
+            disk = psutil.disk_usage('/')
+            disk_used_gb = disk.used / (1024**3)
+            disk_total_gb = disk.total / (1024**3)
+            disk_percent = (disk.used / disk.total) * 100
+            embed.add_field(
+                name="💽 Disk Usage",
+                value=f"**{disk_used_gb:.1f}GB / {disk_total_gb:.1f}GB**\n({disk_percent:.1f}%)",
+                inline=True
+            )
+            
             # Version/Build
             embed.add_field(
                 name="🔧 Version",
