@@ -6253,24 +6253,41 @@ export function registerRoutes(app: Express): Server {
 
       // Note: Type validation removed as database doesn't have type column
 
-      // Create new changelog entry
+      // Create new changelog entry (initially unpublished)
       const [newChangelog] = await db.insert(changelogs).values({
         version,
         title,
         description,
-        changes: Array.isArray(changes) ? changes : [changes]
+        changes: Array.isArray(changes) ? changes : [changes],
+        isPublished: false
       }).returning();
 
       // Publish to Discord
       const success = await publishChangelogToDiscord(newChangelog);
       
       if (success) {
+        // Mark as published in database
+        await db.update(changelogs)
+          .set({ 
+            isPublished: true, 
+            publishedAt: new Date() 
+          })
+          .where(eq(changelogs.id, newChangelog.id));
+
+        console.log(`✅ Changelog v${version} marked as published in database`);
+        
         res.json({
           success: true,
           message: `Custom changelog v${version} created and published successfully to Discord`,
-          data: { version: newChangelog.version, title: newChangelog.title }
+          data: { 
+            version: newChangelog.version, 
+            title: newChangelog.title,
+            isPublished: true,
+            publishedAt: new Date().toISOString()
+          }
         });
       } else {
+        console.log(`❌ Changelog v${version} created but failed to publish to Discord`);
         res.status(500).json({
           error: "Failed to publish custom changelog to Discord"
         });

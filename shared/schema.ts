@@ -330,6 +330,8 @@ export const changelogs = pgTable("changelogs", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   changes: text("changes").array().notNull(),
+  isPublished: boolean("is_published").default(false).notNull(),
+  publishedAt: timestamp("published_at"),
   release_date: timestamp("release_date").defaultNow().notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
