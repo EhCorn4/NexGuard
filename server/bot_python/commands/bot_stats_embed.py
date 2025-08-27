@@ -20,19 +20,23 @@ class BotStatsEmbedCog(commands.Cog):
         
     async def cog_load(self):
         """Called when the cog is loaded"""
-        # Start the update task
-        await self.load_stats_embeds()
-        self.update_stats_embeds.start()
+        # Start loading stats embeds without blocking
+        asyncio.create_task(self.initialize_after_ready())
         logger.info("Bot Stats Embed system initialized")
         
     async def cog_unload(self):
         """Clean up when cog is unloaded"""
         self.update_stats_embeds.cancel()
     
+    async def initialize_after_ready(self):
+        """Initialize stats embeds after bot is ready"""
+        await self.bot.wait_until_ready()
+        await self.load_stats_embeds()
+        self.update_stats_embeds.start()
+        
     async def load_stats_embeds(self):
         """Load existing stats embeds from database"""
         try:
-            await self.bot.wait_until_ready()
             if not self.bot.db_pool:
                 return
                 
