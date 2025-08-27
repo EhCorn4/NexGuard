@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 import asyncio
 import json
 import logging
+import psutil
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
@@ -295,6 +296,25 @@ class BotStatsEmbedCog(commands.Cog):
                 inline=True
             )
             
+            # CPU Usage
+            cpu_percent = psutil.cpu_percent(interval=0.1)
+            embed.add_field(
+                name="🖥️ CPU Usage",
+                value=f"**{cpu_percent:.1f}%**",
+                inline=True
+            )
+            
+            # Memory Usage
+            memory = psutil.virtual_memory()
+            memory_used_gb = memory.used / (1024**3)
+            memory_total_gb = memory.total / (1024**3)
+            memory_percent = memory.percent
+            embed.add_field(
+                name="💾 Memory Usage",
+                value=f"**{memory_used_gb:.1f}GB / {memory_total_gb:.1f}GB**\n({memory_percent:.1f}%)",
+                inline=True
+            )
+            
             # Version/Build
             embed.add_field(
                 name="🔧 Version",
@@ -305,7 +325,7 @@ class BotStatsEmbedCog(commands.Cog):
             # Available Commands
             embed.add_field(
                 name="⚙️ Commands",
-                value="**61+** slash commands",
+                value="**62** slash commands",
                 inline=True
             )
             
