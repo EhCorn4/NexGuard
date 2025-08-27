@@ -6253,37 +6253,26 @@ export function registerRoutes(app: Express): Server {
 
       // Note: Type validation removed as database doesn't have type column
 
-      // Create new changelog entry (initially unpublished)
+      // Create new changelog entry
       const [newChangelog] = await db.insert(changelogs).values({
         version,
         title,
         description,
-        changes: Array.isArray(changes) ? changes : [changes],
-        isPublished: false
+        changes: Array.isArray(changes) ? changes : [changes]
       }).returning();
 
       // Publish to Discord
       const success = await publishChangelogToDiscord(newChangelog);
       
       if (success) {
-        // Mark as published in database
-        await db.update(changelogs)
-          .set({ 
-            isPublished: true, 
-            publishedAt: new Date() 
-          })
-          .where(eq(changelogs.id, newChangelog.id));
-
-        console.log(`✅ Changelog v${version} marked as published in database`);
+        console.log(`✅ Changelog v${version} created and published to Discord successfully`);
         
         res.json({
           success: true,
           message: `Custom changelog v${version} created and published successfully to Discord`,
           data: { 
             version: newChangelog.version, 
-            title: newChangelog.title,
-            isPublished: true,
-            publishedAt: new Date().toISOString()
+            title: newChangelog.title
           }
         });
       } else {
@@ -6345,8 +6334,16 @@ export function registerRoutes(app: Express): Server {
   // Changelog API endpoints
   app.get("/api/changelogs", async (req, res) => {
     try {
-      // Fetch directly from database with proper column mapping
-      const result = await db.select().from(changelogs).orderBy(desc(changelogs.created_at));
+      // Fetch only existing columns from database
+      const result = await db.select({
+        id: changelogs.id,
+        version: changelogs.version,
+        title: changelogs.title,
+        description: changelogs.description,
+        changes: changelogs.changes,
+        release_date: changelogs.release_date,
+        created_at: changelogs.created_at
+      }).from(changelogs).orderBy(desc(changelogs.created_at));
       
       // Map database columns to frontend interface
       const mappedChangelogs = result.map(changelog => ({
