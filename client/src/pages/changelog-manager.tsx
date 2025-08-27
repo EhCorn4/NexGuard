@@ -83,7 +83,7 @@ export default function ChangelogManager() {
   // Create and publish custom changelog
   const createChangelogMutation = useMutation({
     mutationFn: (data: typeof newChangelog) => 
-      fetch('/api/changelog/publish/custom', { 
+      fetch('/api/changelog/create-and-publish', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
