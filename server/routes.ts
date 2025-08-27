@@ -6345,8 +6345,22 @@ export function registerRoutes(app: Express): Server {
   // Changelog API endpoints
   app.get("/api/changelogs", async (req, res) => {
     try {
-      const changelogData = await storage.getChangelogs();
-      res.json(changelogData);
+      // Fetch directly from database with proper column mapping
+      const result = await db.select().from(changelogs).orderBy(desc(changelogs.created_at));
+      
+      // Map database columns to frontend interface
+      const mappedChangelogs = result.map(changelog => ({
+        id: changelog.id,
+        version: changelog.version,
+        title: changelog.title,
+        description: changelog.description,
+        changes: changelog.changes,
+        type: 'minor' as const, // Default type since not in DB
+        releaseDate: changelog.release_date.toISOString(),
+        isPublished: true // For existing changelogs, assume published
+      }));
+      
+      res.json(mappedChangelogs);
     } catch (error) {
       console.error("Error fetching changelogs:", error);
       res.status(500).json({ error: "Failed to fetch changelogs" });
