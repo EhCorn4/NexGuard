@@ -16,7 +16,7 @@ import PDFDocument from "pdfkit";
 async function publishChangelogToDiscord(changelog: any): Promise<boolean> {
   try {
     console.log("publishChangelogToDiscord called with:", changelog.version);
-    const targetChannelId = '1389986013404991498';
+    const targetChannelId = '1408340635676708946';
     const roleToMention = '1389988181453181018';
     
     // Create embed data with proper change formatting
