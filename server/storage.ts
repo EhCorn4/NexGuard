@@ -1235,7 +1235,7 @@ export class MemStorage implements IStorage {
 
   async getCommandAnalytics(guildId: string, timeRange: string): Promise<any> {
     try {
-      // Get real command data
+      // Get real command data using correct column name
       const topCommands = await db
         .select({
           name: commandAnalytics.commandName,
@@ -1243,7 +1243,7 @@ export class MemStorage implements IStorage {
           successRate: sql`ROUND(AVG(CASE WHEN ${commandAnalytics.success} THEN 100.0 ELSE 0.0 END))`
         })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`))
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`)
         .groupBy(commandAnalytics.commandName)
         .orderBy(desc(count()))
         .limit(8);
@@ -1251,14 +1251,14 @@ export class MemStorage implements IStorage {
       const totalCommandsResult = await db
         .select({ count: count() })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`));
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`);
 
       const successRateResult = await db
         .select({
           successRate: sql`ROUND(AVG(CASE WHEN ${commandAnalytics.success} THEN 100.0 ELSE 0.0 END))`
         })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`));
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`);
 
       return {
         topCommands: topCommands.map(cmd => ({
@@ -1471,7 +1471,7 @@ export class DatabaseStorage implements IStorage {
       const totalCommands = await db
         .select({ count: count() })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`));
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`);
       
       // Get active users from last 24 hours
       const activeUsers = await db
@@ -1498,7 +1498,7 @@ export class DatabaseStorage implements IStorage {
           count: count()
         })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`))
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`)
         .groupBy(commandAnalytics.commandName)
         .orderBy(desc(count()))
         .limit(3);
@@ -1647,7 +1647,7 @@ export class DatabaseStorage implements IStorage {
           successRate: sql`ROUND(AVG(CASE WHEN ${commandAnalytics.success} THEN 100.0 ELSE 0.0 END))`
         })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`))
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`)
         .groupBy(commandAnalytics.commandName)
         .orderBy(desc(count()))
         .limit(8);
@@ -1655,14 +1655,14 @@ export class DatabaseStorage implements IStorage {
       const totalCommandsResult = await db
         .select({ count: count() })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`));
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`);
 
       const successRateResult = await db
         .select({
           successRate: sql`ROUND(AVG(CASE WHEN ${commandAnalytics.success} THEN 100.0 ELSE 0.0 END))`
         })
         .from(commandAnalytics)
-        .where(gte(commandAnalytics.createdAt, sql`NOW() - INTERVAL '24 hours'`));
+        .where(sql`${commandAnalytics.created_at} >= NOW() - INTERVAL '24 hours'`);
 
       return {
         topCommands: topCommands.map(cmd => ({
