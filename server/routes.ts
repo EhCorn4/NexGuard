@@ -19,27 +19,35 @@ async function publishChangelogToDiscord(changelog: any): Promise<boolean> {
     const targetChannelId = '1389986013404991498';
     const roleToMention = '1389988181453181018';
     
-    // Create embed data
+    // Create embed data with proper change formatting
     const embedColor = 0x0099ff; // Blue for all releases
+
+    // Format changes to handle Discord's character limits
+    let changesList = '';
+    if (changelog.changes && changelog.changes.length > 0) {
+      changesList = changelog.changes.map((change: string, index: number) => 
+        `${index + 1}. ${change}`
+      ).join('\n\n');
+    }
+
+    // Combine description and changes to avoid field character limits
+    const fullDescription = `${changelog.description}\n\n**📋 What's New:**\n${changesList}`;
 
     const embedData = {
       title: `🚀 ${changelog.title}`,
-      description: changelog.description,
+      description: fullDescription.length > 4000 ? 
+        `${changelog.description}\n\n**📋 Changes:** See details below...` : 
+        fullDescription,
       color: embedColor,
       fields: [
         {
-          name: "📋 Changes",
-          value: changelog.changes.map((change, index) => `${index + 1}. ${change}`).join('\n'),
-          inline: false
-        },
-        {
           name: "📊 Release Type",
-          value: "UPDATE",
+          value: "MAJOR UPDATE",
           inline: true
         },
         {
           name: "📅 Release Date", 
-          value: new Date(changelog.release_date).toLocaleDateString('en-US', {
+          value: new Date(changelog.release_date || new Date()).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -54,7 +62,32 @@ async function publishChangelogToDiscord(changelog: any): Promise<boolean> {
       timestamp: new Date(changelog.release_date).toISOString()
     };
 
-    // Send webhook request to Discord bot
+    // If changes are too long for embed, send them as separate messages
+    let additionalContent = '';
+    if (fullDescription.length > 4000 && changesList) {
+      // Split changes into chunks for separate messages
+      const maxLength = 1800; // Leave room for formatting
+      const changeChunks = [];
+      let currentChunk = '';
+      
+      for (const change of changelog.changes) {
+        const formattedChange = `• ${change}\n\n`;
+        if ((currentChunk + formattedChange).length > maxLength) {
+          if (currentChunk) changeChunks.push(currentChunk.trim());
+          currentChunk = formattedChange;
+        } else {
+          currentChunk += formattedChange;
+        }
+      }
+      if (currentChunk) changeChunks.push(currentChunk.trim());
+      
+      // Create additional content
+      additionalContent = changeChunks.map((chunk, index) => 
+        `**📋 Changes (Part ${index + 1}/${changeChunks.length}):**\n${chunk}`
+      ).join('\n\n');
+    }
+
+    // Send main embed
     const webhookResponse = await fetch('http://localhost:5001/api/bot/send-message', {
       method: 'POST',
       headers: {
@@ -66,6 +99,20 @@ async function publishChangelogToDiscord(changelog: any): Promise<boolean> {
         embed: embedData
       })
     });
+
+    // Send additional content if needed
+    if (additionalContent && webhookResponse.ok) {
+      await fetch('http://localhost:5001/api/bot/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          channel_id: targetChannelId,
+          content: additionalContent
+        })
+      });
+    }
 
     if (webhookResponse.ok) {
       console.log(`✅ Changelog v${changelog.version} published to Discord successfully`);
