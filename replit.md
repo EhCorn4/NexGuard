@@ -48,6 +48,7 @@ Preferred communication style: Simple, everyday language.
 - **Analytics System**: Real-time analytics data collection and display from PostgreSQL database queries for message, user, server, channel, and command activity.
 - **Discord Changelog System**: Automated publishing of changelogs to Discord with professional embeds, handling long messages.
 - **Documentation System**: Generation and distribution of comprehensive PDF guides for bot features.
+- **Live Bot Statistics System**: Real-time Discord embeds showing bot usage stats (servers, users, uptime, commands, latency) with auto-updates every minute via `/stats-embed` slash command.
 
 ### Data Flow
 - Data is served from Express API routes to the React frontend via React Query for reactive UI updates and efficient state management. Live statistics and analytics data are integrated dynamically across the website.
