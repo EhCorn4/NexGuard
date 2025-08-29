@@ -44,7 +44,9 @@ export async function setupDiscordAuth(app: Express) {
     {
       clientID: process.env.DISCORD_CLIENT_ID!,
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-      callbackURL: "/api/auth/discord/callback",
+      callbackURL: process.env.NODE_ENV === 'development' 
+        ? `https://${process.env.REPL_SLUG || 'localhost'}.${process.env.REPL_OWNER || 'replit'}.replit.dev/api/auth/discord/callback`
+        : "/api/auth/discord/callback",
       scope: ["identify", "email", "guilds"],
     },
     async (accessToken: string, refreshToken: string, profile: any, done: any) => {
