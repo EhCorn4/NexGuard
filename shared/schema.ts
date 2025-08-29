@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   verified: boolean("verified").default(false),
   locale: varchar("locale"),
   mfaEnabled: boolean("mfa_enabled").default(false),
+  accessToken: varchar("access_token"),
+  refreshToken: varchar("refresh_token"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

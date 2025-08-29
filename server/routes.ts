@@ -6204,24 +6204,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot/guilds", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      console.log(`Fetching guilds for user ${userId}`);
+      const accessToken = req.user?.accessToken;
       
-      // Get all bot guilds first
+      console.log(`Fetching guilds for user ${userId}, has token: ${!!accessToken}`);
+      
+      if (accessToken) {
+        // Get user's Discord guilds with admin permissions
+        try {
+          const userGuilds = await getUserAdminGuilds(userId, accessToken);
+          res.json(userGuilds);
+          return;
+        } catch (apiError) {
+          console.error("Discord API failed, falling back to bot guilds:", apiError);
+        }
+      }
+      
+      // Fallback: Get bot guilds and filter to valid ones
       const botGuilds = await BotConfigService.getBotGuilds();
-      
-      // Filter to only show servers with names (remove "Unknown" servers)
-      // and later we'll add permission checking via Discord API
       const validGuilds = botGuilds.filter(guild => 
         guild.name && 
         guild.name !== "Unknown" && 
         guild.name.trim() !== ""
       );
       
-      console.log(`Filtered ${botGuilds.length} total guilds to ${validGuilds.length} valid guilds`);
+      console.log(`Fallback: showing ${validGuilds.length} bot guilds`);
       res.json(validGuilds);
     } catch (error) {
-      console.error("Error fetching bot guilds:", error);
-      res.status(500).json({ message: "Failed to fetch bot guilds" });
+      console.error("Error fetching guilds:", error);
+      res.status(500).json({ message: "Failed to fetch guilds" });
     }
   });
 

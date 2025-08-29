@@ -32,6 +32,46 @@ export function getSession() {
   });
 }
 
+// Discord API helper function to get user's admin guilds
+export async function getUserAdminGuilds(userId: string, accessToken: string) {
+  const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': 'NexGuard Bot (https://nexguard.com, 1.0)'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Discord API error: ${response.status}`);
+  }
+
+  const guilds = await response.json();
+  
+  // Filter to only guilds where user has Administrator permission (permission bit 3)
+  const adminGuilds = guilds.filter((guild: any) => {
+    const hasAdmin = (parseInt(guild.permissions) & 0x8) === 0x8; // Administrator permission
+    const isOwner = guild.owner === true;
+    return hasAdmin || isOwner;
+  });
+
+  console.log(`User ${userId} has admin access to ${adminGuilds.length}/${guilds.length} guilds`);
+
+  // Get bot guilds to mark which ones have the bot
+  const { BotConfigService } = await import('./api/botConfig');
+  const botGuilds = await BotConfigService.getBotGuilds();
+  const botGuildIds = new Set(botGuilds.map(g => g.id));
+
+  return adminGuilds.map((guild: any) => ({
+    id: guild.id,
+    name: guild.name,
+    icon: guild.icon,
+    member_count: guild.approximate_member_count || 0,
+    channel_count: 0,
+    hasBot: botGuildIds.has(guild.id), // Mark if bot is in this server
+    permissions: guild.permissions
+  }));
+}
+
 export async function setupDiscordAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
@@ -80,10 +120,12 @@ export async function setupDiscordAuth(app: Express) {
           verified: profile.verified || false,
           locale: profile.locale,
           mfaEnabled: profile.mfa_enabled || false,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
         });
         
         console.log('Discord user upserted:', user.id);
-        return done(null, { ...user, accessToken, refreshToken });
+        return done(null, user);
       } catch (error) {
         console.error('Discord auth error:', error);
         return done(error, null);
