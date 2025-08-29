@@ -1,16 +1,11 @@
-import { users, newsUpdates, developers, features, testimonials, feedback, guilds, commands, tickets, moderationLogs, changelogs, botStatus, serverAnalytics, messageAnalytics, commandAnalytics, userActivity, channelAnalytics, type User, type InsertUser, type AuthUser, type UpsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type Guild, type Command, type InsertCommand, type Ticket, type InsertTicket, type ModerationLog, type InsertModerationLog, type Changelog, type InsertChangelog, type BotStatus, type InsertBotStatus } from "@shared/schema";
+import { users, newsUpdates, developers, features, testimonials, feedback, guilds, commands, tickets, moderationLogs, changelogs, botStatus, serverAnalytics, messageAnalytics, commandAnalytics, userActivity, channelAnalytics, type User, type InsertUser, type UpsertUser, type NewsUpdate, type Developer, type Feature, type Testimonial, type InsertTestimonial, type Feedback, type InsertFeedback, type Guild, type Command, type InsertCommand, type Ticket, type InsertTicket, type ModerationLog, type InsertModerationLog, type Changelog, type InsertChangelog, type BotStatus, type InsertBotStatus } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, count, sum, avg, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
-  // Legacy user methods (for existing user system)
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  
-  // Replit Auth user methods
-  getAuthUser(id: string): Promise<AuthUser | undefined>;
-  upsertUser(user: UpsertUser): Promise<AuthUser>;
+  // Discord Auth user methods
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   getNews(): Promise<NewsUpdate[]>;
   getDevelopers(): Promise<Developer[]>;
   getFeatures(): Promise<Feature[]>;

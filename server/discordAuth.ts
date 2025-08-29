@@ -1,0 +1,132 @@
+import passport from "passport";
+import { Strategy as DiscordStrategy } from "passport-discord";
+import session from "express-session";
+import type { Express, RequestHandler } from "express";
+import connectPg from "connect-pg-simple";
+import { storage } from "./storage";
+
+if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
+  throw new Error("Discord OAuth credentials not provided");
+}
+
+export function getSession() {
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: sessionTtl,
+    tableName: "sessions",
+  });
+  
+  return session({
+    secret: process.env.SESSION_SECRET!,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      maxAge: sessionTtl,
+    },
+  });
+}
+
+export async function setupDiscordAuth(app: Express) {
+  app.set("trust proxy", 1);
+  app.use(getSession());
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  console.log('Setting up Discord authentication...');
+
+  const strategy = new DiscordStrategy(
+    {
+      clientID: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      callbackURL: "/api/auth/discord/callback",
+      scope: ["identify", "email", "guilds"],
+    },
+    async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+      try {
+        console.log('Discord OAuth callback - Profile:', profile.id, profile.username);
+        
+        // Upsert user in database
+        const user = await storage.upsertUser({
+          id: profile.id,
+          username: profile.username,
+          discriminator: profile.discriminator || "0",
+          email: profile.email,
+          avatar: profile.avatar,
+          verified: profile.verified || false,
+          locale: profile.locale,
+          mfaEnabled: profile.mfa_enabled || false,
+        });
+        
+        console.log('Discord user upserted:', user.id);
+        return done(null, { ...user, accessToken, refreshToken });
+      } catch (error) {
+        console.error('Discord auth error:', error);
+        return done(error, null);
+      }
+    }
+  );
+
+  passport.use(strategy);
+  console.log('Discord strategy registered');
+
+  passport.serializeUser((user: any, done) => {
+    console.log('Serializing user:', user.id);
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id: any, done) => {
+    try {
+      console.log('Deserializing user:', id);
+      // Handle both Discord users and legacy sessions
+      if (typeof id === 'object' && id.claims) {
+        // Legacy Replit session - clear it
+        console.log('Clearing legacy Replit session');
+        return done(null, false);
+      }
+      const user = await storage.getUser(String(id));
+      done(null, user);
+    } catch (error) {
+      console.error('Error deserializing user:', error);
+      done(null, false);
+    }
+  });
+
+  // Auth routes
+  app.get("/api/auth/discord", passport.authenticate("discord"));
+
+  app.get("/api/auth/discord/callback", 
+    passport.authenticate("discord", { failureRedirect: "/?error=auth_failed" }),
+    (req, res) => {
+      console.log('Discord auth successful, redirecting to dashboard');
+      res.redirect("/dashboard?auth=success");
+    }
+  );
+
+  app.get("/api/logout", (req, res) => {
+    console.log('Logging out user');
+    req.logout((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      res.redirect("/");
+    });
+  });
+}
+
+export const isAuthenticated: RequestHandler = (req, res, next) => {
+  console.log('Auth check - isAuthenticated:', req.isAuthenticated());
+  console.log('Auth check - user:', req.user ? 'Present' : 'None');
+  
+  if (req.isAuthenticated() && req.user) {
+    return next();
+  }
+  
+  return res.status(401).json({ message: "Unauthorized" });
+};

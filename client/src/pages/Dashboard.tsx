@@ -98,10 +98,10 @@ export default function Dashboard() {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <Button 
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/api/auth/discord'}
                   className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 py-4 text-lg"
                 >
-                  Sign in with Replit <ArrowRight className="ml-2" size={20} />
+                  Sign in with Discord <ArrowRight className="ml-2" size={20} />
                 </Button>
                 <Button 
                   onClick={() => window.location.href = '/features'}

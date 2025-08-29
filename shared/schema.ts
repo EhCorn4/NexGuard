@@ -14,13 +14,16 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table for Discord authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  id: varchar("id").primaryKey(), // Discord user ID
+  username: varchar("username").notNull(),
+  discriminator: varchar("discriminator"),
+  email: varchar("email"),
+  avatar: varchar("avatar"),
+  verified: boolean("verified").default(false),
+  locale: varchar("locale"),
+  mfaEnabled: boolean("mfa_enabled").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -458,8 +461,10 @@ export const insertFeatureSchema = createInsertSchema(features);
 export const insertTestimonialSchema = createInsertSchema(testimonials);
 export const insertFeedbackSchema = createInsertSchema(feedback);
 
+// Discord user types
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
 export type UpsertUser = typeof users.$inferInsert;
-export type AuthUser = typeof users.$inferSelect;
 export const insertGuildSchema = createInsertSchema(guilds);
 export const insertCommandSchema = createInsertSchema(commands);
 export const insertTicketSchema = createInsertSchema(tickets);
@@ -480,7 +485,6 @@ export const insertUserActivitySchema = createInsertSchema(userActivity);
 export const insertChannelAnalyticsSchema = createInsertSchema(channelAnalytics);
 
 // Select types
-export type User = typeof users.$inferSelect;
 export type NewsUpdate = typeof newsUpdates.$inferSelect;
 export type Developer = typeof developers.$inferSelect;
 export type Feature = typeof features.$inferSelect;
@@ -506,7 +510,6 @@ export type UserActivity = typeof userActivity.$inferSelect;
 export type ChannelAnalytics = typeof channelAnalytics.$inferSelect;
 
 // Insert types
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsUpdate = z.infer<typeof insertNewsUpdateSchema>;
 export type InsertDeveloper = z.infer<typeof insertDeveloperSchema>;
 export type InsertFeature = z.infer<typeof insertFeatureSchema>;

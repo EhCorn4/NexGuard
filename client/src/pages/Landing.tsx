@@ -16,7 +16,7 @@ export default function Landing() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button 
-              onClick={() => window.location.href = '/api/login?returnTo=/dashboard'}
+              onClick={() => window.location.href = '/api/auth/discord'}
               className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 py-4 text-lg"
             >
               Access Security Dashboard <ArrowRight className="ml-2" size={20} />

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { apiEndpoints } from "./api/endpoints";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupDiscordAuth, isAuthenticated } from "./discordAuth";
 import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
@@ -5827,16 +5827,15 @@ For detailed assistance, join our support server at https://discord.gg/wpjZMPXaR
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  await setupDiscordAuth(app);
 
   const httpServer = createServer(app);
   
-  // Auth routes
+  // Discord Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getAuthUser(userId);
-      res.json(user);
+      console.log('Getting authenticated Discord user:', req.user?.id);
+      res.json(req.user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
