@@ -21,18 +21,18 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
       throw new Error(`Discord API error: ${response.status}`);
     }
 
-    const discordGuilds = await response.json();
+    const discordGuilds = await response.json() as any[];
     
     // Filter guilds where user has admin permissions
     // 0x8 = ADMINISTRATOR permission, also include if user is owner
     const adminGuilds = discordGuilds.filter((guild: any) => {
       try {
         const permissions = BigInt(guild.permissions);
-        const hasAdmin = (permissions & 0x8n) === 0x8n; // Administrator permission
+        const hasAdmin = (permissions & BigInt(0x8)) === BigInt(0x8); // Administrator permission
         const isOwner = guild.owner === true;
         
         // Also check for MANAGE_GUILD (0x20) as a fallback admin permission
-        const hasManageGuild = (permissions & 0x20n) === 0x20n;
+        const hasManageGuild = (permissions & BigInt(0x20)) === BigInt(0x20);
         
         const isAdminServer = hasAdmin || isOwner || hasManageGuild;
         
