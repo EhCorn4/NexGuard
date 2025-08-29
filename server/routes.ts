@@ -5,6 +5,49 @@ import { db } from "./db";
 import { apiEndpoints } from "./api/endpoints";
 import { setupDiscordAuth, isAuthenticated } from "./discordAuth";
 import { BotConfigService } from "./api/botConfig";
+
+// Discord API helper function to get user's admin guilds
+async function getUserAdminGuilds(userId: string, accessToken: string) {
+  try {
+    // Fetch user's Discord guilds
+    const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'User-Agent': 'NexGuard-Bot-Website/2.3.2'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Discord API error: ${response.status}`);
+    }
+
+    const discordGuilds = await response.json();
+    
+    // Filter guilds where user has admin permissions (0x8 = ADMINISTRATOR)
+    const adminGuilds = discordGuilds.filter((guild: any) => 
+      (parseInt(guild.permissions) & 0x8) === 0x8 || guild.owner
+    );
+
+    // Get bot guilds to see which ones bot is already in
+    const botGuilds = await BotConfigService.getBotGuilds();
+    const botGuildIds = new Set(botGuilds.map(g => g.id));
+
+    // Format guilds with bot status
+    return adminGuilds.map((guild: any) => ({
+      id: guild.id,
+      name: guild.name,
+      icon: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
+      member_count: 0, // Discord API doesn't provide this in /users/@me/guilds
+      channel_count: 0,
+      bot_in_server: botGuildIds.has(guild.id),
+      user_permissions: guild.permissions,
+      is_owner: guild.owner || false
+    }));
+  } catch (error) {
+    console.error('Error fetching Discord guilds:', error);
+    throw error;
+  }
+}
 import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
@@ -6144,11 +6187,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot configuration endpoints
   app.get("/api/bot/guilds", isAuthenticated, async (req, res) => {
     try {
+      const userId = req.user.claims.sub;
+      const accessToken = req.user.access_token;
+      
+      // Fetch user's guilds from Discord API with admin permissions
+      const userGuilds = await getUserAdminGuilds(userId, accessToken);
+      res.json(userGuilds);
+    } catch (error) {
+      console.error("Error fetching user admin guilds:", error);
+      // Fallback to bot guilds if Discord API fails
       const guilds = await BotConfigService.getBotGuilds();
       res.json(guilds);
-    } catch (error) {
-      console.error("Error fetching bot guilds:", error);
-      res.status(500).json({ message: "Failed to fetch bot guilds" });
     }
   });
 

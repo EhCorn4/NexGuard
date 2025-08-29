@@ -166,9 +166,35 @@ export class BotConfigService {
 
       const guild = guildResult.rows[0];
 
-      // Parse JSON settings if available
-      const settings = guild.settings ? JSON.parse(guild.settings as string) : {};
-      const automodConfig = guild.automod_config ? JSON.parse(guild.automod_config as string) : {};
+      // Parse JSON settings if available - handle both string and object types safely
+      let settings = {};
+      let automodConfig = {};
+      
+      try {
+        if (guild.settings) {
+          if (typeof guild.settings === 'string') {
+            settings = JSON.parse(guild.settings);
+          } else if (typeof guild.settings === 'object' && guild.settings !== null) {
+            settings = guild.settings;
+          }
+        }
+      } catch (e) {
+        console.log('Failed to parse guild settings, using defaults:', guild.settings);
+        settings = {};
+      }
+      
+      try {
+        if (guild.automod_config) {
+          if (typeof guild.automod_config === 'string') {
+            automodConfig = JSON.parse(guild.automod_config);
+          } else if (typeof guild.automod_config === 'object' && guild.automod_config !== null) {
+            automodConfig = guild.automod_config;
+          }
+        }
+      } catch (e) {
+        console.log('Failed to parse automod config, using defaults:', guild.automod_config);
+        automodConfig = {};
+      }
       
       // Construct configuration object with available fields
       return {
