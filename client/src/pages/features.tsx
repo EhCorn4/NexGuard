@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { StaggerContainer, StaggerItem } from "@/components/ui/stagger-container";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings, Shield, Ticket, Command, Zap, Cog, FileText, ShieldCheck } from "lucide-react";
+import { AlertCircle, Gavel, BarChart3, Users, Bell, Gamepad2, Settings, Shield, Ticket, Command, Zap, Cog, FileText, ShieldCheck, ShieldAlert, ShieldX, Activity, HeartPulse, Plug } from "lucide-react";
 import type { Feature } from "@shared/schema";
 import { memo } from "react";
 
@@ -24,6 +24,11 @@ const iconMap = {
   zap: Zap,
   "file-text": FileText,
   "shield-check": ShieldCheck,
+  "shield-alert": ShieldAlert,
+  "shield-x": ShieldX,
+  "activity": Activity,
+  "heart-pulse": HeartPulse,
+  "plug": Plug,
 };
 
 const Features = memo(function Features() {
@@ -63,7 +68,7 @@ const Features = memo(function Features() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <PageHeader 
           title="Bot Features"
-          description={`NexGuard offers comprehensive Discord bot functionality with 61+ slash commands, professional ticket system with direct management commands, live server statistics channels, reaction roles, comprehensive event logging, advanced automod protection, and real-time analytics to enhance your server management experience across ${safeGuildsCount}+ servers.`}
+          description={`NexGuard offers comprehensive Discord bot functionality with 66+ slash commands, enterprise security systems, professional ticket system, live server statistics channels, reaction roles, comprehensive event logging, advanced automod protection, performance monitoring, and real-time analytics to enhance your server management experience across ${safeGuildsCount}+ servers.`}
         />
         
         {/* Bot Status Section */}
@@ -72,7 +77,7 @@ const Features = memo(function Features() {
             <div className={`w-2 h-2 rounded-full animate-pulse ${safeIsOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
             <span className="text-sm text-gray-300">{safeIsOnline ? 'Bot Online & Ready' : 'Bot Offline'}</span>
             <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">61 Commands</span>
+            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">66 Commands</span>
             <div className="w-px h-4 bg-slate-600"></div>
             <span className="text-sm text-[hsl(var(--nexguard-cyan))]">{safeGuildsCount}+ Servers</span>
             <div className="w-px h-4 bg-slate-600"></div>
