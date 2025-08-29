@@ -62,20 +62,22 @@ export async function getUserAdminGuilds(userId: string, accessToken: string) {
   const botGuildIds = new Set(botGuilds.map(g => g.id));
   const memberCountMap = new Map(botGuilds.map(g => [g.id, g.member_count]));
 
-  // Only return guilds where the bot is present (so we have accurate data)
-  const guildsWithBot = adminGuilds.filter((guild: any) => botGuildIds.has(guild.id));
-  
-  console.log(`User ${userId} has access to ${guildsWithBot.length} admin guilds where bot is present`);
+  console.log(`User ${userId} has admin access to ${adminGuilds.length} total admin guilds`);
+  console.log(`Bot is present in ${botGuilds.length} guilds`);
 
-  return guildsWithBot.map((guild: any) => ({
-    id: guild.id,
-    name: guild.name,
-    icon: guild.icon,
-    member_count: memberCountMap.get(guild.id) || 0, // Use database member count
-    channel_count: 0,
-    hasBot: true, // All these guilds have the bot
-    permissions: guild.permissions
-  }));
+  // Return ALL admin guilds, marking which ones have the bot
+  return adminGuilds.map((guild: any) => {
+    const hasBot = botGuildIds.has(guild.id);
+    return {
+      id: guild.id,
+      name: guild.name,
+      icon: guild.icon,
+      member_count: hasBot ? (memberCountMap.get(guild.id) || 0) : (guild.approximate_member_count || 0),
+      channel_count: 0,
+      hasBot: hasBot,
+      permissions: guild.permissions
+    };
+  });
 }
 
 export async function setupDiscordAuth(app: Express) {
