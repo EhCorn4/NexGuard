@@ -382,7 +382,12 @@ class NexGuardBot(commands.Bot):
         try:
             # Calculate uptime
             uptime = datetime.utcnow() - self.bot_start_time
-            uptime_str = str(uptime).split('.')[0]  # Remove microseconds
+            # Format uptime with limited decimal places (1 decimal for seconds)
+            total_seconds = uptime.total_seconds()
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            seconds = total_seconds % 60
+            uptime_str = f"{hours}:{minutes:02d}:{seconds:04.1f}"
             
             async with self.db_pool.acquire() as conn:
                 await conn.execute("""
