@@ -346,25 +346,34 @@ class PerformanceMonitor(commands.Cog):
         """Broadcast alert to all configured channels"""
         try:
             for guild in self.bot.guilds:
-                # Try to find alert/monitoring channels
-                alert_channels = []
+                # Look specifically for general-events channel first
+                target_channel = None
                 for channel in guild.text_channels:
-                    if any(keyword in channel.name.lower() for keyword in ['alert', 'monitor', 'performance', 'log']):
+                    if channel.name.lower() == 'general-events':
                         if channel.permissions_for(guild.me).send_messages:
-                            alert_channels.append(channel)
+                            target_channel = channel
+                            break
+                
+                # If no general-events channel, look for other alert channels
+                if not target_channel:
+                    for channel in guild.text_channels:
+                        if any(keyword in channel.name.lower() for keyword in ['alert', 'monitor', 'performance', 'log', 'events']):
+                            if channel.permissions_for(guild.me).send_messages:
+                                target_channel = channel
+                                break
                 
                 # If no specific channels, use system channel
-                if not alert_channels and guild.system_channel:
+                if not target_channel and guild.system_channel:
                     if guild.system_channel.permissions_for(guild.me).send_messages:
-                        alert_channels.append(guild.system_channel)
+                        target_channel = guild.system_channel
                 
-                # Send to found channels
-                for channel in alert_channels[:1]:  # Only send to first found channel per guild
+                # Send to found channel
+                if target_channel:
                     try:
-                        await channel.send(embed=embed)
-                        break
+                        await target_channel.send(embed=embed)
+                        logger.info(f"Performance alert sent to {target_channel.name} in {guild.name}")
                     except discord.Forbidden:
-                        continue
+                        logger.warning(f"No permission to send performance alert in {guild.name}")
                         
         except Exception as e:
             logger.error(f"Error broadcasting alert: {e}")

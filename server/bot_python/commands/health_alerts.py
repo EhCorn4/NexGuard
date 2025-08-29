@@ -433,24 +433,33 @@ class BotHealthAlerts(commands.Cog):
             for guild in self.bot.guilds:
                 alert_channel = None
                 
-                # Look for dedicated alert channels
+                # Look specifically for general-events channel first
                 for channel in guild.text_channels:
-                    if any(keyword in channel.name.lower() for keyword in ['alert', 'health', 'monitor', 'bot']):
+                    if channel.name.lower() == 'general-events':
                         if channel.permissions_for(guild.me).send_messages:
                             alert_channel = channel
                             break
                 
-                # Fallback to system channel
+                # If no general-events channel, look for other alert channels
+                if not alert_channel:
+                    for channel in guild.text_channels:
+                        if any(keyword in channel.name.lower() for keyword in ['alert', 'health', 'monitor', 'bot', 'events']):
+                            if channel.permissions_for(guild.me).send_messages:
+                                alert_channel = channel
+                                break
+                
+                # If no specific channels, use system channel
                 if not alert_channel and guild.system_channel:
                     if guild.system_channel.permissions_for(guild.me).send_messages:
                         alert_channel = guild.system_channel
                 
-                # Send alert
+                # Send to found channel
                 if alert_channel:
                     try:
                         await alert_channel.send(embed=embed)
+                        logger.info(f"Health alert sent to {alert_channel.name} in {guild.name}")
                     except discord.Forbidden:
-                        pass
+                        logger.warning(f"No permission to send health alert in {guild.name}")
                         
         except Exception as e:
             logger.error(f"Error sending Discord alerts: {e}")
