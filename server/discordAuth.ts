@@ -84,7 +84,7 @@ export async function setupDiscordAuth(app: Express) {
     try {
       console.log('Deserializing user:', id);
       // Handle both Discord users and legacy sessions
-      if (typeof id === 'object' && id.claims) {
+      if (typeof id === 'object' && (id as any).claims) {
         // Legacy Replit session - clear it
         console.log('Clearing legacy Replit session');
         return done(null, false);
@@ -97,14 +97,23 @@ export async function setupDiscordAuth(app: Express) {
     }
   });
 
-  // Auth routes
-  app.get("/api/auth/discord", passport.authenticate("discord"));
+  // Auth routes with URL mapping support
+  app.get("/api/auth/discord", (req, res, next) => {
+    // Store return URL in session for post-auth redirect
+    const returnTo = req.query.returnTo as string || '/dashboard';
+    (req.session as any).returnTo = returnTo;
+    console.log('Discord auth initiated, return URL:', returnTo);
+    passport.authenticate("discord")(req, res, next);
+  });
 
   app.get("/api/auth/discord/callback", 
     passport.authenticate("discord", { failureRedirect: "/?error=auth_failed" }),
     (req, res) => {
-      console.log('Discord auth successful, redirecting to dashboard');
-      res.redirect("/dashboard?auth=success");
+      console.log('Discord auth successful');
+      const returnTo = (req.session as any).returnTo || '/dashboard';
+      delete (req.session as any).returnTo; // Clean up
+      console.log('Redirecting to:', returnTo + '?auth=success');
+      res.redirect(returnTo + '?auth=success');
     }
   );
 

@@ -3,16 +3,16 @@
 ## Overview
 NexGuard is a comprehensive Discord bot complemented by a professional website, designed to provide robust server management capabilities including advanced moderation, a full-featured ticket system, and various utility commands. The website acts as a central hub for users to monitor bot status, explore features, and access support, aiming to deliver a professional and reliable user experience for Discord server administrators with significant market potential.
 
-## Recent Changes (v2.9.0 - August 29, 2025) ✅ COMPLETED
-- **Replit OAuth Authentication System**: Successfully implemented comprehensive authentication with session management, user profiles, and secure login/logout flow
-- **Authentication-Aware UI**: Created Landing page for public users and UserHome dashboard for authenticated users with dynamic routing based on auth state
-- **Security Dashboard Public Release**: Moved security dashboard from stealth mode to public navigation for authenticated users - now prominently featured in main navbar
-- **User Account Management**: Full integration with Replit OAuth including user profile data, authentication middleware, and database session storage
-- **Professional Landing Experience**: Designed conversion-focused landing page highlighting 18 protected servers, 949 monitored users, and 67+ commands
-- **Authenticated User Dashboard**: Built comprehensive user home with quick access to security dashboard, analytics, and bot management features
-- **Session Persistence**: Database-backed session storage with proper authentication state management and automatic token refresh
-- **Production Authentication**: Live authentication system operational with proper error handling and user experience optimization
-- **Authentication Flow Optimization**: Resolved infinite loop issues with simplified auth state management using direct API calls and proper HMR handling
+## Recent Changes (v3.0.0 - August 29, 2025) ✅ COMPLETED
+- **Discord OAuth Authentication Migration**: Successfully migrated from Replit OAuth to Discord OAuth for enhanced Discord bot integration and user permission management
+- **URL Mapping & Custom Links**: Implemented advanced URL mapping system supporting custom redirect URLs post-authentication (returnTo parameter support)
+- **Discord User Management**: Updated database schema to store Discord user data including username, avatar, discriminator, guilds, and verification status  
+- **Enhanced Permission System**: Discord-based permission checking with server membership verification and role-based access control
+- **Authentication Utilities**: Created comprehensive auth utility system with Discord avatar handling, username formatting, and permission checking
+- **Session Management**: Database-backed Discord session storage with proper legacy session cleanup and hybrid compatibility
+- **Frontend Integration**: Updated all login buttons and authentication flows to use Discord OAuth endpoints with custom redirect support
+- **Storage System Cleanup**: Rebuilt storage implementation with proper Discord auth interface compliance and simplified database operations
+- **Production Ready**: Live Discord authentication system operational with real Discord user profiles, avatars, and server access verification
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -40,10 +40,12 @@ Preferred communication style: Simple, everyday language.
 ### Backend
 - **Framework**: Express.js with TypeScript
 - **Bot Framework**: Discord.py v2 with slash commands
+- **Authentication**: Discord OAuth 2.0 with user permission verification and server membership checking
 - **Development**: Hot reload with Vite middleware integration
-- **API Structure**: RESTful endpoints for content management, bot data, and external integrations.
-- **Security Infrastructure**: Anti-raid and anti-nuke protection systems with real-time monitoring.
-- **Monitoring Systems**: Performance monitoring, health alerts, and comprehensive logging.
+- **API Structure**: RESTful endpoints for content management, bot data, and external integrations
+- **Security Infrastructure**: Anti-raid and anti-nuke protection systems with real-time monitoring
+- **Monitoring Systems**: Performance monitoring, health alerts, and comprehensive logging
+- **URL Mapping**: Custom redirect system supporting post-authentication deep linking
 
 ### Database Schema
 - Core entities include Users, News Updates, Developers, Features, Testimonials, Feedback, Bot Status, Commands, Guilds, Tickets, Moderation Logs, Ban List, Warning History, Changelogs, Performance Metrics, Health Alerts, Anti-Raid Logs, Anti-Nuke Logs, Guild Backups, Threat Intelligence, Attack Patterns, Behavioral Profiles, Threat Alerts, and Cross-Server Intelligence.
