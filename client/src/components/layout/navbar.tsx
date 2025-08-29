@@ -28,6 +28,7 @@ export function Navbar() {
   const publicNavItems = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/invite", label: "Invite Bot" },
     { href: "/developers", label: "Developers" },
     { href: "/community", label: "Community" },
