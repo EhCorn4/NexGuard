@@ -12,7 +12,8 @@ NexGuard is a comprehensive Discord bot complemented by a professional website, 
 - **Session Management**: Database-backed Discord session storage with proper legacy session cleanup and hybrid compatibility
 - **Frontend Integration**: Updated all login buttons and authentication flows to use Discord OAuth endpoints with custom redirect support
 - **Storage System Cleanup**: Rebuilt storage implementation with proper Discord auth interface compliance and simplified database operations
-- **Production Ready**: Live Discord authentication system operational with real Discord user profiles, avatars, and server access verification
+- **Multi-Environment Support**: Configured Discord app with both development and production callback URLs for seamless deployment
+- **Production Ready**: Live Discord authentication system operational with real Discord user profiles, avatars, and server access verification - works in both development and deployed environments
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
