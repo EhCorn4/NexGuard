@@ -12,7 +12,7 @@ export default function Dashboard() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-xl">Loading NexGuard Dashboard...</div>
       </div>
     );
   }
@@ -30,11 +30,11 @@ export default function Dashboard() {
           <div className="bg-gray-800/50 p-8 rounded-lg border border-gray-700 backdrop-blur-sm">
             <Lock className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
             <h1 className="text-4xl font-bold text-white mb-4">
-              Security Dashboard Access Required
+              NexGuard Dashboard Access Required
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Sign in with your Discord account to access the NexGuard Security Dashboard 
-              and monitor real-time threat intelligence across protected Discord servers.
+              Sign in with your Discord account to access the NexGuard Dashboard 
+              and manage your Discord bot settings, monitor servers, and view analytics.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
