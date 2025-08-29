@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands, tasks
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Set, Optional
 import json
 from collections import defaultdict, deque
@@ -185,7 +185,7 @@ class AntiRaidSystem(commands.Cog):
             # Delete recent messages
             try:
                 async for message in channel.history(limit=50):
-                    if message.author == user and (datetime.utcnow().replace(tzinfo=None) - message.created_at.replace(tzinfo=None)).seconds < 60:
+                    if message.author == user and (datetime.now(timezone.utc) - message.created_at.replace(tzinfo=timezone.utc)).seconds < 60:
                         await message.delete()
             except discord.Forbidden:
                 pass
@@ -272,7 +272,12 @@ class AntiRaidSystem(commands.Cog):
     async def check_suspicious_account(self, member: discord.Member):
         """Check if joining account is suspicious"""
         try:
-            account_age = datetime.utcnow() - member.created_at
+            now = datetime.now(timezone.utc)
+            created_at = member.created_at
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+            
+            account_age = now - created_at
             
             # Flag accounts created within last 24 hours
             if account_age < timedelta(hours=24):

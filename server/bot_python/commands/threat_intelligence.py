@@ -7,7 +7,7 @@ import logging
 import json
 import time
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Set, Optional, Tuple, Any
 from collections import defaultdict, deque
 import hashlib
@@ -58,6 +58,160 @@ class ThreatIntelligenceSystem(commands.Cog):
         self.predictive_threat_modeling.start()
         
         logger.info("Threat Intelligence System initialized")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        """Analyze member joins for threats"""
+        try:
+            analysis = await self.analyze_member_join(member)
+            
+            if analysis['threat_score'] > 50:
+                logger.warning(f"🚨 HIGH THREAT: {member.name} joined {member.guild.name} - Score: {analysis['threat_score']}/100")
+                
+                # Store in active threats
+                self.active_threats[member.guild.id].append({
+                    'user_id': member.id,
+                    'username': member.name,
+                    'threat_type': 'member_join',
+                    'threat_score': analysis['threat_score'],
+                    'risk_factors': analysis['risk_factors'],
+                    'detected_at': datetime.now(timezone.utc).isoformat(),
+                    'action_taken': None
+                })
+                
+                # Share threat intelligence
+                await self.share_threat_intelligence(
+                    member.id, 
+                    member.guild.id, 
+                    {
+                        'event': 'member_join',
+                        'threat_score': analysis['threat_score'],
+                        'risk_factors': analysis['risk_factors']
+                    }
+                )
+            
+        except Exception as e:
+            logger.error(f"Error in threat intelligence member join handler: {e}")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """Analyze messages for threat patterns"""
+        if not message.guild or message.author.bot:
+            return
+            
+        try:
+            user_id = message.author.id
+            guild_id = message.guild.id
+            
+            # Analyze message for threats
+            event_data = {
+                'guild_id': guild_id,
+                'message_content': message.content[:100],  # First 100 chars
+                'channel_id': message.channel.id,
+                'message_length': len(message.content),
+                'mention_count': len(message.mentions),
+                'has_attachments': len(message.attachments) > 0
+            }
+            
+            threat_score, risk_factors = self.calculate_threat_score(user_id, guild_id, event_data)
+            
+            if threat_score > 60:
+                logger.warning(f"🔍 MESSAGE THREAT: {message.author.name} in {message.guild.name} - Score: {threat_score}/100")
+                
+                # Store threat intelligence
+                await self._store_threat_intelligence(
+                    user_id=user_id,
+                    guild_id=guild_id,
+                    threat_type="suspicious_message",
+                    threat_score=threat_score,
+                    confidence_level=min(threat_score + 10, 100),
+                    risk_factors=risk_factors,
+                    behavioral_patterns=[f"message_length_{len(message.content)}"],
+                    cross_server_matches=1 if self._check_cross_server_intelligence(user_id) > 0 else 0
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in threat intelligence message handler: {e}")
+
+    async def analyze_member_join(self, member: discord.Member) -> Dict:
+        """Analyze member join for threats"""
+        try:
+            user_id = member.id
+            guild_id = member.guild.id
+            join_time = datetime.now(timezone.utc)
+            
+            # Basic user analysis
+            created_at = member.created_at
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+            
+            account_age = (join_time - created_at).days
+            threat_score = 0
+            risk_factors = []
+            
+            # Check account age
+            if account_age < 1:
+                threat_score += 40
+                risk_factors.append("very_new_account")
+            elif account_age < 7:
+                threat_score += 25
+                risk_factors.append("new_account")
+            
+            # Check for suspicious username patterns
+            username_score = self._analyze_username_patterns(member.name)
+            threat_score += username_score
+            if username_score > 0:
+                risk_factors.append("suspicious_username")
+            
+            # Check behavioral patterns
+            behavioral_score = self._detect_behavioral_anomalies(user_id, {
+                'guild_id': guild_id,
+                'join_time': join_time,
+                'account_age': account_age
+            })
+            threat_score += behavioral_score
+            if behavioral_score > 30:
+                risk_factors.append("behavioral_anomaly")
+            
+            # Check cross-server intelligence
+            cross_server_score = self._check_cross_server_intelligence(user_id)
+            threat_score += cross_server_score
+            if cross_server_score > 0:
+                risk_factors.append("cross_server_threat")
+            
+            # Determine confidence level
+            confidence = min(threat_score, 100)
+            
+            # Store threat intelligence
+            await self._store_threat_intelligence(
+                user_id=user_id,
+                guild_id=guild_id,
+                threat_type="member_join",
+                threat_score=min(threat_score, 100),
+                confidence_level=confidence,
+                risk_factors=risk_factors,
+                behavioral_patterns=[],
+                cross_server_matches=1 if cross_server_score > 0 else 0
+            )
+            
+            logger.info(f"🔍 THREAT ANALYSIS: {member.name} ({user_id}) joined {member.guild.name} - Score: {min(threat_score, 100)}/100, Risk: {risk_factors}")
+            
+            return {
+                'threat_score': min(threat_score, 100),
+                'risk_factors': risk_factors,
+                'confidence': confidence,
+                'user_id': user_id,
+                'guild_id': guild_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing member join: {e}")
+            return {
+                'threat_score': 0,
+                'risk_factors': [],
+                'confidence': 0,
+                'error': str(e)
+            }
     
     async def cog_unload(self):
         """Clean up when cog is unloaded"""
@@ -167,9 +321,10 @@ class ThreatIntelligenceSystem(commands.Cog):
             logger.error(f"Error analyzing message patterns: {e}")
             return 0
     
-    def _detect_behavioral_anomalies(self, user_id: int, guild_id: int) -> int:
+    def _detect_behavioral_anomalies(self, user_id: int, event_data: Dict = None) -> int:
         """Detect anomalies in user behavior patterns"""
         try:
+            guild_id = event_data.get('guild_id') if event_data else 0
             user_profile = self.user_profiles[guild_id].get(user_id, {})
             
             if not user_profile or len(user_profile) < 10:
