@@ -88,7 +88,6 @@ class NexGuardBot(commands.Bot):
             'server.bot_python.commands.performance_monitor',
             'server.bot_python.commands.health_alerts',
             'server.bot_python.commands.threat_intelligence',
-            'server.bot_python.commands.threat_demo',
             # 'server.bot_python.commands.chatbot'  # AI Chatbot system - DISABLED
         ]
         
