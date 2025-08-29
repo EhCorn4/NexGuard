@@ -593,7 +593,7 @@ export class MemStorage implements IStorage {
 
     this.changelogsData.set(2, {
       id: 2,
-      version: "2.5.0",
+      version: "2.6.0",
       title: "Enterprise Security & Monitoring Suite - Complete Protection Infrastructure",
       description: "Revolutionary enterprise-grade security and monitoring systems now protecting Discord servers with comprehensive threat detection, real-time performance monitoring, and advanced health alerting. This massive update transforms NexGuard into a complete server protection and monitoring platform.",
       changes: [
