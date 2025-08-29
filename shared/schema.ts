@@ -124,6 +124,78 @@ export const channelAnalytics = pgTable("channel_analytics", {
   lastActivity: timestamp("last_activity").defaultNow().notNull(),
 });
 
+// Threat Intelligence Tables
+export const threatIntelligence = pgTable("threat_intelligence", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  threatType: text("threat_type").notNull(), // "raid", "nuke", "spam", "behavioral"
+  threatScore: integer("threat_score").notNull(), // 0-100
+  confidenceLevel: integer("confidence_level").notNull(), // 0-100
+  detectedAt: timestamp("detected_at").defaultNow().notNull(),
+  actionTaken: text("action_taken"), // "quarantine", "ban", "monitor", "none"
+  riskFactors: text("risk_factors").array(),
+  behavioralPatterns: text("behavioral_patterns").array(),
+  crossServerMatches: integer("cross_server_matches").default(0),
+  isActive: boolean("is_active").default(true),
+});
+
+export const attackPatterns = pgTable("attack_patterns", {
+  id: serial("id").primaryKey(),
+  patternName: text("pattern_name").notNull(),
+  patternType: text("pattern_type").notNull(), // "raid", "nuke", "coordinated"
+  description: text("description").notNull(),
+  signatures: text("signatures").array(), // Pattern signatures for detection
+  severity: integer("severity").notNull(), // 1-10
+  occurrenceCount: integer("occurrence_count").default(1),
+  lastSeen: timestamp("last_seen").defaultNow().notNull(),
+  firstSeen: timestamp("first_seen").defaultNow().notNull(),
+  affectedGuilds: text("affected_guilds").array(),
+  preventionMethods: text("prevention_methods").array(),
+});
+
+export const behavioralProfiles = pgTable("behavioral_profiles", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  profileData: text("profile_data").notNull(), // JSON blob of behavioral data
+  messagingPattern: text("messaging_pattern"),
+  activitySchedule: text("activity_schedule"),
+  interactionStyle: text("interaction_style"),
+  anomalyScore: integer("anomaly_score").default(0), // 0-100
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+  isNormal: boolean("is_normal").default(true),
+  riskLevel: text("risk_level").default("low"), // "low", "medium", "high", "critical"
+});
+
+export const threatAlerts = pgTable("threat_alerts", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  alertType: text("alert_type").notNull(), // "predictive", "active", "post_incident"
+  severity: text("severity").notNull(), // "info", "warning", "critical", "emergency"
+  threatDescription: text("threat_description").notNull(),
+  affectedUsers: text("affected_users").array(),
+  predictedImpact: text("predicted_impact"),
+  recommendedActions: text("recommended_actions").array(),
+  alertedAt: timestamp("alerted_at").defaultNow().notNull(),
+  resolvedAt: timestamp("resolved_at"),
+  autoResolved: boolean("auto_resolved").default(false),
+  falsePositive: boolean("false_positive").default(false),
+});
+
+export const crossServerIntelligence = pgTable("cross_server_intelligence", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  threatSignature: text("threat_signature").notNull(), // Unique identifier for threat pattern
+  guildsAffected: text("guilds_affected").array(),
+  threatLevel: integer("threat_level").notNull(), // 1-10
+  sharedAt: timestamp("shared_at").defaultNow().notNull(),
+  threatData: text("threat_data").notNull(), // JSON blob of threat information
+  verifiedBy: text("verified_by").array(), // Other guilds that confirmed this threat
+  actionsTaken: text("actions_taken").array(),
+  isNetworkThreat: boolean("is_network_threat").default(false),
+});
+
 // Bot-related tables
 export const guilds = pgTable("guilds", {
   id: text("id").primaryKey(), // Discord guild ID

@@ -6399,6 +6399,80 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Threat Intelligence API Endpoints
+  app.get("/api/threat-intelligence/user/:userId/guild/:guildId", async (req, res) => {
+    try {
+      const { userId, guildId } = req.params;
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const result = await threatIntelligenceService.getUserThreatScore(userId, guildId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error getting user threat score:", error);
+      res.status(500).json({ error: "Failed to get user threat score" });
+    }
+  });
+
+  app.get("/api/threat-intelligence/active/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const threats = await threatIntelligenceService.getActiveThreatsByGuild(guildId);
+      res.json(threats);
+    } catch (error) {
+      console.error("Error getting active threats:", error);
+      res.status(500).json({ error: "Failed to get active threats" });
+    }
+  });
+
+  app.get("/api/threat-intelligence/patterns", async (req, res) => {
+    try {
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const patterns = await threatIntelligenceService.getAttackPatterns();
+      res.json(patterns);
+    } catch (error) {
+      console.error("Error getting attack patterns:", error);
+      res.status(500).json({ error: "Failed to get attack patterns" });
+    }
+  });
+
+  app.get("/api/threat-intelligence/cross-server/:userId?", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const intelligence = await threatIntelligenceService.getCrossServerIntelligence(userId);
+      res.json(intelligence);
+    } catch (error) {
+      console.error("Error getting cross-server intelligence:", error);
+      res.status(500).json({ error: "Failed to get cross-server intelligence" });
+    }
+  });
+
+  app.get("/api/threat-intelligence/alerts/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { severity } = req.query;
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const alerts = await threatIntelligenceService.getThreatAlerts(guildId, severity as string);
+      res.json(alerts);
+    } catch (error) {
+      console.error("Error getting threat alerts:", error);
+      res.status(500).json({ error: "Failed to get threat alerts" });
+    }
+  });
+
+  app.get("/api/threat-intelligence/trends/:guildId", async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const days = parseInt(req.query.days as string) || 30;
+      const { threatIntelligenceService } = await import('./api/threat-intelligence');
+      const trends = await threatIntelligenceService.getThreatTrends(guildId, days);
+      res.json(trends);
+    } catch (error) {
+      console.error("Error getting threat trends:", error);
+      res.status(500).json({ error: "Failed to get threat trends" });
+    }
+  });
+
   app.get("/api/bot/tickets", async (req, res) => {
     try {
       const tickets = await storage.getTickets();
