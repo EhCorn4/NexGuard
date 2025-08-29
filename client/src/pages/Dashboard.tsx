@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useSimpleAuth } from '@/hooks/useSimpleAuth';
 import { Activity, Shield, Users, Server, AlertTriangle, Brain, ArrowRight, Lock } from 'lucide-react';
 
 interface BotStatus {
@@ -37,9 +38,18 @@ interface ActiveThreat {
 }
 
 export default function Dashboard() {
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  // Try both auth hooks for debugging
+  const complexAuth = useAuth();
+  const simpleAuth = useSimpleAuth();
   
-  console.log('Dashboard render - isAuthenticated:', isAuthenticated, 'authLoading:', authLoading, 'user:', user);
+  // Use simple auth as primary
+  const { isAuthenticated, isLoading: authLoading, user } = simpleAuth;
+  
+  // Debug logging
+  console.log('Dashboard render - Complex auth:', complexAuth);
+  console.log('Dashboard render - Simple auth:', simpleAuth);
+  
+  const shouldShowDashboard = isAuthenticated;
 
   const { data: botStatus, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
@@ -70,8 +80,8 @@ export default function Dashboard() {
   }
 
   // Show sign-in interface for unauthenticated users
-  if (!isAuthenticated) {
-    console.log('Showing sign-in interface - not authenticated');
+  if (!shouldShowDashboard) {
+    console.log('Showing sign-in interface - not authenticated. Auth state:', { isAuthenticated, authLoading, user });
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24">
         <div className="max-w-4xl mx-auto px-4 py-16">

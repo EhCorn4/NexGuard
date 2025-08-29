@@ -95,17 +95,23 @@ class AuthManager {
         credentials: "include",
       });
 
+      console.log('Auth fetch response:', res.status, res.statusText);
+
       if (res.status === 401) {
+        console.log('User not authenticated (401)');
         this.user = null;
         this.error = null;
       } else if (!res.ok) {
+        console.log('Auth fetch error:', res.status, res.statusText);
         this.error = new Error(`${res.status}: ${res.statusText}`);
         this.user = null;
       } else {
         this.user = await res.json();
         this.error = null;
+        console.log('User authenticated successfully:', this.user);
       }
     } catch (err) {
+      console.error('Auth fetch exception:', err);
       this.error = err;
       this.user = null;
     } finally {
@@ -113,6 +119,7 @@ class AuthManager {
       this.hasInitialized = true;
       this.promise = null;
       this.saveCachedState();
+      console.log('Auth state updated:', this.getState());
       this.notifyListeners();
     }
   }
