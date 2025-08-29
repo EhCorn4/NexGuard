@@ -98,6 +98,8 @@ interface Guild {
   icon?: string | null;
   member_count?: number;
   channel_count?: number;
+  bot_in_server?: boolean;
+  hasBot?: boolean;
 }
 
 interface Channel {
@@ -136,6 +138,9 @@ export function SimpleDashboard() {
     queryKey: ["/api/bot/guilds"],
     retry: false,
   });
+
+  // Debug guild data
+  console.log('Guild data received:', guilds);
 
   // Fetch guild configuration
   const { data: guildConfig, isLoading: configLoading } = useQuery<BotConfig>({
@@ -244,11 +249,11 @@ export function SimpleDashboard() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold">
-                {user?.username?.charAt(0).toUpperCase()}
+                {(user as any)?.username?.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="text-white font-medium">{user?.username}</p>
+              <p className="text-white font-medium">{(user as any)?.username}</p>
               <p className="text-gray-400 text-sm">Administrator</p>
             </div>
           </div>
@@ -499,7 +504,7 @@ export function SimpleDashboard() {
                               <span>{guild.name}</span>
                               <Badge variant="outline" className="text-gray-300">{guild.member_count} members</Badge>
                             </div>
-                            {(guild as any).bot_in_server ? (
+                            {(guild.bot_in_server || guild.hasBot) ? (
                               <Badge className="bg-green-600 text-white text-xs">Bot Active</Badge>
                             ) : (
                               <Badge variant="destructive" className="text-xs">No Bot</Badge>
@@ -513,7 +518,7 @@ export function SimpleDashboard() {
               </Card>
 
               {/* Bot Invite Message for servers without bot */}
-              {selectedGuildId && guilds && !guilds.find(g => g.id === selectedGuildId)?.bot_in_server && (
+              {selectedGuildId && guilds && !(guilds.find(g => g.id === selectedGuildId)?.bot_in_server || guilds.find(g => g.id === selectedGuildId)?.hasBot) && (
                 <Card className="bg-yellow-900/20 border-yellow-600/50">
                   <CardHeader>
                     <CardTitle className="text-yellow-400 flex items-center space-x-2">
@@ -536,7 +541,7 @@ export function SimpleDashboard() {
               )}
 
               {/* Configuration Settings */}
-              {selectedGuildId && config && guilds?.find(g => g.id === selectedGuildId)?.bot_in_server && (
+              {selectedGuildId && config && (guilds?.find(g => g.id === selectedGuildId)?.bot_in_server || guilds?.find(g => g.id === selectedGuildId)?.hasBot) && (
                 <Tabs defaultValue="general" className="space-y-6">
                   <TabsList className="grid w-full grid-cols-6 bg-gray-800/50 border-gray-700">
                     <TabsTrigger value="general">General</TabsTrigger>
