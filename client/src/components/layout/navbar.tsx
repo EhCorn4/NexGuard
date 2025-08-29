@@ -26,7 +26,7 @@ export function Navbar() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
-    { href: "/dashboard", label: "Dashboard" },
+    // { href: "/dashboard", label: "Dashboard" }, // Hidden until release - still accessible via direct URL
     { href: "/invite", label: "Invite Bot" },
     { href: "/developers", label: "Developers" },
     { href: "/community", label: "Community" },
