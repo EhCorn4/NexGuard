@@ -346,15 +346,15 @@ class PerformanceMonitor(commands.Cog):
         """Broadcast alert to all configured channels"""
         try:
             for guild in self.bot.guilds:
-                # Look specifically for general-events channel first
+                # Look specifically for general-events or general-logs channels first
                 target_channel = None
                 for channel in guild.text_channels:
-                    if channel.name.lower() == 'general-events':
+                    if channel.name.lower() in ['general-events', 'general-logs']:
                         if channel.permissions_for(guild.me).send_messages:
                             target_channel = channel
                             break
                 
-                # If no general-events channel, look for other alert channels
+                # If no general-events or general-logs channels, look for other alert channels
                 if not target_channel:
                     for channel in guild.text_channels:
                         if any(keyword in channel.name.lower() for keyword in ['alert', 'monitor', 'performance', 'log', 'events']):

@@ -433,14 +433,14 @@ class BotHealthAlerts(commands.Cog):
             for guild in self.bot.guilds:
                 alert_channel = None
                 
-                # Look specifically for general-events channel first
+                # Look specifically for general-events or general-logs channels first
                 for channel in guild.text_channels:
-                    if channel.name.lower() == 'general-events':
+                    if channel.name.lower() in ['general-events', 'general-logs']:
                         if channel.permissions_for(guild.me).send_messages:
                             alert_channel = channel
                             break
                 
-                # If no general-events channel, look for other alert channels
+                # If no general-events or general-logs channels, look for other alert channels
                 if not alert_channel:
                     for channel in guild.text_channels:
                         if any(keyword in channel.name.lower() for keyword in ['alert', 'health', 'monitor', 'bot', 'events']):
