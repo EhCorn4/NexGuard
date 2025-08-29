@@ -29,7 +29,7 @@ const Docs = lazy(() => import("@/pages/docs"));
 const Analytics = lazy(() => import("@/pages/analytics"));
 const Donate = lazy(() => import("@/pages/donate"));
 const ChangelogManager = lazy(() => import("@/pages/changelog-manager"));
-// Dashboard functionality removed
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const CookiesPolicy = lazy(() => import("@/pages/cookies-policy"));
@@ -140,7 +140,13 @@ function Router() {
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
-              {/* Dashboard functionality removed */}
+              <Route path="/dashboard" component={() => (
+                <PageTransition key="dashboard">
+                  <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
+                    <Dashboard />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
               <Route path="/terms-of-service" component={() => (
                 <PageTransition key="terms-of-service">
                   <PerformanceWrapper skeletonType="card" skeletonCount={1}>
