@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
+import { apiEndpoints } from "./api/endpoints";
 import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
@@ -5824,6 +5825,33 @@ For detailed assistance, join our support server at https://discord.gg/wpjZMPXaR
 }
 
 export function registerRoutes(app: Express): Server {
+  const httpServer = createServer(app);
+  
+  // Register API endpoints for external integrations
+  app.use('/api', apiEndpoints);
+  
+  // Bot webhook endpoints for internal communication
+  app.post('/api/bot/heartbeat', (req, res) => {
+    console.log('Bot heartbeat received:', req.body);
+    res.json({ success: true, timestamp: new Date().toISOString() });
+  });
+  
+  app.post('/api/bot/performance-alert', (req, res) => {
+    console.log('Performance alert received:', req.body);
+    res.json({ success: true, alert_received: true });
+  });
+  
+  app.post('/api/bot/health-alert', (req, res) => {
+    console.log('Health alert received:', req.body);
+    res.json({ success: true, alert_received: true });
+  });
+  
+  app.post('/api/bot/moderation/ban', (req, res) => {
+    console.log('Ban request received:', req.body);
+    // TODO: Forward to Discord bot via internal communication
+    res.json({ success: true, message: 'Ban request queued' });
+  });
+  
   // News endpoints
   app.get("/api/news", async (req, res) => {
     try {
@@ -6723,6 +6751,5 @@ export function registerRoutes(app: Express): Server {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  const httpServer = createServer(app);
   return httpServer;
 }
