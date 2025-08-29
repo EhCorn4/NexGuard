@@ -50,7 +50,7 @@ function Router() {
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
         <Navbar />
         <main role="main">
-          <PerformanceMonitor enabled={false} />
+          {/* <PerformanceMonitor enabled={false} /> */}
           <AnimatePresence mode="wait" initial={false}>
             <Switch key={location}>
               <Route path="/" component={() => (
