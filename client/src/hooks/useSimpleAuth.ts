@@ -24,12 +24,21 @@ export function useSimpleAuth() {
 
       if (response.ok) {
         const user = await response.json();
-        console.log('Simple auth success:', user);
+        console.log('✅ Simple auth SUCCESS');
+        console.log('📊 Raw response:', user);
+        console.log('📊 User data type:', typeof user);
+        console.log('📊 User truthy:', !!user);
+        console.log('📊 User keys:', user ? Object.keys(user) : 'null');
+        console.log('📊 User ID:', user?.id);
+        
+        const isAuthenticated = !!user && (user.id || Object.keys(user).length > 0);
+        console.log('🔐 Setting authenticated:', isAuthenticated);
+        
         setAuthState({
           user,
           isLoading: false,
           error: null,
-          isAuthenticated: true,
+          isAuthenticated,
         });
       } else {
         console.log('Simple auth failed:', response.status);

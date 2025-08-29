@@ -84,11 +84,19 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  console.log('Setting up authentication strategies...');
+  console.log('REPLIT_DOMAINS:', process.env.REPLIT_DOMAINS);
+  
+  const domains = process.env.REPLIT_DOMAINS?.split(",") || [];
+  console.log('Parsed domains:', domains);
+  
+  for (const domain of domains) {
+    const strategyName = `replitauth:${domain}`;
+    console.log('Registering strategy:', strategyName);
+    
     const strategy = new Strategy(
       {
-        name: `replitauth:${domain}`,
+        name: strategyName,
         config,
         scope: "openid email profile offline_access",
         callbackURL: `https://${domain}/api/callback`,
@@ -96,20 +104,52 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
+    console.log('Strategy registered successfully:', strategyName);
   }
+  
+  console.log('All strategies registered. Available strategies:');
+  console.log(Object.keys((passport as any)._strategies || {}));
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    console.log('Login request - hostname:', req.hostname);
+    console.log('Available strategies:', Object.keys((passport as any)._strategies || {}));
+    
+    const strategyName = `replitauth:${req.hostname}`;
+    console.log('Looking for strategy:', strategyName);
+    
+    // Fallback to first available strategy if hostname doesn't match
+    const availableStrategies = Object.keys((passport as any)._strategies || {}).filter(name => name.startsWith('replitauth:'));
+    const useStrategy = (passport as any)._strategies[strategyName] ? strategyName : availableStrategies[0];
+    
+    console.log('Using strategy:', useStrategy);
+    
+    if (!useStrategy) {
+      return res.status(500).json({ error: 'No authentication strategy available' });
+    }
+    
+    passport.authenticate(useStrategy, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    console.log('Callback request - hostname:', req.hostname);
+    
+    const strategyName = `replitauth:${req.hostname}`;
+    const availableStrategies = Object.keys((passport as any)._strategies || {}).filter(name => name.startsWith('replitauth:'));
+    const useStrategy = (passport as any)._strategies[strategyName] ? strategyName : availableStrategies[0];
+    
+    console.log('Callback using strategy:', useStrategy);
+    
+    if (!useStrategy) {
+      return res.status(500).json({ error: 'No authentication strategy available' });
+    }
+    
+    passport.authenticate(useStrategy, {
       successReturnToOrRedirect: "/dashboard?auth=success",
       failureRedirect: "/api/login",
     })(req, res, next);
