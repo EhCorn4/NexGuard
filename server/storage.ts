@@ -114,6 +114,36 @@ export class MemStorage implements IStorage {
       comments: 38,
     });
 
+    this.newsUpdates.set(42, {
+      id: 42,
+      title: "🚨 Enterprise Security Suite: Anti-Raid & Anti-Nuke Protection",
+      content: "Revolutionary security systems now protecting your Discord servers! Advanced anti-raid protection detects mass joins and spam attacks instantly. Anti-nuke system monitors audit logs for mass destruction attempts. Both systems feature automatic quarantine, professional alerts, and comprehensive logging.",
+      category: "SECURITY",
+      publishedAt: new Date('2025-08-29T05:30:00Z'),
+      likes: 312,
+      comments: 78,
+    });
+
+    this.newsUpdates.set(43, {
+      id: 43,
+      title: "📊 Advanced Monitoring: Performance & Health Alert Systems",
+      content: "Professional monitoring infrastructure launched! Real-time performance tracking with CPU, memory, and disk monitoring. Comprehensive health alerts system with 30-second health checks, error rate tracking, and multi-channel notifications. Complete bot reliability and uptime assurance.",
+      category: "NEW FEATURE",
+      publishedAt: new Date('2025-08-29T05:25:00Z'),
+      likes: 189,
+      comments: 45,
+    });
+
+    this.newsUpdates.set(44, {
+      id: 44,
+      title: "🔌 External API Integration: Professional RESTful Endpoints",
+      content: "Comprehensive API system for external integrations! Access bot statistics, server data, performance metrics, and execute moderation actions through secure RESTful endpoints. Perfect for custom dashboards, third-party applications, and advanced monitoring systems.",
+      category: "NEW FEATURE", 
+      publishedAt: new Date('2025-08-29T05:20:00Z'),
+      likes: 156,
+      comments: 34,
+    });
+
     this.newsUpdates.set(39, {
       id: 39,
       title: "🔒 Enhanced Privacy: Author Information Removed",
@@ -334,7 +364,7 @@ export class MemStorage implements IStorage {
       comments: 67,
     });
 
-    this.currentNewsId = 29;
+    this.currentNewsId = 45;
 
     // Initialize developers
     this.developers.set(1, {
@@ -396,9 +426,9 @@ export class MemStorage implements IStorage {
     this.features.set(5, {
       id: 5,
       title: "Comprehensive Command Suite",
-      description: "Complete server administration suite with 50+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, and role management.",
+      description: "Complete server administration suite with 66+ slash commands covering admin, moderation, tickets, utilities, auto-replies, automod, security, and monitoring systems.",
       icon: "cog",
-      benefits: ["50+ slash commands across all categories", "Advanced admin tools with error logging", "AI assistant with intelligent responses", "8 comprehensive automod commands", "Role management with hierarchical permissions", "Real-time monitoring and analytics"],
+      benefits: ["66+ slash commands across all categories", "Advanced admin tools with error logging", "AI assistant with intelligent responses", "8 comprehensive automod commands", "Security commands for anti-raid and anti-nuke protection", "Performance monitoring and health check commands", "Role management with hierarchical permissions", "Real-time monitoring and analytics"],
     });
 
     this.features.set(6, {
@@ -449,7 +479,47 @@ export class MemStorage implements IStorage {
       benefits: ["7 specialized logging categories", "Member join/leave tracking with account age warnings", "Message edit/delete logs with content preservation", "Voice activity monitoring and channel movements", "Role and channel change notifications", "Moderation event tracking with audit logs", "Professional Discord embed formatting", "Configurable logging channels per event type"],
     });
 
-    this.currentFeatureId = 12;
+    this.features.set(12, {
+      id: 12,
+      title: "Anti-Raid Protection System",
+      description: "Enterprise-grade anti-raid protection with real-time threat detection, automatic server lockdown, and intelligent pattern recognition to prevent coordinated attacks on your Discord server.",
+      icon: "shield-alert",
+      benefits: ["Real-time raid detection with 10+ user join monitoring", "Automatic server lockdown within seconds of detection", "Message spam protection (15+ messages in 30 seconds)", "Mention spam blocking (10+ mentions per message)", "Invite spam detection and prevention", "Professional moderator alerts with detailed incident reports", "Suspicious account pattern detection (new accounts)", "Smart quarantine system with automatic role removal"],
+    });
+
+    this.features.set(13, {
+      id: 13,
+      title: "Anti-Nuke Protection System", 
+      description: "Advanced anti-nuke protection monitoring audit logs for mass destruction attempts including channel deletions, role deletions, and permission escalations with instant quarantine response.",
+      icon: "shield-x",
+      benefits: ["Mass channel deletion detection (3+ channels in 60 seconds)", "Role deletion monitoring (3+ roles in 60 seconds)", "Member ban/kick abuse detection (5+ bans, 10+ kicks)", "Webhook creation spam protection (5+ webhooks)", "Dangerous role creation monitoring (admin permissions)", "Mixed attack pattern detection (8+ total destructive actions)", "Instant user quarantine with role removal and bans", "Comprehensive guild backup system for restoration", "Trusted user whitelist management", "Professional audit trail with evidence logging"],
+    });
+
+    this.features.set(14, {
+      id: 14,
+      title: "Performance Monitoring & Alerts",
+      description: "Real-time bot performance monitoring with comprehensive system metrics, threshold-based alerting, and professional notification system for proactive bot health management.",
+      icon: "activity",
+      benefits: ["Real-time CPU, memory, and disk usage monitoring", "Bot latency and connection quality tracking", "Performance threshold alerts (CPU >90%, Memory >90%)", "Database connectivity and response time monitoring", "Automatic alert broadcasting to configured channels", "15-minute alert cooldowns to prevent spam", "Performance data logging and trend analysis", "System resource optimization recommendations"],
+    });
+
+    this.features.set(15, {
+      id: 15,
+      title: "Bot Health Alerts System",
+      description: "Comprehensive bot health monitoring with uptime tracking, error rate analysis, and multi-channel alerting system ensuring maximum bot reliability and service availability.",
+      icon: "heart-pulse",
+      benefits: ["Continuous health checks every 30 seconds", "Heartbeat system with external monitoring", "Error rate tracking and threshold alerting", "Discord API connectivity monitoring", "Database health and performance checks", "Comprehensive health degradation alerts", "Recovery notifications when health is restored", "Health status logging for historical analysis", "Multi-channel alert broadcasting"],
+    });
+
+    this.features.set(16, {
+      id: 16,
+      title: "External API Integration",
+      description: "Professional RESTful API endpoints for external integrations, third-party applications, and custom dashboard development with comprehensive bot data access and management capabilities.",
+      icon: "plug",
+      benefits: ["RESTful API endpoints for bot statistics and server data", "External moderation action integration", "Performance and analytics data access", "API key authentication for secure access", "Real-time bot status and health monitoring", "Server information and analytics queries", "Webhook endpoints for external notifications", "Comprehensive API documentation and examples"],
+    });
+
+    this.currentFeatureId = 17;
 
     // Initialize testimonials with some sample data
     this.testimonialsData.set(1, {

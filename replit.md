@@ -30,17 +30,22 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: Express.js with TypeScript
 - **Bot Framework**: Discord.py v2 with slash commands
 - **Development**: Hot reload with Vite middleware integration
-- **API Structure**: RESTful endpoints for content management and bot data.
+- **API Structure**: RESTful endpoints for content management, bot data, and external integrations.
+- **Security Infrastructure**: Anti-raid and anti-nuke protection systems with real-time monitoring.
+- **Monitoring Systems**: Performance monitoring, health alerts, and comprehensive logging.
 
 ### Database Schema
-- Core entities include Users, News Updates, Developers, Features, Testimonials, Feedback, Bot Status, Commands, Guilds, Tickets, Moderation Logs, Ban List, Warning History, and Changelogs.
+- Core entities include Users, News Updates, Developers, Features, Testimonials, Feedback, Bot Status, Commands, Guilds, Tickets, Moderation Logs, Ban List, Warning History, Changelogs, Performance Metrics, Health Alerts, Anti-Raid Logs, Anti-Nuke Logs, and Guild Backups.
 
 ### Bot Features
-- **Comprehensive Command Suite**: 55+ commands covering Admin, Moderation, Ticket, and Utility functionalities.
+- **Comprehensive Command Suite**: 66+ commands covering Admin, Moderation, Ticket, Utility, Security, and Monitoring functionalities.
 - **Admin**: Server configuration, logging setup, welcome messages, autoreply, automod, and role management.
 - **Moderation**: Advanced ban/kick/warn, channel lock/unlock, timeout management, comprehensive logging.
 - **Ticket System**: Multi-category support tickets with Discord integration, staff assignment, and button-based interaction. Supports renaming ticket channels and robust panel management.
 - **Utility**: AI assistant (currently disabled), server/user info, embed builder, help system.
+- **Security Systems**: Enterprise-grade anti-raid protection with real-time threat detection, automatic server lockdown, and intelligent pattern recognition. Advanced anti-nuke protection monitoring audit logs for mass destruction attempts with instant quarantine response.
+- **Monitoring & Alerts**: Real-time performance monitoring with CPU, memory, disk usage tracking. Comprehensive bot health alerts with uptime monitoring, error rate analysis, and multi-channel notification system.
+- **External Integration**: Professional RESTful API endpoints for external integrations, third-party applications, and custom dashboard development with comprehensive bot data access.
 - **Logging**: Universal command logging, advanced automod logging, and comprehensive event logging across 7 categories (members, messages, voice, channels, roles, moderation). Includes an automated `/botlogs` setup command.
 - **Automation**: Advanced AutoMod (spam, bad words, links, caps lock, mention limits), Auto-reply system, Auto-role assignment.
 - **Management**: Ban management with appeal system, warning system, custom moderation roles.
