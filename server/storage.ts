@@ -591,7 +591,29 @@ export class MemStorage implements IStorage {
       isPublished: true
     });
 
-    this.currentChangelogId = 2;
+    this.changelogsData.set(2, {
+      id: 2,
+      version: "2.5.0",
+      title: "Enterprise Security & Monitoring Suite - Complete Protection Infrastructure",
+      description: "Revolutionary enterprise-grade security and monitoring systems now protecting Discord servers with comprehensive threat detection, real-time performance monitoring, and advanced health alerting. This massive update transforms NexGuard into a complete server protection and monitoring platform.",
+      changes: [
+        "🛡️ ANTI-RAID PROTECTION SYSTEM - Real-time threat detection with automatic server lockdown. Monitors user joins (10+ in 30 seconds), message spam (15+ in 30 seconds), mention spam (10+ per message), and invite spam with instant quarantine response",
+        "⚔️ ANTI-NUKE PROTECTION SYSTEM - Advanced audit log monitoring for mass destruction attempts. Detects channel deletions (3+ in 60s), role deletions (3+ in 60s), mass bans/kicks (5+ bans, 10+ kicks), webhook spam (5+ webhooks), and dangerous role creation with instant user quarantine",
+        "📊 PERFORMANCE MONITORING SYSTEM - Real-time system metrics tracking with CPU, memory, disk usage monitoring. Configurable thresholds (CPU >90%, Memory >90%, Disk >95%, Latency >1000ms) with 15-minute alert cooldowns",
+        "💓 BOT HEALTH ALERTS SYSTEM - Comprehensive health monitoring with 30-second health checks, Discord API connectivity monitoring, database health tracking, and error rate analysis with multi-channel alert broadcasting",
+        "🔌 EXTERNAL API INTEGRATION - Professional RESTful endpoints for bot statistics, server data, performance metrics, and moderation actions. Secure API access for third-party applications and custom dashboards",
+        "🎯 COMMAND SUITE EXPANSION - Enhanced from 61 to 66+ slash commands with new security categories including anti-raid, anti-nuke, performance monitoring, and health check commands",
+        "📧 ALERT BROADCASTING SYSTEM - Intelligent channel targeting prioritizing 'general-events' channels, with fallback to monitoring/alert channels and comprehensive logging of alert delivery",
+        "🗄️ DATABASE INTEGRATION - Advanced logging systems for security events, performance metrics, health status, and comprehensive data persistence with 30-day retention policies",
+        "🔒 TRUSTED USER MANAGEMENT - Whitelist system for anti-nuke protection allowing trusted administrators to perform mass actions without triggering quarantine systems",
+        "📈 REAL-TIME ANALYTICS - Enhanced monitoring infrastructure with live data collection, trend analysis, and professional dashboard integration for comprehensive server insights"
+      ],
+      type: "major",
+      releaseDate: new Date(),
+      isPublished: false
+    });
+
+    this.currentChangelogId = 3;
 
     // Initialize comprehensive commands data - All 41+ commands
     
