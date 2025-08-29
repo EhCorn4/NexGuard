@@ -119,6 +119,12 @@ export function SimpleDashboard() {
   const [config, setConfig] = useState<BotConfig | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get user data
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
 
   const { data: botStatus, isLoading } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
