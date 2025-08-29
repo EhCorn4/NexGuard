@@ -116,7 +116,7 @@ export interface GuildInfo {
 
 export class BotConfigService {
   
-  // Get list of guilds the bot is in
+  // Get list of guilds the bot is in with proper filtering
   static async getBotGuilds(): Promise<GuildInfo[]> {
     try {
       const result = await db.execute(sql`
@@ -124,7 +124,8 @@ export class BotConfigService {
                COALESCE(member_count, 0) as member_count,
                0 as channel_count
         FROM guilds 
-        ORDER BY name
+        WHERE name IS NOT NULL AND name != '' AND name != 'Unknown' AND name != 'Unknown Server'
+        ORDER BY member_count DESC, name
       `);
       
       return result.rows.map(row => ({
