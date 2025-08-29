@@ -23,10 +23,26 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
 
     const discordGuilds = await response.json();
     
-    // Filter guilds where user has admin permissions (0x8 = ADMINISTRATOR)
-    const adminGuilds = discordGuilds.filter((guild: any) => 
-      (parseInt(guild.permissions) & 0x8) === 0x8 || guild.owner
-    );
+    // Filter guilds where user has admin permissions
+    // 0x8 = ADMINISTRATOR permission, also include if user is owner
+    const adminGuilds = discordGuilds.filter((guild: any) => {
+      try {
+        const permissions = BigInt(guild.permissions);
+        const hasAdmin = (permissions & 0x8n) === 0x8n; // Administrator permission
+        const isOwner = guild.owner === true;
+        
+        // Also check for MANAGE_GUILD (0x20) as a fallback admin permission
+        const hasManageGuild = (permissions & 0x20n) === 0x20n;
+        
+        const isAdminServer = hasAdmin || isOwner || hasManageGuild;
+        
+        console.log(`Guild ${guild.name}: permissions=${guild.permissions}, hasAdmin=${hasAdmin}, isOwner=${isOwner}, hasManageGuild=${hasManageGuild}, qualified=${isAdminServer}`);
+        return isAdminServer;
+      } catch (e) {
+        console.error(`Error processing guild ${guild.name}:`, e);
+        return false;
+      }
+    });
 
     // Get bot guilds to see which ones bot is already in
     const botGuilds = await BotConfigService.getBotGuilds();
@@ -6185,10 +6201,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bot configuration endpoints
-  app.get("/api/bot/guilds", isAuthenticated, async (req, res) => {
+  app.get("/api/bot/guilds", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const accessToken = req.user.access_token;
+      // Debug user object structure  
+      console.log('User object keys:', Object.keys(req.user || {}));
+      console.log('User object:', req.user);
+      
+      const userId = req.user?.id;
+      const accessToken = req.user?.accessToken;
+      
+      console.log('Guild fetch - User ID:', userId, 'Has Access Token:', !!accessToken);
+      
+      if (!userId || !accessToken) {
+        throw new Error('Missing user ID or access token');
+      }
       
       // Fetch user's guilds from Discord API with admin permissions
       const userGuilds = await getUserAdminGuilds(userId, accessToken);
