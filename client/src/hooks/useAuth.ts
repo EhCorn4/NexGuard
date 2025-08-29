@@ -81,6 +81,13 @@ class AuthManager {
       await this.fetchUser();
     }
   }
+
+  // Force refresh auth state (called after login)
+  async refresh() {
+    this.hasInitialized = false;
+    this.promise = null;
+    await this.fetchUser();
+  }
 }
 
 const authManager = AuthManager.getInstance();
@@ -91,6 +98,15 @@ export function useAuth() {
   useEffect(() => {
     // Initialize auth on first use
     authManager.initialize();
+
+    // Check if we just came from a login redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'success') {
+      // Force refresh auth state after login
+      authManager.refresh();
+      // Clean up URL if it has auth params
+      window.history.replaceState({}, '', window.location.pathname);
+    }
 
     // Subscribe to changes
     const unsubscribe = authManager.subscribe(() => {
