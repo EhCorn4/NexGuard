@@ -22,6 +22,7 @@ export default function Landing() {
               Sign in with Replit <ArrowRight className="ml-2" size={20} />
             </Button>
             <Button 
+              onClick={() => window.location.href = '/features'}
               variant="outline" 
               className="border-gray-300 text-gray-300 hover:bg-gray-800 px-8 py-4 text-lg"
             >
