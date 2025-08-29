@@ -42,7 +42,6 @@ export function Navbar() {
   const authNavItems = [
     { href: "/", label: "Home" },
     { href: "/dashboard", label: "Security Dashboard" },
-    { href: "/servers", label: "Server Management" },
     { href: "/features", label: "Features" },
     { href: "/analytics", label: "Analytics" },
     { href: "/invite", label: "Invite Bot" },

@@ -3,17 +3,15 @@
 ## Overview
 NexGuard is a comprehensive Discord bot complemented by a professional website, designed to provide robust server management capabilities including advanced moderation, a full-featured ticket system, and various utility commands. The website acts as a central hub for users to monitor bot status, explore features, and access support, aiming to deliver a professional and reliable user experience for Discord server administrators with significant market potential.
 
-## Recent Changes (v3.0.0 - August 29, 2025) ✅ COMPLETED
-- **Discord OAuth Authentication Migration**: Successfully migrated from Replit OAuth to Discord OAuth for enhanced Discord bot integration and user permission management
-- **URL Mapping & Custom Links**: Implemented advanced URL mapping system supporting custom redirect URLs post-authentication (returnTo parameter support)
-- **Discord User Management**: Updated database schema to store Discord user data including username, avatar, discriminator, guilds, and verification status  
-- **Enhanced Permission System**: Discord-based permission checking with server membership verification and role-based access control
-- **Authentication Utilities**: Created comprehensive auth utility system with Discord avatar handling, username formatting, and permission checking
-- **Session Management**: Database-backed Discord session storage with proper legacy session cleanup and hybrid compatibility
-- **Frontend Integration**: Updated all login buttons and authentication flows to use Discord OAuth endpoints with custom redirect support
-- **Storage System Cleanup**: Rebuilt storage implementation with proper Discord auth interface compliance and simplified database operations
-- **Multi-Environment Support**: Configured Discord app with both development and production callback URLs for seamless deployment
-- **Production Ready**: Live Discord authentication system operational with real Discord user profiles, avatars, and server access verification - successfully tested and working in both development and deployed environments at https://nexguard.replit.app
+## Recent Changes (v3.1.0 - August 29, 2025) ✅ COMPLETED
+- **Unified Dashboard System**: Successfully merged server management and security dashboard into single tabbed interface for streamlined bot administration
+- **Comprehensive Bot Configuration**: Built complete bot configuration API system with 70+ settings covering AutoMod, logging, welcome/goodbye, moderation roles, and security features
+- **Real-Time Server Management**: Created server management interface with tabbed configuration sections allowing website toggles to directly modify bot database settings
+- **Live Discord Integration**: Implemented channel and role selection dropdowns using real-time Discord server data with authentication-protected API endpoints
+- **Advanced Configuration Coverage**: Complete bot setting management including general settings, moderation tools, AutoMod detection, feature toggles, and comprehensive logging options
+- **Unified User Experience**: Integrated Overview, Server Configuration, and Analytics tabs in single dashboard eliminating need for separate /servers route
+- **Database Communication Bridge**: Established shared PostgreSQL database as communication layer between Express server and Python Discord bot for instant configuration updates
+- **Production Bot Integration**: Live system operational with 18 connected Discord servers and real-time configuration synchronization - successfully tested with actual Discord server management capabilities
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

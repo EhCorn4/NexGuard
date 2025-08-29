@@ -120,8 +120,7 @@ export class BotConfigService {
   static async getBotGuilds(): Promise<GuildInfo[]> {
     try {
       const result = await db.execute(sql`
-        SELECT DISTINCT g.id, g.name, g.icon, g.member_count, 
-               (SELECT COUNT(*) FROM channels WHERE guild_id = g.id) as channel_count
+        SELECT DISTINCT g.id, g.name, g.member_count, 0 as channel_count
         FROM guilds g 
         ORDER BY g.name
       `);
@@ -129,7 +128,7 @@ export class BotConfigService {
       return result.rows.map(row => ({
         id: row.id as string,
         name: row.name as string,
-        icon: row.icon as string || null,
+        icon: null,
         member_count: row.member_count as number || 0,
         channel_count: row.channel_count as number || 0
       }));
@@ -145,7 +144,7 @@ export class BotConfigService {
       // Get main guild config with all available fields
       const guildResult = await db.execute(sql`
         SELECT 
-          id, name, icon, member_count, prefix, language, timezone,
+          id, name, member_count, prefix, language, timezone,
           welcome_enabled, welcome_channel_id, welcome_message, welcome_embed_enabled, 
           welcome_role_id, welcome_dm_enabled,
           goodbye_enabled, goodbye_channel_id, goodbye_message,
@@ -188,7 +187,7 @@ export class BotConfigService {
       return {
         guild_id: guild.id as string,
         guild_name: guild.name as string,
-        icon: guild.icon as string || null,
+        icon: null,
         member_count: guild.member_count as number || 0,
         
         // Core settings
