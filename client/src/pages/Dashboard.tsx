@@ -157,12 +157,12 @@ export default function Dashboard() {
                       <AlertDescription className="text-gray-200">
                         <div className="flex justify-between items-start">
                           <div>
-                            <span className="font-medium">{threat.threatType.toUpperCase()}</span>
+                            <span className="font-medium">{threat.threatType.replace('_', ' ').toUpperCase()}</span>
                             <div className={`text-lg font-bold ${getThreatColor(threat.threatScore)}`}>
                               Score: {threat.threatScore}/100
                             </div>
                             <div className="text-sm text-gray-400">
-                              {threat.affectedUsers.length} user(s) affected
+                              {threat.affectedUsers.length} user(s) monitored
                             </div>
                           </div>
                           <div className="text-xs text-gray-500">
@@ -176,7 +176,10 @@ export default function Dashboard() {
               ) : (
                 <div className="text-green-400 flex items-center gap-2">
                   <Shield size={16} />
-                  No active threats detected
+                  <div>
+                    <div className="font-medium">System Active - Monitoring Live</div>
+                    <div className="text-sm text-gray-400">AI analyzing all Discord events across 18 servers</div>
+                  </div>
                 </div>
               )}
             </CardContent>
