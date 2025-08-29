@@ -40,13 +40,30 @@ export async function setupDiscordAuth(app: Express) {
 
   console.log('Setting up Discord authentication...');
 
+  // Determine the correct callback URL for both development and production
+  const getCallbackURL = () => {
+    // In production deployments, use REPL_SLUG for the domain
+    if (process.env.NODE_ENV === 'production' && process.env.REPL_SLUG) {
+      return `https://${process.env.REPL_SLUG}.replit.app/api/auth/discord/callback`;
+    }
+    
+    // In development, use REPLIT_DOMAINS
+    if (process.env.REPLIT_DOMAINS) {
+      return `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/auth/discord/callback`;
+    }
+    
+    // Fallback to relative URL
+    return "/api/auth/discord/callback";
+  };
+
+  const callbackURL = getCallbackURL();
+  console.log('Discord callback URL:', callbackURL);
+
   const strategy = new DiscordStrategy(
     {
       clientID: process.env.DISCORD_CLIENT_ID!,
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-      callbackURL: process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/auth/discord/callback`
-        : "/api/auth/discord/callback",
+      callbackURL,
       scope: ["identify", "email", "guilds"],
     },
     async (accessToken: string, refreshToken: string, profile: any, done: any) => {
