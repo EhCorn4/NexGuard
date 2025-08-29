@@ -153,6 +153,17 @@ class AuthManager {
     sessionStorage.removeItem(AUTH_TIMESTAMP_KEY);
     await this.fetchUser();
   }
+
+  // Clear auth state (for logout)
+  clearAuth() {
+    this.user = null;
+    this.error = null;
+    this.hasInitialized = true;
+    this.isLoading = false;
+    sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    sessionStorage.removeItem(AUTH_TIMESTAMP_KEY);
+    this.notifyListeners();
+  }
 }
 
 const authManager = AuthManager.getInstance();
@@ -164,13 +175,18 @@ export function useAuth() {
     // Initialize auth on first use
     authManager.initialize();
 
-    // Only check for auth success parameter once
+    // Check for auth success parameter and handle it
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auth') === 'success') {
-      // Force refresh auth state after login
-      authManager.refresh();
-      // Clean up URL immediately
+      console.log('Auth success detected, refreshing state');
+      // Clean up URL first
       window.history.replaceState({}, '', window.location.pathname);
+      // Then force refresh auth state after a small delay to ensure session is ready
+      setTimeout(() => {
+        authManager.refresh().then(() => {
+          console.log('Auth refresh completed');
+        });
+      }, 100);
     }
 
     // Subscribe to changes
@@ -179,7 +195,10 @@ export function useAuth() {
     });
 
     return unsubscribe;
-  }, []); // Empty dependency array to run only once
+  }, []);
 
   return state;
 }
+
+// Export auth manager for direct access if needed
+export { authManager };
