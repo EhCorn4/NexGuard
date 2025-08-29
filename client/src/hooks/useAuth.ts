@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
 
+// Global auth state that survives HMR
+const AUTH_STORAGE_KEY = 'nexguard_auth_state';
+const AUTH_TIMESTAMP_KEY = 'nexguard_auth_timestamp';
+
+interface AuthState {
+  user: any;
+  isLoading: boolean;
+  error: any;
+  isAuthenticated: boolean;
+}
+
 // Singleton auth state to prevent multiple requests
 class AuthManager {
   private static instance: AuthManager;
@@ -9,15 +20,62 @@ class AuthManager {
   private hasInitialized = false;
   private listeners: Array<() => void> = [];
   private promise: Promise<any> | null = null;
+  private lastFetchTime = 0;
+  private CACHE_DURATION = 60000; // 1 minute cache
 
   static getInstance() {
     if (!AuthManager.instance) {
       AuthManager.instance = new AuthManager();
+      // Load cached state on creation
+      AuthManager.instance.loadCachedState();
     }
     return AuthManager.instance;
   }
 
+  private loadCachedState() {
+    try {
+      const cachedState = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      const timestamp = sessionStorage.getItem(AUTH_TIMESTAMP_KEY);
+      
+      if (cachedState && timestamp) {
+        const cacheAge = Date.now() - parseInt(timestamp);
+        if (cacheAge < this.CACHE_DURATION) {
+          const state = JSON.parse(cachedState);
+          this.user = state.user;
+          this.error = state.error;
+          this.isLoading = false;
+          this.hasInitialized = true;
+          this.lastFetchTime = parseInt(timestamp);
+          console.log('Loaded cached auth state');
+          return;
+        }
+      }
+    } catch (e) {
+      console.log('No valid cached auth state');
+    }
+  }
+
+  private saveCachedState() {
+    try {
+      const state = {
+        user: this.user,
+        error: this.error,
+      };
+      sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
+      sessionStorage.setItem(AUTH_TIMESTAMP_KEY, this.lastFetchTime.toString());
+    } catch (e) {
+      console.error('Failed to cache auth state');
+    }
+  }
+
   async fetchUser() {
+    // Check if we have recent cached data
+    const now = Date.now();
+    if (this.hasInitialized && (now - this.lastFetchTime) < this.CACHE_DURATION) {
+      console.log('Using cached auth data');
+      return;
+    }
+
     if (this.promise) {
       return this.promise; // Return existing promise if already fetching
     }
@@ -28,7 +86,9 @@ class AuthManager {
 
   private async doFetch() {
     try {
+      console.log('Fetching auth user');
       this.isLoading = true;
+      this.lastFetchTime = Date.now();
       this.notifyListeners();
 
       const res = await fetch("/api/auth/user", {
@@ -52,6 +112,7 @@ class AuthManager {
       this.isLoading = false;
       this.hasInitialized = true;
       this.promise = null;
+      this.saveCachedState();
       this.notifyListeners();
     }
   }
@@ -84,8 +145,12 @@ class AuthManager {
 
   // Force refresh auth state (called after login)
   async refresh() {
+    console.log('Forcing auth refresh');
     this.hasInitialized = false;
     this.promise = null;
+    this.lastFetchTime = 0; // Force fresh fetch
+    sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    sessionStorage.removeItem(AUTH_TIMESTAMP_KEY);
     await this.fetchUser();
   }
 }
