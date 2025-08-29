@@ -3,12 +3,14 @@
 ## Overview
 NexGuard is a comprehensive Discord bot complemented by a professional website, designed to provide robust server management capabilities including advanced moderation, a full-featured ticket system, and various utility commands. The website acts as a central hub for users to monitor bot status, explore features, and access support, aiming to deliver a professional and reliable user experience for Discord server administrators with significant market potential.
 
-## Recent Changes (v2.5.0 - August 29, 2025)
+## Recent Changes (v2.6.0 - August 29, 2025)
 - **Enterprise Security Suite**: Implemented comprehensive anti-raid and anti-nuke protection systems with real-time threat detection and automatic quarantine response
 - **Advanced Monitoring Infrastructure**: Added performance monitoring with CPU/memory/disk tracking and bot health alerts with 30-second health checks
-- **External API Integration**: Created professional RESTful endpoints for third-party applications and custom dashboard development
+- **External API Integration**: Created professional RESTful endpoints for third-party applications and custom dashboard development with comprehensive bot data access
 - **Command Suite Expansion**: Enhanced from 61 to 66+ commands with new security and monitoring categories
 - **Website Documentation Update**: Added 5 new feature cards showcasing enterprise security and monitoring capabilities
+- **Discord Announcements**: Published comprehensive v2.6.0 security suite announcement focusing on anti-raid, anti-nuke, bot health alerts, and external API integration
+- **Performance Monitoring Deployment**: Successfully deployed live performance alerts to general-logs and general-events channels across 18 servers
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
