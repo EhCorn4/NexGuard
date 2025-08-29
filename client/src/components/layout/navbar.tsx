@@ -7,12 +7,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { BotStatusIndicator } from "@/components/ui/bot-status";
 import { HoverScale } from "@/components/ui/hover-scale";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import nexguardIcon from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751938060068.png";
 
 export function Navbar() {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,10 +25,9 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = [
+  const publicNavItems = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
-    // { href: "/dashboard", label: "Dashboard" }, // Hidden until release - still accessible via direct URL
     { href: "/invite", label: "Invite Bot" },
     { href: "/developers", label: "Developers" },
     { href: "/community", label: "Community" },
@@ -36,6 +37,22 @@ export function Navbar() {
     { href: "/analytics", label: "Analytics" },
     { href: "/donate", label: "Donate" },
   ];
+
+  const authNavItems = [
+    { href: "/", label: "Home" },
+    { href: "/dashboard", label: "Security Dashboard" },
+    { href: "/features", label: "Features" },
+    { href: "/analytics", label: "Analytics" },
+    { href: "/invite", label: "Invite Bot" },
+    { href: "/developers", label: "Developers" },
+    { href: "/community", label: "Community" },
+    { href: "/testimonials", label: "Testimonials" },
+    { href: "/feedback", label: "Feedback" },
+    { href: "/docs", label: "Docs" },
+    { href: "/donate", label: "Donate" },
+  ];
+
+  const navItems = isAuthenticated ? authNavItems : publicNavItems;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-[hsl(var(--nexguard-cyan))]/20 transition-all duration-300 ${
