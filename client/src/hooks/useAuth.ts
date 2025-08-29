@@ -164,12 +164,12 @@ export function useAuth() {
     // Initialize auth on first use
     authManager.initialize();
 
-    // Check if we just came from a login redirect
+    // Only check for auth success parameter once
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auth') === 'success') {
       // Force refresh auth state after login
       authManager.refresh();
-      // Clean up URL if it has auth params
+      // Clean up URL immediately
       window.history.replaceState({}, '', window.location.pathname);
     }
 
@@ -179,7 +179,7 @@ export function useAuth() {
     });
 
     return unsubscribe;
-  }, []);
+  }, []); // Empty dependency array to run only once
 
   return state;
 }

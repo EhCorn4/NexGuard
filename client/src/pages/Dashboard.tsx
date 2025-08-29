@@ -37,7 +37,9 @@ interface ActiveThreat {
 }
 
 export default function Dashboard() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  
+  console.log('Dashboard render - isAuthenticated:', isAuthenticated, 'authLoading:', authLoading, 'user:', user);
 
   const { data: botStatus, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
@@ -59,6 +61,7 @@ export default function Dashboard() {
 
   // Show loading state while checking authentication
   if (authLoading) {
+    console.log('Showing loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
@@ -68,6 +71,7 @@ export default function Dashboard() {
 
   // Show sign-in interface for unauthenticated users
   if (!isAuthenticated) {
+    console.log('Showing sign-in interface - not authenticated');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24">
         <div className="max-w-4xl mx-auto px-4 py-16">
