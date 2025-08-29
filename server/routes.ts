@@ -6141,6 +6141,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bot configuration endpoints
+  app.get("/api/bot/guilds", isAuthenticated, async (req, res) => {
+    try {
+      const guilds = await BotConfigService.getBotGuilds();
+      res.json(guilds);
+    } catch (error) {
+      console.error("Error fetching bot guilds:", error);
+      res.status(500).json({ message: "Failed to fetch bot guilds" });
+    }
+  });
+
+  app.get("/api/bot/config/:guildId", isAuthenticated, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const config = await BotConfigService.getGuildConfig(guildId);
+      
+      if (!config) {
+        return res.status(404).json({ message: "Guild configuration not found" });
+      }
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching guild config:", error);
+      res.status(500).json({ message: "Failed to fetch guild configuration" });
+    }
+  });
+
+  app.put("/api/bot/config/:guildId", isAuthenticated, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const updates = req.body;
+      
+      const success = await BotConfigService.updateGuildConfig(guildId, updates);
+      
+      if (success) {
+        res.json({ message: "Configuration updated successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to update configuration" });
+      }
+    } catch (error) {
+      console.error("Error updating guild config:", error);
+      res.status(500).json({ message: "Failed to update guild configuration" });
+    }
+  });
+
+  app.get("/api/bot/channels/:guildId", isAuthenticated, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const channels = await BotConfigService.getGuildChannels(guildId);
+      res.json(channels);
+    } catch (error) {
+      console.error("Error fetching guild channels:", error);
+      res.status(500).json({ message: "Failed to fetch guild channels" });
+    }
+  });
+
+  app.get("/api/bot/roles/:guildId", isAuthenticated, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const roles = await BotConfigService.getGuildRoles(guildId);
+      res.json(roles);
+    } catch (error) {
+      console.error("Error fetching guild roles:", error);
+      res.status(500).json({ message: "Failed to fetch guild roles" });
+    }
+  });
+
+  app.get("/api/bot/autoreplies/:guildId", isAuthenticated, async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const autoReplies = await BotConfigService.getAutoReplies(guildId);
+      res.json(autoReplies);
+    } catch (error) {
+      console.error("Error fetching auto-replies:", error);
+      res.status(500).json({ message: "Failed to fetch auto-replies" });
+    }
+  });
+
   // Webhook endpoint for sending messages through the bot
   app.post("/webhook/send", async (req, res) => {
     try {

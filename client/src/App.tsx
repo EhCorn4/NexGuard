@@ -33,6 +33,7 @@ const Analytics = lazy(() => import("@/pages/analytics"));
 const Donate = lazy(() => import("@/pages/donate"));
 const ChangelogManager = lazy(() => import("@/pages/changelog-manager"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const ServerManagement = lazy(() => import("@/pages/ServerManagement"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const CookiesPolicy = lazy(() => import("@/pages/cookies-policy"));
@@ -148,6 +149,13 @@ function Router() {
                 <PageTransition key="dashboard">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={6}>
                     <Dashboard />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
+              <Route path="/servers" component={() => (
+                <PageTransition key="servers">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={4}>
+                    <ServerManagement />
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
