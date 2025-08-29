@@ -185,7 +185,7 @@ class AntiRaidSystem(commands.Cog):
             # Delete recent messages
             try:
                 async for message in channel.history(limit=50):
-                    if message.author == user and (datetime.utcnow() - message.created_at).seconds < 60:
+                    if message.author == user and (datetime.utcnow().replace(tzinfo=None) - message.created_at.replace(tzinfo=None)).seconds < 60:
                         await message.delete()
             except discord.Forbidden:
                 pass
