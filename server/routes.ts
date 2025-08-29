@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { apiEndpoints } from "./api/endpoints";
 import { setupDiscordAuth, isAuthenticated } from "./discordAuth";
+import { BotConfigService } from "./api/botConfig";
 import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
