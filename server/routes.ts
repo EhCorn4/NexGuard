@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { apiEndpoints } from "./api/endpoints";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { changelogs, type Changelog } from "@shared/schema";
 import { insertTestimonialSchema, insertFeedbackSchema } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
@@ -5824,8 +5825,23 @@ For detailed assistance, join our support server at https://discord.gg/wpjZMPXaR
 © 2025 NexGuard. All rights reserved.`;
 }
 
-export function registerRoutes(app: Express): Server {
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
   const httpServer = createServer(app);
+  
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getAuthUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
   
   // Register API endpoints for external integrations
   app.use('/api', apiEndpoints);

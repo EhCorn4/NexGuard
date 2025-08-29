@@ -12,11 +12,14 @@ import { PerformanceWrapper } from "@/components/optimized/performance-wrapper";
 import { PageTransition } from "@/components/ui/page-transition";
 import { usePrefetchCriticalData, useServiceWorker, useMemoryOptimization } from "@/components/optimized/cache-optimization";
 import { PerformanceMonitor } from "@/components/optimized/performance-monitor";
+import { useAuth } from "@/hooks/useAuth";
 import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/pages/home"));
+const Landing = lazy(() => import("@/pages/Landing"));
+const UserHome = lazy(() => import("@/pages/UserHome"));
 const Features = lazy(() => import("@/pages/features"));
 const Invite = lazy(() => import("@/pages/invite"));
 const Developers = lazy(() => import("@/pages/developers"));
@@ -40,6 +43,7 @@ function Router() {
   // Enable smooth scrolling to top on page navigation
   useScrollToTop();
   const [location] = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
   
   return (
     <ErrorBoundary>
@@ -52,7 +56,15 @@ function Router() {
               <Route path="/" component={() => (
                 <PageTransition key="home">
                   <PerformanceWrapper skeletonType="grid" skeletonCount={1}>
-                    <Home />
+                    {isLoading ? (
+                      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24 flex items-center justify-center">
+                        <div className="text-white text-xl">Loading...</div>
+                      </div>
+                    ) : isAuthenticated ? (
+                      <UserHome />
+                    ) : (
+                      <Landing />
+                    )}
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
