@@ -44,18 +44,24 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
       }
     });
 
-    // Get bot guilds to see which ones bot is already in
+    // Get bot guilds to see which ones bot is already in AND get accurate member counts
     const botGuilds = await BotConfigService.getBotGuilds();
     const botGuildIds = new Set(botGuilds.map(g => g.id));
+    const memberCountMap = new Map(botGuilds.map(g => [g.id, g.member_count]));
 
-    // Format guilds with bot status
-    return adminGuilds.map((guild: any) => ({
+    // Only return guilds where the bot is present (so we have accurate data)
+    const guildsWithBot = adminGuilds.filter((guild: any) => botGuildIds.has(guild.id));
+    
+    console.log(`Filtered to ${guildsWithBot.length} admin guilds where bot is present`);
+
+    // Format guilds with accurate member counts from database
+    return guildsWithBot.map((guild: any) => ({
       id: guild.id,
       name: guild.name,
       icon: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
-      member_count: 0, // Discord API doesn't provide this in /users/@me/guilds
+      member_count: memberCountMap.get(guild.id) || 0, // Use database member count
       channel_count: 0,
-      bot_in_server: botGuildIds.has(guild.id),
+      bot_in_server: true, // All these guilds have the bot
       user_permissions: guild.permissions,
       is_owner: guild.owner || false
     }));

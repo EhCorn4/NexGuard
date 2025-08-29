@@ -56,18 +56,24 @@ export async function getUserAdminGuilds(userId: string, accessToken: string) {
 
   console.log(`User ${userId} has admin access to ${adminGuilds.length}/${guilds.length} guilds`);
 
-  // Get bot guilds to mark which ones have the bot
+  // Get bot guilds to mark which ones have the bot and get accurate member counts
   const { BotConfigService } = await import('./api/botConfig');
   const botGuilds = await BotConfigService.getBotGuilds();
   const botGuildIds = new Set(botGuilds.map(g => g.id));
+  const memberCountMap = new Map(botGuilds.map(g => [g.id, g.member_count]));
 
-  return adminGuilds.map((guild: any) => ({
+  // Only return guilds where the bot is present (so we have accurate data)
+  const guildsWithBot = adminGuilds.filter((guild: any) => botGuildIds.has(guild.id));
+  
+  console.log(`User ${userId} has access to ${guildsWithBot.length} admin guilds where bot is present`);
+
+  return guildsWithBot.map((guild: any) => ({
     id: guild.id,
     name: guild.name,
     icon: guild.icon,
-    member_count: guild.approximate_member_count || 0,
+    member_count: memberCountMap.get(guild.id) || 0, // Use database member count
     channel_count: 0,
-    hasBot: botGuildIds.has(guild.id), // Mark if bot is in this server
+    hasBot: true, // All these guilds have the bot
     permissions: guild.permissions
   }));
 }
