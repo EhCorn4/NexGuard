@@ -42,9 +42,9 @@ export async function setupDiscordAuth(app: Express) {
 
   // Determine the correct callback URL for both development and production
   const getCallbackURL = () => {
-    // In production deployments, use REPL_SLUG for the domain
-    if (process.env.NODE_ENV === 'production' && process.env.REPL_SLUG) {
-      return `https://${process.env.REPL_SLUG}.replit.app/api/auth/discord/callback`;
+    // Check if we're in production deployment based on hostname
+    if (process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT === 'true') {
+      return 'https://nexguard.replit.app/api/auth/discord/callback';
     }
     
     // In development, use REPLIT_DOMAINS
