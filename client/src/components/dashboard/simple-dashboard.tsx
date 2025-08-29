@@ -222,7 +222,7 @@ export function SimpleDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24">
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
               NexGuard Security Dashboard
@@ -231,6 +231,30 @@ export function SimpleDashboard() {
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Monitor your Discord bot, manage server configurations, and view real-time security analytics
           </p>
+        </div>
+
+        {/* User Info & Logout */}
+        <div className="flex justify-between items-center mb-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold">
+                {user?.username?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <p className="text-white font-medium">{user?.username}</p>
+              <p className="text-gray-400 text-sm">Administrator</p>
+            </div>
+          </div>
+          <button
+            onClick={() => window.location.href = '/api/logout'}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </button>
         </div>
 
         {/* Main Dashboard Tabs */}
