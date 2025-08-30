@@ -126,14 +126,14 @@ export default function ServerManagement() {
   });
 
   // Fetch guild channels
-  const { data: channels } = useQuery<Channel[]>({
+  const { data: channels, isLoading: channelsLoading, error: channelsError } = useQuery<Channel[]>({
     queryKey: ["/api/bot/channels", selectedGuildId],
     enabled: !!selectedGuildId,
     retry: false,
   });
 
   // Fetch guild roles
-  const { data: roles } = useQuery<Role[]>({
+  const { data: roles, isLoading: rolesLoading, error: rolesError } = useQuery<Role[]>({
     queryKey: ["/api/bot/roles", selectedGuildId],
     enabled: !!selectedGuildId,
     retry: false,
@@ -671,7 +671,20 @@ export default function ServerManagement() {
                 <CardDescription>Configure event logging channels</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(channelsLoading || rolesLoading) ? (
+                  <div className="flex items-center justify-center h-32">
+                    <div className="text-center">
+                      <Settings className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      <p>Loading channels and roles...</p>
+                    </div>
+                  </div>
+                ) : (channelsError || rolesError) ? (
+                  <div className="text-center p-8">
+                    <p className="text-red-500 mb-2">Failed to load server data</p>
+                    <p className="text-sm text-muted-foreground">Please refresh the page or try selecting a different server</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>General Log Channel</Label>
                     <Select value={config.general_log_channel_id || ""} onValueChange={(value) => handleConfigChange("general_log_channel_id", value || null)}>
@@ -801,6 +814,7 @@ export default function ServerManagement() {
                     </Select>
                   </div>
                 </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
