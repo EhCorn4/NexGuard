@@ -161,17 +161,46 @@ class NexGuardBot(commands.Bot):
             return
             
         try:
+            # Default automod configuration with bad words filtering enabled
+            default_automod_config = {
+                "spam": {
+                    "enabled": True,
+                    "action": "warn",
+                    "max_messages": 5,
+                    "time_window": 5
+                },
+                "links": {
+                    "enabled": False,
+                    "action": "delete",
+                    "block_urls": False,
+                    "block_invites": True
+                },
+                "badwords": {
+                    "enabled": True,
+                    "action": "delete",
+                    "strict": True,
+                    "custom_words": [
+                        "cunt", "dumb faggot", "dumb nigga", "faggot", "faggot retard", "fuck", 
+                        "fuckin", "fucking", "fucking faggot", "fucking nigga", "fucking retard", 
+                        "gay faggot", "gay nigga", "gay retard", "grooms", "nigger retard", 
+                        "retard", "retarded faggot", "retarded nigga", "retarded nigger", "shit", 
+                        "stupid faggot", "stupid retard", "bitch", "bitchs", "bitchass"
+                    ]
+                }
+            }
+            
             async with self.db_pool.acquire() as conn:
                 await conn.execute("""
-                    INSERT INTO guilds (id, name, member_count, joined_at, updated_at)
-                    VALUES ($1, $2, $3, $4, $5)
+                    INSERT INTO guilds (id, name, member_count, automod_config, joined_at, updated_at)
+                    VALUES ($1, $2, $3, $4, $5, $6)
                     ON CONFLICT (id) DO UPDATE SET
                         name = EXCLUDED.name,
                         member_count = EXCLUDED.member_count,
+                        automod_config = COALESCE(guilds.automod_config, EXCLUDED.automod_config),
                         updated_at = EXCLUDED.updated_at
-                """, str(guild.id), guild.name, guild.member_count, datetime.utcnow(), datetime.utcnow())
+                """, str(guild.id), guild.name, guild.member_count, json.dumps(default_automod_config), datetime.utcnow(), datetime.utcnow())
                 
-                logger.info(f"Registered guild: {guild.name} ({guild.id})")
+                logger.info(f"Registered guild with default automod: {guild.name} ({guild.id})")
         except Exception as e:
             logger.error(f"Failed to register guild: {e}")
     

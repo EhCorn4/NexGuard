@@ -37,6 +37,37 @@ EMOJIS = {
     'MENTION': '📢'
 }
 
+# Default bad words list for all servers
+DEFAULT_BAD_WORDS = [
+    "cunt", "dumb faggot", "dumb nigga", "faggot", "faggot retard", "fuck", 
+    "fuckin", "fucking", "fucking faggot", "fucking nigga", "fucking retard", 
+    "gay faggot", "gay nigga", "gay retard", "grooms", "nigger retard", 
+    "retard", "retarded faggot", "retarded nigga", "retarded nigger", "shit", 
+    "stupid faggot", "stupid retard", "bitch", "bitchs", "bitchass"
+]
+
+# Default automod configuration for new guilds
+DEFAULT_AUTOMOD_CONFIG = {
+    "spam": {
+        "enabled": True,
+        "action": "warn",
+        "max_messages": 5,
+        "time_window": 5
+    },
+    "links": {
+        "enabled": False,
+        "action": "delete",
+        "block_urls": False,
+        "block_invites": True
+    },
+    "badwords": {
+        "enabled": True,
+        "action": "delete",
+        "strict": True,
+        "custom_words": DEFAULT_BAD_WORDS
+    }
+}
+
 class AutoModCog(commands.Cog):
     """Advanced AutoMod system for comprehensive server moderation"""
     
@@ -53,7 +84,7 @@ class AutoModCog(commands.Cog):
     async def get_automod_settings(self, guild_id: str) -> Dict[str, Any]:
         """Get automod settings for a guild from database"""
         if not self.bot.db_pool:
-            return {}
+            return DEFAULT_AUTOMOD_CONFIG.copy()
         
         try:
             async with self.bot.db_pool.acquire() as conn:
@@ -63,10 +94,14 @@ class AutoModCog(commands.Cog):
                 
                 if config and config['automod_config']:
                     return json.loads(config['automod_config'])
-                return {}
+                else:
+                    # Return default config and save it for new guilds
+                    default_config = DEFAULT_AUTOMOD_CONFIG.copy()
+                    await self.save_automod_settings(guild_id, default_config)
+                    return default_config
         except Exception as e:
             logger.error(f"Error getting automod settings: {e}")
-            return {}
+            return DEFAULT_AUTOMOD_CONFIG.copy()
     
     async def save_automod_settings(self, guild_id: str, settings: Dict[str, Any]):
         """Save automod settings for a guild to database"""
@@ -84,6 +119,67 @@ class AutoModCog(commands.Cog):
                 ''', guild_id, json.dumps(settings))
         except Exception as e:
             logger.error(f"Error saving automod settings: {e}")
+    
+    @app_commands.command(name="automod-apply-defaults", description="Apply default bad words filter to all servers (Owner only)")
+    async def apply_default_automod(self, interaction: discord.Interaction):
+        """Apply default automod configuration to all guilds that don't have it"""
+        # Check if user is bot owner
+        if interaction.user.id != 409889861441421315:  # Replace with actual bot owner ID
+            embed = discord.Embed(
+                title=f"{EMOJIS['ERROR']} Permission Denied",
+                description="Only the bot owner can run this command.",
+                color=COLORS['ERROR']
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            updated_count = 0
+            total_count = 0
+            
+            async with self.bot.db_pool.acquire() as conn:
+                # Get all guilds that don't have automod configuration or have empty config
+                guilds = await conn.fetch('''
+                    SELECT id, name FROM guilds 
+                    WHERE automod_config IS NULL 
+                    OR automod_config = '{}' 
+                    OR automod_config = ''
+                ''')
+                
+                total_count = len(guilds)
+                
+                for guild_row in guilds:
+                    guild_id = guild_row['id']
+                    guild_name = guild_row['name']
+                    
+                    # Apply default configuration
+                    await self.save_automod_settings(guild_id, DEFAULT_AUTOMOD_CONFIG)
+                    updated_count += 1
+                    logger.info(f"Applied default automod to guild: {guild_name} ({guild_id})")
+            
+            embed = discord.Embed(
+                title=f"{EMOJIS['SUCCESS']} Default AutoMod Applied",
+                description=f"Successfully applied default bad words filter to **{updated_count}** out of **{total_count}** guilds.",
+                color=COLORS['SUCCESS']
+            )
+            embed.add_field(
+                name="Default Configuration",
+                value=f"• **Bad Words Filter**: Enabled\n• **Action**: Delete messages\n• **Words**: {len(DEFAULT_BAD_WORDS)} default words\n• **Spam Protection**: Enabled\n• **Link Filtering**: Disabled",
+                inline=False
+            )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+        except Exception as e:
+            logger.error(f"Error applying default automod: {e}")
+            embed = discord.Embed(
+                title=f"{EMOJIS['ERROR']} Error",
+                description=f"Failed to apply default automod configuration: {str(e)}",
+                color=COLORS['ERROR']
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
     
     @app_commands.command(name="automod-config", description="Configure AutoMod settings")
     async def automod_config(self, interaction: discord.Interaction):
