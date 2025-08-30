@@ -52,14 +52,21 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
     console.log(`User ${userId} has admin access to ${adminGuilds.length} total guilds`);
     console.log(`Bot is present in ${botGuilds.length} guilds`);
 
-    // Return ALL admin guilds, marking which ones have the bot
+    // Return ALL admin guilds, always prioritizing database member counts
     return adminGuilds.map((guild: any) => {
       const hasBot = botGuildIds.has(guild.id);
+      const dbMemberCount = memberCountMap.get(guild.id);
+      
+      // Always use database member count if available, otherwise use Discord API approximate
+      const memberCount = dbMemberCount || guild.approximate_member_count || 0;
+      
+      console.log(`Guild ${guild.name}: hasBot=${hasBot}, dbCount=${dbMemberCount}, apiCount=${guild.approximate_member_count}, using=${memberCount}`);
+      
       return {
         id: guild.id,
         name: guild.name,
         icon: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
-        member_count: hasBot ? (memberCountMap.get(guild.id) || 0) : (guild.approximate_member_count || 0),
+        member_count: memberCount,
         channel_count: 0,
         bot_in_server: hasBot,
         user_permissions: guild.permissions,
