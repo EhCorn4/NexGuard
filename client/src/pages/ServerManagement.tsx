@@ -258,7 +258,7 @@ export default function ServerManagement() {
       </Card>
 
       {/* Configuration Tabs */}
-      {selectedGuildId && config && (
+      {selectedGuildId && config && !configLoading && (
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="general">General</TabsTrigger>
@@ -671,7 +671,7 @@ export default function ServerManagement() {
                 <CardDescription>Configure event logging channels</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {(channelsLoading || rolesLoading || !channels || !roles) ? (
+                {(channelsLoading || rolesLoading || !selectedGuildId || !config) ? (
                   <div className="flex items-center justify-center h-32">
                     <div className="text-center">
                       <Settings className="h-6 w-6 animate-spin mx-auto mb-2" />
@@ -682,6 +682,11 @@ export default function ServerManagement() {
                   <div className="text-center p-8">
                     <p className="text-red-500 mb-2">Failed to load server data</p>
                     <p className="text-sm text-muted-foreground">Please refresh the page or try selecting a different server</p>
+                  </div>
+                ) : (!channels || !roles || !Array.isArray(channels) || !Array.isArray(roles)) ? (
+                  <div className="text-center p-8">
+                    <p className="text-yellow-500 mb-2">No channels or roles found</p>
+                    <p className="text-sm text-muted-foreground">This server may not have any accessible channels or roles</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
