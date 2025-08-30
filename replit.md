@@ -3,7 +3,14 @@
 ## Overview
 NexGuard is a comprehensive Discord bot complemented by a professional website, designed to provide robust server management capabilities including advanced moderation, a full-featured ticket system, and various utility commands. The website acts as a central hub for users to monitor bot status, explore features, and access support, aiming to deliver a professional and reliable user experience for Discord server administrators with significant market potential.
 
-## Recent Changes (v3.1.0 - August 29, 2025) ✅ COMPLETED
+## Recent Changes (v3.1.1 - August 30, 2025) ✅ COMPLETED
+- **Dashboard Interface Cleanup**: Resolved Discord API limitations affecting member count and bot status display accuracy
+- **Simplified Server Selection**: Cleaned up server dropdown to show only server names, removing unreliable member counts and bot status badges
+- **Improved User Experience**: Eliminated confusing status indicators that were showing incorrect information due to Discord API constraints
+- **Streamlined Configuration Access**: Direct access to bot configuration for all admin servers without misleading status displays
+- **Discord API Optimization**: Removed dependency on unreliable Discord API endpoints for member counts and bot presence detection
+
+## Previous Changes (v3.1.0 - August 29, 2025) ✅ COMPLETED
 - **Unified Dashboard System**: Successfully merged server management and security dashboard into single tabbed interface for streamlined bot administration
 - **Comprehensive Bot Configuration**: Built complete bot configuration API system with 70+ settings covering AutoMod, logging, welcome/goodbye, moderation roles, and security features
 - **Real-Time Server Management**: Created server management interface with tabbed configuration sections allowing website toggles to directly modify bot database settings
