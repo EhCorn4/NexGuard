@@ -56,35 +56,13 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
     const guildsWithMemberCounts = await Promise.all(
       adminGuilds.map(async (guild: any) => {
         const hasBot = botGuildIds.has(guild.id);
-        const dbMemberCount = memberCountMap.get(guild.id);
-        let memberCount = dbMemberCount;
         
-        // If no database count, try to get from Discord API with bot token
-        if (!memberCount) {
-          try {
-            // For servers without bot, we can't get accurate member counts
-            // Discord's /users/@me/guilds doesn't include member_count
-            memberCount = guild.approximate_member_count || 0;
-            
-            // If still 0, estimate based on guild activity (rough estimate)
-            if (memberCount === 0) {
-              // Very rough estimation based on common Discord server sizes
-              memberCount = Math.floor(Math.random() * 200) + 50; // 50-250 members
-            }
-          } catch (error) {
-            console.log(`Could not get member count for ${guild.name}`);
-            memberCount = Math.floor(Math.random() * 150) + 25; // Fallback estimate
-          }
-        }
-        
-        console.log(`Guild ${guild.name}: hasBot=${hasBot}, dbCount=${dbMemberCount}, finalCount=${memberCount}`);
+        console.log(`Guild ${guild.name}: hasBot=${hasBot}`);
         
         return {
           id: guild.id,
           name: guild.name,
           icon: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
-          member_count: memberCount,
-          channel_count: 0,
           bot_in_server: hasBot,
           user_permissions: guild.permissions,
           is_owner: guild.owner || false

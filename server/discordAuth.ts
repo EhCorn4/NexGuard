@@ -69,24 +69,13 @@ export async function getUserAdminGuilds(userId: string, accessToken: string) {
   const guildsWithMemberCounts = await Promise.all(
     adminGuilds.map(async (guild: any) => {
       const hasBot = botGuildIds.has(guild.id);
-      const dbMemberCount = memberCountMap.get(guild.id);
-      let memberCount = dbMemberCount;
       
-      // If no database count, provide realistic estimates
-      if (!memberCount) {
-        // Discord API doesn't provide member counts in /users/@me/guilds
-        // For servers without bot, provide reasonable estimates
-        memberCount = guild.approximate_member_count || Math.floor(Math.random() * 300) + 100;
-      }
-      
-      console.log(`Guild ${guild.name}: hasBot=${hasBot}, dbCount=${dbMemberCount}, finalCount=${memberCount}`);
+      console.log(`Guild ${guild.name}: hasBot=${hasBot}`);
       
       return {
         id: guild.id,
         name: guild.name,
         icon: guild.icon,
-        member_count: memberCount,
-        channel_count: 0,
         hasBot: hasBot,
         permissions: guild.permissions
       };

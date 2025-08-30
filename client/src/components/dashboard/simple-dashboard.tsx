@@ -96,8 +96,6 @@ interface Guild {
   id: string;
   name: string;
   icon?: string | null;
-  member_count?: number;
-  channel_count?: number;
   bot_in_server?: boolean;
   hasBot?: boolean;
 }
@@ -500,10 +498,7 @@ export function SimpleDashboard() {
                       {guilds?.map((guild) => (
                         <SelectItem key={guild.id} value={guild.id} className="text-white">
                           <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center space-x-2">
-                              <span>{guild.name}</span>
-                              <Badge variant="outline" className="text-gray-300">{guild.member_count} members</Badge>
-                            </div>
+                            <span>{guild.name}</span>
                             {(guild.bot_in_server || guild.hasBot) ? (
                               <Badge className="bg-green-600 text-white text-xs">Bot Active</Badge>
                             ) : (
