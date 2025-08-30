@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Shield, Users, Server, Settings, BarChart3, MessageSquare, AlertTriangle, Clock, Zap, MessageCircle, Lock, Bot, FileText } from 'lucide-react';
+import { Activity, Shield, Users, Server, Settings, BarChart3, MessageSquare, AlertTriangle, Clock, Zap, MessageCircle, Lock, Bot, FileText, Download } from 'lucide-react';
 import { useState, useEffect } from "react";
 
 interface BotStatus {
@@ -213,6 +213,41 @@ export function SimpleDashboard() {
     }
   }, [guildConfig]);
 
+  // Import Discord server configurations
+  const importConfigsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/bot/import-configs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Import failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Import Successful",
+        description: `Successfully imported ${data.imported} server configurations. The dashboard now reflects your actual Discord server settings.`,
+      });
+      // Refresh the guilds list
+      queryClient.invalidateQueries({ queryKey: ["/api/bot/guilds"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Import Failed",
+        description: `Failed to import configurations: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleConfigChange = (field: keyof BotConfig, value: any) => {
     if (!config) return;
     
@@ -242,12 +277,33 @@ export function SimpleDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24">
       <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-5xl font-bold text-white mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                NexGuard Security Dashboard
+              </span>
+            </h1>
+          </div>
+          <Button
+            onClick={() => importConfigsMutation.mutate()}
+            disabled={importConfigsMutation.isPending}
+            className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            {importConfigsMutation.isPending ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                Importing...
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5 mr-2" />
+                Import Server Configs
+              </>
+            )}
+          </Button>
+        </div>
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-6">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-              NexGuard Security Dashboard
-            </span>
-          </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Monitor your Discord bot, manage server configurations, and view real-time security analytics
           </p>
