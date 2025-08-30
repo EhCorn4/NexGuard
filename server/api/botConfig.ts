@@ -403,26 +403,88 @@ export class BotConfigService {
   // Get guild channels and roles for dropdown selection
   static async getGuildChannels(guildId: string) {
     try {
-      // Note: This should ideally fetch from Discord API, not database
-      // For now, return empty array since channels table doesn't exist
-      console.log(`Fetching channels for guild ${guildId} - using Discord API integration`);
-      return [];
+      console.log(`Fetching channels for guild ${guildId} from Discord API`);
+      
+      // Try to fetch from Discord bot first
+      try {
+        const botResponse = await fetch('http://localhost:5001/api/bot/guild-channels', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            guild_id: guildId
+          })
+        });
+
+        if (botResponse.ok) {
+          const channelsData = await botResponse.json();
+          console.log(`Fetched ${channelsData.length} channels for guild ${guildId}`);
+          return channelsData;
+        } else {
+          console.log(`Bot API unavailable for channels, status: ${botResponse.status}`);
+        }
+      } catch (botError) {
+        console.log('Bot API not available for channels:', botError);
+      }
+
+      // Fallback: return some common channel types for configuration
+      console.log(`Returning fallback channels for guild ${guildId}`);
+      return [
+        { id: 'none', name: 'No Channel Selected', type: 0 },
+        { id: 'general', name: '#general (example)', type: 0 },
+        { id: 'mod-logs', name: '#mod-logs (example)', type: 0 },
+        { id: 'bot-commands', name: '#bot-commands (example)', type: 0 }
+      ];
     } catch (error) {
       console.error('Error fetching guild channels:', error);
-      return [];
+      return [
+        { id: 'none', name: 'No Channel Selected', type: 0 }
+      ];
     }
   }
 
   // Get guild roles for role selection
   static async getGuildRoles(guildId: string) {
     try {
-      // Note: This should ideally fetch from Discord API, not database  
-      // For now, return empty array since roles table doesn't exist
-      console.log(`Fetching roles for guild ${guildId} - using Discord API integration`);
-      return [];
+      console.log(`Fetching roles for guild ${guildId} from Discord API`);
+      
+      // Try to fetch from Discord bot first
+      try {
+        const botResponse = await fetch('http://localhost:5001/api/bot/guild-roles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            guild_id: guildId
+          })
+        });
+
+        if (botResponse.ok) {
+          const rolesData = await botResponse.json();
+          console.log(`Fetched ${rolesData.length} roles for guild ${guildId}`);
+          return rolesData;
+        } else {
+          console.log(`Bot API unavailable for roles, status: ${botResponse.status}`);
+        }
+      } catch (botError) {
+        console.log('Bot API not available for roles:', botError);
+      }
+
+      // Fallback: return some common role types for configuration
+      console.log(`Returning fallback roles for guild ${guildId}`);
+      return [
+        { id: 'none', name: 'No Role Selected', color: 0, position: 0, managed: false },
+        { id: 'moderator', name: '@Moderator (example)', color: 3447003, position: 5, managed: false },
+        { id: 'admin', name: '@Admin (example)', color: 15158332, position: 10, managed: false },
+        { id: 'member', name: '@Member (example)', color: 9807270, position: 1, managed: false }
+      ];
     } catch (error) {
       console.error('Error fetching guild roles:', error);
-      return [];
+      return [
+        { id: 'none', name: 'No Role Selected', color: 0, position: 0, managed: false }
+      ];
     }
   }
 
