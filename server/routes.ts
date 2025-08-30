@@ -6309,7 +6309,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot/channels/:guildId", isAuthenticated, async (req, res) => {
     try {
       const { guildId } = req.params;
-      const channels = await BotConfigService.getGuildChannels(guildId);
+      const accessToken = req.user?.accessToken;
+      const channels = await BotConfigService.getGuildChannels(guildId, accessToken);
       res.json(channels);
     } catch (error) {
       console.error("Error fetching guild channels:", error);
@@ -6320,7 +6321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot/roles/:guildId", isAuthenticated, async (req, res) => {
     try {
       const { guildId } = req.params;
-      const roles = await BotConfigService.getGuildRoles(guildId);
+      const accessToken = req.user?.accessToken;
+      const roles = await BotConfigService.getGuildRoles(guildId, accessToken);
       res.json(roles);
     } catch (error) {
       console.error("Error fetching guild roles:", error);

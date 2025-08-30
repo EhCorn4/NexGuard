@@ -401,34 +401,44 @@ export class BotConfigService {
   }
 
   // Get guild channels and roles for dropdown selection
-  static async getGuildChannels(guildId: string) {
+  static async getGuildChannels(guildId: string, accessToken?: string) {
     try {
-      console.log(`Fetching channels for guild ${guildId} from Discord API`);
+      console.log(`Fetching real channels for guild ${guildId} from Discord API`);
       
-      // Try to fetch from Discord bot first
-      try {
-        const botResponse = await fetch('http://localhost:5001/api/bot/guild-channels', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            guild_id: guildId
-          })
-        });
+      // Fetch directly from Discord API if we have an access token
+      if (accessToken) {
+        try {
+          const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'User-Agent': 'NexGuard-Bot-Website/2.3.2'
+            }
+          });
 
-        if (botResponse.ok) {
-          const channelsData = await botResponse.json();
-          console.log(`Fetched ${channelsData.length} channels for guild ${guildId}`);
-          return channelsData;
-        } else {
-          console.log(`Bot API unavailable for channels, status: ${botResponse.status}`);
+          if (response.ok) {
+            const channels = await response.json();
+            const textChannels = channels
+              .filter((ch: any) => ch.type === 0 || ch.type === 5) // Text and announcement channels
+              .map((ch: any) => ({
+                id: ch.id,
+                name: `#${ch.name}`,
+                type: ch.type
+              }));
+            
+            console.log(`Fetched ${textChannels.length} real channels for guild ${guildId}`);
+            return [
+              { id: 'none', name: 'No Channel Selected', type: 0 },
+              ...textChannels
+            ];
+          } else {
+            console.log(`Discord API error for channels: ${response.status}`);
+          }
+        } catch (apiError) {
+          console.log('Discord API not available for channels:', apiError);
         }
-      } catch (botError) {
-        console.log('Bot API not available for channels:', botError);
       }
 
-      // Fallback: return some common channel types for configuration
+      // Fallback when no access token or API fails
       console.log(`Returning fallback channels for guild ${guildId}`);
       return [
         { id: 'none', name: 'No Channel Selected', type: 0 },
@@ -445,34 +455,47 @@ export class BotConfigService {
   }
 
   // Get guild roles for role selection
-  static async getGuildRoles(guildId: string) {
+  static async getGuildRoles(guildId: string, accessToken?: string) {
     try {
-      console.log(`Fetching roles for guild ${guildId} from Discord API`);
+      console.log(`Fetching real roles for guild ${guildId} from Discord API`);
       
-      // Try to fetch from Discord bot first
-      try {
-        const botResponse = await fetch('http://localhost:5001/api/bot/guild-roles', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            guild_id: guildId
-          })
-        });
+      // Fetch directly from Discord API if we have an access token
+      if (accessToken) {
+        try {
+          const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'User-Agent': 'NexGuard-Bot-Website/2.3.2'
+            }
+          });
 
-        if (botResponse.ok) {
-          const rolesData = await botResponse.json();
-          console.log(`Fetched ${rolesData.length} roles for guild ${guildId}`);
-          return rolesData;
-        } else {
-          console.log(`Bot API unavailable for roles, status: ${botResponse.status}`);
+          if (response.ok) {
+            const roles = await response.json();
+            const userRoles = roles
+              .filter((role: any) => !role.managed && role.name !== '@everyone')
+              .sort((a: any, b: any) => b.position - a.position)
+              .map((role: any) => ({
+                id: role.id,
+                name: `@${role.name}`,
+                color: role.color,
+                position: role.position,
+                managed: role.managed
+              }));
+            
+            console.log(`Fetched ${userRoles.length} real roles for guild ${guildId}`);
+            return [
+              { id: 'none', name: 'No Role Selected', color: 0, position: 0, managed: false },
+              ...userRoles
+            ];
+          } else {
+            console.log(`Discord API error for roles: ${response.status}`);
+          }
+        } catch (apiError) {
+          console.log('Discord API not available for roles:', apiError);
         }
-      } catch (botError) {
-        console.log('Bot API not available for roles:', botError);
       }
 
-      // Fallback: return some common role types for configuration
+      // Fallback when no access token or API fails
       console.log(`Returning fallback roles for guild ${guildId}`);
       return [
         { id: 'none', name: 'No Role Selected', color: 0, position: 0, managed: false },
