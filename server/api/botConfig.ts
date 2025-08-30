@@ -47,6 +47,7 @@ export interface BotConfig {
   
   // Logging channels
   log_channel_id?: string | null;
+  error_log_channel_id?: string | null;
   general_log_channel_id?: string | null;
   member_log_channel_id?: string | null;
   message_log_channel_id?: string | null;
@@ -56,6 +57,18 @@ export interface BotConfig {
   moderation_log_channel_id?: string | null;
   server_log_channel_id?: string | null;
   invite_log_channel_id?: string | null;
+  
+  // Logging toggles
+  error_logging_enabled?: boolean;
+  general_logging_enabled?: boolean;
+  member_logging_enabled?: boolean;
+  message_logging_enabled?: boolean;
+  voice_logging_enabled?: boolean;
+  channel_logging_enabled?: boolean;
+  role_logging_enabled?: boolean;
+  moderation_logging_enabled?: boolean;
+  server_logging_enabled?: boolean;
+  invite_logging_enabled?: boolean;
   
   // Security settings
   anti_raid_enabled?: boolean;

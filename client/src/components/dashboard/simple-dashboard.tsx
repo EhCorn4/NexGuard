@@ -232,8 +232,8 @@ export function SimpleDashboard() {
     updateConfigMutation.mutate({ [field]: value });
   };
 
-  const textChannels = channels?.filter(ch => ch.type === 0) || [];
-  const categories = channels?.filter(ch => ch.type === 4) || [];
+  const textChannels = channels?.filter(ch => ch?.type === 0 || ch?.type === undefined) || [];
+  const categories = channels?.filter(ch => ch?.type === 4) || [];
   const nonManagedRoles = roles?.filter(role => !role.managed) || [];
 
   if (isLoading) {
@@ -717,9 +717,14 @@ export function SimpleDashboard() {
                                   <SelectValue placeholder="Select error log channel..." />
                                 </SelectTrigger>
                                 <SelectContent className="bg-gray-700 border-gray-600">
-                                  {channels?.filter(c => c.type === 0).map(channel => (
+                                  {channels?.filter(c => c?.type === 0 || c?.type === undefined).map(channel => (
                                     <SelectItem key={channel.id} value={channel.id} className="text-white">
                                       #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -751,11 +756,20 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
                                       </SelectItem>
-                                    ))}
+                                    )}
+                                      </SelectItem>
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs joins, leaves, kicks, bans</p>
@@ -782,11 +796,20 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
                                       </SelectItem>
-                                    ))}
+                                    )}
+                                      </SelectItem>
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs edits, deletions, bulk deletes</p>
@@ -813,9 +836,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -844,9 +872,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -875,9 +908,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -906,9 +944,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -937,9 +980,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -968,9 +1016,14 @@ export function SimpleDashboard() {
                                     <SelectValue placeholder="Select channel..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-gray-700 border-gray-600">
-                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                    {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                    )) : (
+                                      <SelectItem value="" className="text-gray-400" disabled>
+                                        No channels available
+                                      </SelectItem>
+                                    )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -992,8 +1045,8 @@ export function SimpleDashboard() {
                                 className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
                                 onClick={() => {
                                   // Enable all logging and set to first available channel
-                                  if (channels && channels.length > 0) {
-                                    const firstChannel = channels.find(c => c.type === 0)?.id || "";
+                                  if (textChannels && textChannels.length > 0) {
+                                    const firstChannel = textChannels[0]?.id || "";
                                     handleConfigChange("member_logging_enabled", true);
                                     handleConfigChange("message_logging_enabled", true);
                                     handleConfigChange("voice_logging_enabled", true);
@@ -1013,6 +1066,12 @@ export function SimpleDashboard() {
                                     toast({
                                       title: "Logging Enabled",
                                       description: "All logging categories enabled with first available channel",
+                                    });
+                                  } else {
+                                    toast({
+                                      title: "No Channels Available",
+                                      description: "Please ensure the bot has access to text channels first",
+                                      variant: "destructive",
                                     });
                                   }
                                 }}
