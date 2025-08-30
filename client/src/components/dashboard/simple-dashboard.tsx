@@ -90,6 +90,28 @@ interface BotConfig {
   default_volume?: number;
   audit_enabled?: boolean;
   audit_channel_id?: string | null;
+  
+  // Comprehensive logging configuration
+  general_log_channel_id?: string | null;
+  member_log_channel_id?: string | null;
+  message_log_channel_id?: string | null;
+  voice_log_channel_id?: string | null;
+  channel_log_channel_id?: string | null;
+  role_log_channel_id?: string | null;
+  moderation_log_channel_id?: string | null;
+  server_log_channel_id?: string | null;
+  invite_log_channel_id?: string | null;
+  
+  // Logging toggles
+  general_logging_enabled?: boolean;
+  member_logging_enabled?: boolean;
+  message_logging_enabled?: boolean;
+  voice_logging_enabled?: boolean;
+  channel_logging_enabled?: boolean;
+  role_logging_enabled?: boolean;
+  moderation_logging_enabled?: boolean;
+  server_logging_enabled?: boolean;
+  invite_logging_enabled?: boolean;
 }
 
 interface Guild {
@@ -662,6 +684,392 @@ export function SimpleDashboard() {
                         </div>
                       </CardContent>
                     </Card>
+                  </TabsContent>
+
+                  {/* Logging Settings */}
+                  <TabsContent value="logging">
+                    <div className="space-y-6">
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader>
+                          <CardTitle className="text-white flex items-center space-x-2">
+                            <FileText className="h-5 w-5" />
+                            <span>Logging Configuration</span>
+                          </CardTitle>
+                          <CardDescription className="text-gray-300">Configure comprehensive logging for all server events</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          {/* Main logging toggle */}
+                          <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <Switch
+                                checked={config.error_logging_enabled || false}
+                                onCheckedChange={(checked) => handleConfigChange("error_logging_enabled", checked)}
+                              />
+                              <Label className="text-white font-medium">Enable Error Logging</Label>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="error-log-channel" className="text-white">Error Log Channel</Label>
+                              <Select 
+                                value={config.error_log_channel_id || ""}
+                                onValueChange={(value) => handleConfigChange("error_log_channel_id", value)}
+                              >
+                                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                  <SelectValue placeholder="Select error log channel..." />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-700 border-gray-600">
+                                  {channels?.filter(c => c.type === 0).map(channel => (
+                                    <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                      #{channel.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <Separator className="bg-gray-600" />
+
+                          {/* Event Logging Categories */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Member Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.member_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("member_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Member Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="member-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.member_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("member_log_channel_id", value)}
+                                  disabled={!config.member_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs joins, leaves, kicks, bans</p>
+                              </div>
+                            </div>
+
+                            {/* Message Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.message_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("message_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Message Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="message-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.message_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("message_log_channel_id", value)}
+                                  disabled={!config.message_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs edits, deletions, bulk deletes</p>
+                              </div>
+                            </div>
+
+                            {/* Voice Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.voice_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("voice_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Voice Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="voice-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.voice_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("voice_log_channel_id", value)}
+                                  disabled={!config.voice_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs joins, leaves, mutes, deafens</p>
+                              </div>
+                            </div>
+
+                            {/* Channel Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.channel_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("channel_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Channel Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="channel-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.channel_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("channel_log_channel_id", value)}
+                                  disabled={!config.channel_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs creation, deletion, edits</p>
+                              </div>
+                            </div>
+
+                            {/* Role Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.role_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("role_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Role Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="role-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.role_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("role_log_channel_id", value)}
+                                  disabled={!config.role_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs role changes, permissions</p>
+                              </div>
+                            </div>
+
+                            {/* Moderation Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.moderation_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("moderation_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Moderation Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="moderation-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.moderation_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("moderation_log_channel_id", value)}
+                                  disabled={!config.moderation_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs warnings, timeouts, AutoMod actions</p>
+                              </div>
+                            </div>
+
+                            {/* Server Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.server_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("server_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Server Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="server-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.server_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("server_log_channel_id", value)}
+                                  disabled={!config.server_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs server updates, emoji changes</p>
+                              </div>
+                            </div>
+
+                            {/* Invite Events */}
+                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <Switch
+                                  checked={config.invite_logging_enabled || false}
+                                  onCheckedChange={(checked) => handleConfigChange("invite_logging_enabled", checked)}
+                                />
+                                <Label className="text-white font-medium">Invite Events</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="invite-log-channel" className="text-white text-sm">Channel</Label>
+                                <Select 
+                                  value={config.invite_log_channel_id || ""}
+                                  onValueChange={(value) => handleConfigChange("invite_log_channel_id", value)}
+                                  disabled={!config.invite_logging_enabled}
+                                >
+                                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
+                                    <SelectValue placeholder="Select channel..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-gray-700 border-gray-600">
+                                    {channels?.filter(c => c.type === 0).map(channel => (
+                                      <SelectItem key={channel.id} value={channel.id} className="text-white">
+                                        #{channel.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-gray-400">Logs invite creation, deletion, usage</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <Separator className="bg-gray-600" />
+
+                          {/* Quick Actions */}
+                          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-600/50">
+                            <h4 className="text-white font-medium mb-3">Quick Setup Actions</h4>
+                            <div className="flex flex-wrap gap-3">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+                                onClick={() => {
+                                  // Enable all logging and set to first available channel
+                                  if (channels && channels.length > 0) {
+                                    const firstChannel = channels.find(c => c.type === 0)?.id || "";
+                                    handleConfigChange("member_logging_enabled", true);
+                                    handleConfigChange("message_logging_enabled", true);
+                                    handleConfigChange("voice_logging_enabled", true);
+                                    handleConfigChange("channel_logging_enabled", true);
+                                    handleConfigChange("role_logging_enabled", true);
+                                    handleConfigChange("moderation_logging_enabled", true);
+                                    handleConfigChange("server_logging_enabled", true);
+                                    handleConfigChange("invite_logging_enabled", true);
+                                    handleConfigChange("member_log_channel_id", firstChannel);
+                                    handleConfigChange("message_log_channel_id", firstChannel);
+                                    handleConfigChange("voice_log_channel_id", firstChannel);
+                                    handleConfigChange("channel_log_channel_id", firstChannel);
+                                    handleConfigChange("role_log_channel_id", firstChannel);
+                                    handleConfigChange("moderation_log_channel_id", firstChannel);
+                                    handleConfigChange("server_log_channel_id", firstChannel);
+                                    handleConfigChange("invite_log_channel_id", firstChannel);
+                                    toast({
+                                      title: "Logging Enabled",
+                                      description: "All logging categories enabled with first available channel",
+                                    });
+                                  }
+                                }}
+                              >
+                                Enable All Logging
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700 text-white border-red-500"
+                                onClick={() => {
+                                  // Disable all logging
+                                  handleConfigChange("member_logging_enabled", false);
+                                  handleConfigChange("message_logging_enabled", false);
+                                  handleConfigChange("voice_logging_enabled", false);
+                                  handleConfigChange("channel_logging_enabled", false);
+                                  handleConfigChange("role_logging_enabled", false);
+                                  handleConfigChange("moderation_logging_enabled", false);
+                                  handleConfigChange("server_logging_enabled", false);
+                                  handleConfigChange("invite_logging_enabled", false);
+                                  toast({
+                                    title: "Logging Disabled",
+                                    description: "All logging categories have been disabled",
+                                    variant: "destructive",
+                                  });
+                                }}
+                              >
+                                Disable All Logging
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Recent Logs Card */}
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader>
+                          <CardTitle className="text-white flex items-center space-x-2">
+                            <Activity className="h-5 w-5" />
+                            <span>Recent Log Activity</span>
+                          </CardTitle>
+                          <CardDescription className="text-gray-300">Live feed of recent server events</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="bg-gray-900 rounded-lg p-4 max-h-64 overflow-y-auto">
+                            <div className="space-y-2 text-sm font-mono">
+                              <div className="text-green-400">[MEMBER] User joined: @NewUser#1234</div>
+                              <div className="text-blue-400">[MESSAGE] Message edited in #general</div>
+                              <div className="text-yellow-400">[VOICE] User left voice channel</div>
+                              <div className="text-purple-400">[ROLE] Role assigned to @User#5678</div>
+                              <div className="text-red-400">[MODERATION] User warned for spam</div>
+                              <div className="text-gray-400 text-center mt-4">Live logging will appear here when configured</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </TabsContent>
 
                   {/* Feature Settings */}

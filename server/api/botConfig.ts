@@ -176,6 +176,12 @@ export class BotConfigService {
           automod_enabled, automod_caps_enabled, automod_caps_threshold,
           automod_mentions_enabled, automod_mentions_limit,
           log_channel_id, error_log_channel_id, error_logging_enabled,
+          general_log_channel_id, member_log_channel_id, message_log_channel_id,
+          voice_log_channel_id, channel_log_channel_id, role_log_channel_id,
+          moderation_log_channel_id, server_log_channel_id, invite_log_channel_id,
+          general_logging_enabled, member_logging_enabled, message_logging_enabled,
+          voice_logging_enabled, channel_logging_enabled, role_logging_enabled,
+          moderation_logging_enabled, server_logging_enabled, invite_logging_enabled,
           auto_role_enabled, auto_role_id,
           settings, automod_config
         FROM guilds 
@@ -189,8 +195,8 @@ export class BotConfigService {
       const guild = guildResult.rows[0];
 
       // Parse JSON settings if available - handle both string and object types safely
-      let settings = {};
-      let automodConfig = {};
+      let settings: any = {};
+      let automodConfig: any = {};
       
       try {
         if (guild.settings) {
@@ -251,15 +257,28 @@ export class BotConfigService {
         automod_action: automodConfig.action || "warn",
         automod_threshold: guild.automod_caps_threshold as number || 3,
         log_channel_id: guild.log_channel_id as string || null,
-        general_log_channel_id: settings.general_log_channel_id || null,
-        member_log_channel_id: settings.member_log_channel_id || null,
-        message_log_channel_id: settings.message_log_channel_id || null,
-        voice_log_channel_id: settings.voice_log_channel_id || null,
-        channel_log_channel_id: settings.channel_log_channel_id || null,
-        role_log_channel_id: settings.role_log_channel_id || null,
-        moderation_log_channel_id: settings.moderation_log_channel_id || null,
-        server_log_channel_id: settings.server_log_channel_id || null,
-        invite_log_channel_id: settings.invite_log_channel_id || null,
+        error_log_channel_id: guild.error_log_channel_id as string || null,
+        error_logging_enabled: guild.error_logging_enabled as boolean || false,
+        general_log_channel_id: guild.general_log_channel_id as string || null,
+        member_log_channel_id: guild.member_log_channel_id as string || null,
+        message_log_channel_id: guild.message_log_channel_id as string || null,
+        voice_log_channel_id: guild.voice_log_channel_id as string || null,
+        channel_log_channel_id: guild.channel_log_channel_id as string || null,
+        role_log_channel_id: guild.role_log_channel_id as string || null,
+        moderation_log_channel_id: guild.moderation_log_channel_id as string || null,
+        server_log_channel_id: guild.server_log_channel_id as string || null,
+        invite_log_channel_id: guild.invite_log_channel_id as string || null,
+        
+        // Logging toggles
+        general_logging_enabled: guild.general_logging_enabled as boolean || false,
+        member_logging_enabled: guild.member_logging_enabled as boolean || false,
+        message_logging_enabled: guild.message_logging_enabled as boolean || false,
+        voice_logging_enabled: guild.voice_logging_enabled as boolean || false,
+        channel_logging_enabled: guild.channel_logging_enabled as boolean || false,
+        role_logging_enabled: guild.role_logging_enabled as boolean || false,
+        moderation_logging_enabled: guild.moderation_logging_enabled as boolean || false,
+        server_logging_enabled: guild.server_logging_enabled as boolean || false,
+        invite_logging_enabled: guild.invite_logging_enabled as boolean || false,
         anti_raid_enabled: settings.anti_raid_enabled || false,
         anti_nuke_enabled: settings.anti_nuke_enabled || false,
         verification_enabled: settings.verification_enabled || false,
@@ -317,8 +336,9 @@ export class BotConfigService {
 
       // Map updates to appropriate tables
       for (const [key, value] of Object.entries(updates)) {
-        if (key.includes('_log_channel_id')) {
-          loggingUpdates[key] = value;
+        if (key.includes('_log_channel_id') || key.includes('_logging_enabled') || 
+            key === 'error_log_channel_id' || key === 'error_logging_enabled') {
+          guildUpdates[key] = value; // Store logging fields directly in guilds table
         } else if (key !== 'guild_id' && key !== 'guild_name') {
           guildUpdates[key] = value;
         }
@@ -326,17 +346,21 @@ export class BotConfigService {
 
       // Update guilds table
       if (Object.keys(guildUpdates).length > 0) {
-        // Use simple UPDATE query for each field
-        for (const [key, value] of Object.entries(guildUpdates)) {
-          await db.execute(sql`
-            UPDATE guilds 
-            SET ${sql.identifier(key)} = ${value}, updated_at = NOW()
-            WHERE id = ${guildId}
-          `);
-        }
+        // Build dynamic update query
+        const updatePairs = Object.entries(guildUpdates).map(([key, value]) => {
+          return sql`${sql.identifier(key)} = ${value}`;
+        });
+        
+        const updateQuery = sql`
+          UPDATE guilds 
+          SET ${sql.join(updatePairs, sql`, `)}, updated_at = NOW()
+          WHERE id = ${guildId}
+        `;
+        
+        await db.execute(updateQuery);
       }
 
-      // Store logging settings in guild settings JSON field
+      // Handle any remaining settings that need to go in JSON field
       if (Object.keys(loggingUpdates).length > 0) {
         const currentSettings = await db.execute(sql`
           SELECT settings FROM guilds WHERE id = ${guildId}

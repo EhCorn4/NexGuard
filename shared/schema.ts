@@ -229,9 +229,32 @@ export const guilds = pgTable("guilds", {
   adminRoleId: text("admin_role_id"),
   moderatorRoleId: text("moderator_role_id"),
   muteRoleId: text("mute_role_id"),
+  
+  // Comprehensive Logging Configuration
   logChannelId: text("log_channel_id"),
   errorLogChannelId: text("error_log_channel_id"),
   errorLoggingEnabled: boolean("error_logging_enabled").default(false).notNull(),
+  generalLogChannelId: text("general_log_channel_id"),
+  memberLogChannelId: text("member_log_channel_id"),
+  messageLogChannelId: text("message_log_channel_id"),
+  voiceLogChannelId: text("voice_log_channel_id"),
+  channelLogChannelId: text("channel_log_channel_id"),
+  roleLogChannelId: text("role_log_channel_id"),
+  moderationLogChannelId: text("moderation_log_channel_id"),
+  serverLogChannelId: text("server_log_channel_id"),
+  inviteLogChannelId: text("invite_log_channel_id"),
+  
+  // Logging toggles for each category
+  generalLoggingEnabled: boolean("general_logging_enabled").default(true).notNull(),
+  memberLoggingEnabled: boolean("member_logging_enabled").default(true).notNull(),
+  messageLoggingEnabled: boolean("message_logging_enabled").default(true).notNull(),
+  voiceLoggingEnabled: boolean("voice_logging_enabled").default(true).notNull(),
+  channelLoggingEnabled: boolean("channel_logging_enabled").default(true).notNull(),
+  roleLoggingEnabled: boolean("role_logging_enabled").default(true).notNull(),
+  moderationLoggingEnabled: boolean("moderation_logging_enabled").default(true).notNull(),
+  serverLoggingEnabled: boolean("server_logging_enabled").default(true).notNull(),
+  inviteLoggingEnabled: boolean("invite_logging_enabled").default(true).notNull(),
+  
   welcomeChannelId: text("welcome_channel_id"),
   welcomeEnabled: boolean("welcome_enabled").default(false).notNull(),
   welcomeMessage: text("welcome_message").default("Welcome to {server}, {user}! You are our #{member_count} member."),
