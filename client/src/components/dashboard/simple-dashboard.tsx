@@ -96,8 +96,6 @@ interface Guild {
   id: string;
   name: string;
   icon?: string | null;
-  bot_in_server?: boolean;
-  hasBot?: boolean;
 }
 
 interface Channel {
@@ -497,14 +495,7 @@ export function SimpleDashboard() {
                     <SelectContent className="bg-gray-700 border-gray-600">
                       {guilds?.map((guild) => (
                         <SelectItem key={guild.id} value={guild.id} className="text-white">
-                          <div className="flex items-center justify-between w-full">
-                            <span>{guild.name}</span>
-                            {(guild.bot_in_server || guild.hasBot) ? (
-                              <Badge className="bg-green-600 text-white text-xs">Bot Active</Badge>
-                            ) : (
-                              <Badge variant="destructive" className="text-xs">No Bot</Badge>
-                            )}
-                          </div>
+                          <span>{guild.name}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -512,31 +503,8 @@ export function SimpleDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Bot Invite Message for servers without bot */}
-              {selectedGuildId && guilds && !(guilds.find(g => g.id === selectedGuildId)?.bot_in_server || guilds.find(g => g.id === selectedGuildId)?.hasBot) && (
-                <Card className="bg-yellow-900/20 border-yellow-600/50">
-                  <CardHeader>
-                    <CardTitle className="text-yellow-400 flex items-center space-x-2">
-                      <AlertTriangle className="h-5 w-5" />
-                      <span>Bot Not Installed</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-yellow-300 mb-4">
-                      NexGuard bot is not installed in this server yet. You need to invite the bot first to configure settings.
-                    </p>
-                    <Button 
-                      onClick={() => window.open('https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands', '_blank')}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Invite NexGuard Bot
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Configuration Settings */}
-              {selectedGuildId && config && (guilds?.find(g => g.id === selectedGuildId)?.bot_in_server || guilds?.find(g => g.id === selectedGuildId)?.hasBot) && (
+              {selectedGuildId && config && (
                 <Tabs defaultValue="general" className="space-y-6">
                   <TabsList className="grid w-full grid-cols-6 bg-gray-800/50 border-gray-700">
                     <TabsTrigger value="general">General</TabsTrigger>

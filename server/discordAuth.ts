@@ -68,15 +68,12 @@ export async function getUserAdminGuilds(userId: string, accessToken: string) {
   // Get member counts with proper fallbacks
   const guildsWithMemberCounts = await Promise.all(
     adminGuilds.map(async (guild: any) => {
-      const hasBot = botGuildIds.has(guild.id);
-      
-      console.log(`Guild ${guild.name}: hasBot=${hasBot}`);
+      console.log(`Guild ${guild.name}: processing`);
       
       return {
         id: guild.id,
         name: guild.name,
         icon: guild.icon,
-        hasBot: hasBot,
         permissions: guild.permissions
       };
     })

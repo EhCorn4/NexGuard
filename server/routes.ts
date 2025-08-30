@@ -55,15 +55,12 @@ async function getUserAdminGuilds(userId: string, accessToken: string) {
     // Get individual guild details for accurate member counts
     const guildsWithMemberCounts = await Promise.all(
       adminGuilds.map(async (guild: any) => {
-        const hasBot = botGuildIds.has(guild.id);
-        
-        console.log(`Guild ${guild.name}: hasBot=${hasBot}`);
+        console.log(`Guild ${guild.name}: processing`);
         
         return {
           id: guild.id,
           name: guild.name,
           icon: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
-          bot_in_server: hasBot,
           user_permissions: guild.permissions,
           is_owner: guild.owner || false
         };
