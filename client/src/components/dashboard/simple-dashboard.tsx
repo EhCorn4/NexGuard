@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Shield, Users, Server, Settings, BarChart3, MessageSquare, AlertTriangle, Clock, Zap, MessageCircle, Lock, Bot } from 'lucide-react';
+import { Activity, Shield, Users, Server, Settings, BarChart3, MessageSquare, AlertTriangle, Clock, Zap, MessageCircle, Lock, Bot, FileText } from 'lucide-react';
 import { useState, useEffect } from "react";
 
 interface BotStatus {
@@ -91,16 +91,7 @@ interface BotConfig {
   audit_enabled?: boolean;
   audit_channel_id?: string | null;
   
-  // Comprehensive logging configuration
-  general_log_channel_id?: string | null;
-  member_log_channel_id?: string | null;
-  message_log_channel_id?: string | null;
-  voice_log_channel_id?: string | null;
-  channel_log_channel_id?: string | null;
-  role_log_channel_id?: string | null;
-  moderation_log_channel_id?: string | null;
-  server_log_channel_id?: string | null;
-  invite_log_channel_id?: string | null;
+  // Comprehensive logging configuration (already defined above)
   
   // Logging toggles
   general_logging_enabled?: boolean;
@@ -702,31 +693,30 @@ export function SimpleDashboard() {
                           <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
                             <div className="flex items-center space-x-2 mb-4">
                               <Switch
-                                checked={config.error_logging_enabled || false}
-                                onCheckedChange={(checked) => handleConfigChange("error_logging_enabled", checked)}
+                                checked={config.general_logging_enabled || false}
+                                onCheckedChange={(checked) => handleConfigChange("general_logging_enabled", checked)}
                               />
-                              <Label className="text-white font-medium">Enable Error Logging</Label>
+                              <Label className="text-white font-medium">Enable General Logging</Label>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="error-log-channel" className="text-white">Error Log Channel</Label>
+                              <Label htmlFor="general-log-channel" className="text-white">General Log Channel</Label>
                               <Select 
-                                value={config.error_log_channel_id || ""}
-                                onValueChange={(value) => handleConfigChange("error_log_channel_id", value)}
+                                value={config.general_log_channel_id || ""}
+                                onValueChange={(value) => handleConfigChange("general_log_channel_id", value)}
                               >
                                 <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                                  <SelectValue placeholder="Select error log channel..." />
+                                  <SelectValue placeholder="Select general log channel..." />
                                 </SelectTrigger>
                                 <SelectContent className="bg-gray-700 border-gray-600">
                                   {channels?.filter(c => c?.type === 0 || c?.type === undefined).map(channel => (
                                     <SelectItem key={channel.id} value={channel.id} className="text-white">
                                       #{channel.name}
-                                    )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
-                                        No channels available
-                                      </SelectItem>
-                                    )}
                                     </SelectItem>
-                                  ))}
+                                  )) || (
+                                    <SelectItem value="" className="text-gray-400" disabled>
+                                      No channels available
+                                    </SelectItem>
+                                  )}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -759,11 +749,6 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
-                                    )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
-                                        No channels available
-                                      </SelectItem>
-                                    )}
                                       </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
@@ -799,11 +784,6 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
-                                    )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
-                                        No channels available
-                                      </SelectItem>
-                                    )}
                                       </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
@@ -839,13 +819,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs joins, leaves, mutes, deafens</p>
@@ -875,13 +854,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs creation, deletion, edits</p>
@@ -911,13 +889,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs role changes, permissions</p>
@@ -947,13 +924,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs warnings, timeouts, AutoMod actions</p>
@@ -983,13 +959,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs server updates, emoji changes</p>
@@ -1019,13 +994,12 @@ export function SimpleDashboard() {
                                     {textChannels.length > 0 ? textChannels.map(channel => (
                                       <SelectItem key={channel.id} value={channel.id} className="text-white">
                                         #{channel.name}
+                                      </SelectItem>
                                     )) : (
                                       <SelectItem value="" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
-                                      </SelectItem>
-                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <p className="text-xs text-gray-400">Logs invite creation, deletion, usage</p>
