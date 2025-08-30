@@ -452,4 +452,164 @@ export class BotConfigService {
       return [];
     }
   }
+
+  // Bulk import Discord server configurations
+  static async importDiscordServerConfigs(userId: string, accessToken: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
+    const errors: string[] = [];
+    let imported = 0;
+
+    try {
+      // Fetch user's admin guilds from Discord
+      const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'User-Agent': 'NexGuard-Bot-Website/2.3.2'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Discord API error: ${response.status}`);
+      }
+
+      const discordGuilds = await response.json() as any[];
+      
+      // Filter guilds where user has admin permissions
+      const adminGuilds = discordGuilds.filter((guild: any) => {
+        try {
+          const permissions = BigInt(guild.permissions);
+          const hasAdmin = (permissions & BigInt(0x8)) === BigInt(0x8);
+          const isOwner = guild.owner === true;
+          const hasManageGuild = (permissions & BigInt(0x20)) === BigInt(0x20);
+          return hasAdmin || isOwner || hasManageGuild;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      // Process each admin guild
+      for (const guild of adminGuilds) {
+        try {
+          await this.importSingleGuildConfig(guild);
+          imported++;
+          console.log(`✅ Imported config for guild: ${guild.name} (${guild.id})`);
+        } catch (error) {
+          const errorMsg = `Failed to import guild ${guild.name}: ${error}`;
+          errors.push(errorMsg);
+          console.error(`❌ ${errorMsg}`);
+        }
+      }
+
+      return {
+        success: errors.length < adminGuilds.length,
+        imported,
+        errors
+      };
+    } catch (error) {
+      console.error('Error in bulk import:', error);
+      return {
+        success: false,
+        imported: 0,
+        errors: [`Bulk import failed: ${error}`]
+      };
+    }
+  }
+
+  // Import configuration for a single guild
+  private static async importSingleGuildConfig(discordGuild: any): Promise<void> {
+    const guildId = discordGuild.id;
+    const guildName = discordGuild.name;
+
+    try {
+      // Check if guild already exists
+      const existingGuild = await db.execute(sql`
+        SELECT id FROM guilds WHERE id = ${guildId}
+      `);
+
+      if (existingGuild.rows.length > 0) {
+        // Update existing guild with fresh data
+        await db.execute(sql`
+          UPDATE guilds 
+          SET name = ${guildName}, updated_at = NOW()
+          WHERE id = ${guildId}
+        `);
+        console.log(`Updated existing guild: ${guildName}`);
+      } else {
+        // Create new guild with comprehensive default configuration
+        await db.execute(sql`
+          INSERT INTO guilds (
+            id, name, member_count, prefix,
+            moderation_enabled, ticket_enabled,
+            welcome_enabled, welcome_message,
+            automod_enabled,
+            general_logging_enabled, member_logging_enabled, message_logging_enabled,
+            voice_logging_enabled, channel_logging_enabled, role_logging_enabled,
+            moderation_logging_enabled, server_logging_enabled, invite_logging_enabled,
+            auto_role_enabled, stats_enabled, economy_enabled,
+            reaction_roles_enabled, custom_commands_enabled,
+            ai_enabled, music_enabled, audit_enabled,
+            settings, automod_config,
+            created_at, updated_at
+          ) VALUES (
+            ${guildId}, ${guildName}, 0, '!',
+            true, true,
+            false, 'Welcome to {guild.name}, {user.mention}! You are our #{member.count} member.',
+            true,
+            true, true, true,
+            true, true, true,
+            true, true, true,
+            false, false, false,
+            false, false,
+            false, false, false,
+            '{}', '{}',
+            NOW(), NOW()
+          ) ON CONFLICT (id) DO UPDATE SET
+            name = ${guildName},
+            updated_at = NOW()
+        `);
+        console.log(`Created new guild configuration: ${guildName}`);
+      }
+
+      // Fetch and store basic Discord server information
+      await this.fetchAndStoreGuildDetails(guildId);
+
+    } catch (error) {
+      console.error(`Error importing guild ${guildName}:`, error);
+      throw error;
+    }
+  }
+
+  // Fetch and store additional guild details from Discord API
+  private static async fetchAndStoreGuildDetails(guildId: string): Promise<void> {
+    try {
+      // Request guild data from bot
+      const botResponse = await fetch('http://localhost:5001/api/bot/guild-info', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guild_id: guildId
+        })
+      });
+
+      if (botResponse.ok) {
+        const guildData = await botResponse.json();
+        
+        // Update guild with fresh data from Discord
+        await db.execute(sql`
+          UPDATE guilds 
+          SET member_count = ${guildData.member_count || 0},
+              updated_at = NOW()
+          WHERE id = ${guildId}
+        `);
+        
+        console.log(`Updated guild details for ${guildId}: ${guildData.member_count} members`);
+      } else {
+        console.log(`Could not fetch guild details for ${guildId} from bot`);
+      }
+    } catch (error) {
+      console.log(`Warning: Could not fetch guild details for ${guildId}:`, error);
+      // Not a critical error, continue processing
+    }
+  }
 }

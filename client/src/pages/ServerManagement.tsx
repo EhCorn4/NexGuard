@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Shield, MessageCircle, Users, BarChart3, Bot, Zap } from "lucide-react";
+import { Settings, Shield, MessageCircle, Users, BarChart3, Bot, Zap, Download } from "lucide-react";
 
 interface BotConfig {
   guild_id: string;
@@ -180,6 +180,41 @@ export default function ServerManagement() {
     }
   }, [guildConfig]);
 
+  // Import Discord server configurations
+  const importConfigsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/bot/import-configs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Import failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Import Successful",
+        description: `Successfully imported ${data.imported} server configurations. The dashboard now reflects your actual Discord server settings.`,
+      });
+      // Refresh the guilds list
+      queryClient.invalidateQueries({ queryKey: ["/api/bot/guilds"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Import Failed",
+        description: `Failed to import configurations: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleConfigChange = (field: keyof BotConfig, value: any) => {
     if (!config) return;
     
@@ -224,12 +259,31 @@ export default function ServerManagement() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center space-x-4">
-        <Settings className="h-8 w-8" />
-        <div>
-          <h1 className="text-3xl font-bold">Server Management</h1>
-          <p className="text-muted-foreground">Configure NexGuard bot settings for your Discord servers</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Settings className="h-8 w-8" />
+          <div>
+            <h1 className="text-3xl font-bold">Server Management</h1>
+            <p className="text-muted-foreground">Configure NexGuard bot settings for your Discord servers</p>
+          </div>
         </div>
+        <Button
+          onClick={() => importConfigsMutation.mutate()}
+          disabled={importConfigsMutation.isPending}
+          className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+        >
+          {importConfigsMutation.isPending ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Importing...
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4 mr-2" />
+              Import Server Configs
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Server Selection */}

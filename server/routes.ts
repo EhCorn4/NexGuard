@@ -6328,6 +6328,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk import Discord server configurations
+  app.post("/api/bot/import-configs", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const accessToken = req.user?.accessToken;
+      
+      if (!user || !accessToken) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      console.log(`Starting bulk import for user ${user.id}`);
+      const result = await BotConfigService.importDiscordServerConfigs(user.id, accessToken);
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Successfully imported ${result.imported} server configurations`,
+          imported: result.imported,
+          errors: result.errors
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Import failed",
+          imported: result.imported,
+          errors: result.errors
+        });
+      }
+    } catch (error) {
+      console.error("Error in bulk import:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to import server configurations",
+        errors: [String(error)]
+      });
+    }
+  });
+
   app.get("/api/bot/autoreplies/:guildId", isAuthenticated, async (req, res) => {
     try {
       const { guildId } = req.params;
