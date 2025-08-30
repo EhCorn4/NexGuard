@@ -351,12 +351,12 @@ export default function ServerManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Moderator Role</Label>
-                    <Select value={config.mod_role_id || ""} onValueChange={(value) => handleConfigChange("mod_role_id", value || null)}>
+                    <Select value={config.mod_role_id || "none"} onValueChange={(value) => handleConfigChange("mod_role_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select moderator role..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {nonManagedRoles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -367,12 +367,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Administrator Role</Label>
-                    <Select value={config.admin_role_id || ""} onValueChange={(value) => handleConfigChange("admin_role_id", value || null)}>
+                    <Select value={config.admin_role_id || "none"} onValueChange={(value) => handleConfigChange("admin_role_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select admin role..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {nonManagedRoles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -383,12 +383,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Mute Role</Label>
-                    <Select value={config.mute_role_id || ""} onValueChange={(value) => handleConfigChange("mute_role_id", value || null)}>
+                    <Select value={config.mute_role_id || "none"} onValueChange={(value) => handleConfigChange("mute_role_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select mute role..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {nonManagedRoles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -551,12 +551,12 @@ export default function ServerManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label>Welcome Channel</Label>
-                      <Select value={config.welcome_channel_id || ""} onValueChange={(value) => handleConfigChange("welcome_channel_id", value || null)}>
+                      <Select value={config.welcome_channel_id || "none"} onValueChange={(value) => handleConfigChange("welcome_channel_id", value === "none" ? null : value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select channel..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {textChannels.map((channel) => (
                             <SelectItem key={channel.id} value={channel.id}>
                               #{channel.name}
@@ -567,12 +567,12 @@ export default function ServerManagement() {
                     </div>
                     <div className="space-y-2">
                       <Label>Welcome Role</Label>
-                      <Select value={config.welcome_role_id || ""} onValueChange={(value) => handleConfigChange("welcome_role_id", value || null)}>
+                      <Select value={config.welcome_role_id || "none"} onValueChange={(value) => handleConfigChange("welcome_role_id", value === "none" ? null : value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select role..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {nonManagedRoles.map((role) => (
                             <SelectItem key={role.id} value={role.id}>
                               {role.name}
@@ -630,12 +630,12 @@ export default function ServerManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label>Goodbye Channel</Label>
-                      <Select value={config.goodbye_channel_id || ""} onValueChange={(value) => handleConfigChange("goodbye_channel_id", value || null)}>
+                      <Select value={config.goodbye_channel_id || "none"} onValueChange={(value) => handleConfigChange("goodbye_channel_id", value === "none" ? null : value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select channel..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {textChannels.map((channel) => (
                             <SelectItem key={channel.id} value={channel.id}>
                               #{channel.name}
@@ -687,12 +687,12 @@ export default function ServerManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>General Log Channel</Label>
-                    <Select value={config.general_log_channel_id || ""} onValueChange={(value) => handleConfigChange("general_log_channel_id", value || null)}>
+                    <Select value={config.general_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("general_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -703,12 +703,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Member Log Channel</Label>
-                    <Select value={config.member_log_channel_id || ""} onValueChange={(value) => handleConfigChange("member_log_channel_id", value || null)}>
+                    <Select value={config.member_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("member_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -719,12 +719,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Message Log Channel</Label>
-                    <Select value={config.message_log_channel_id || ""} onValueChange={(value) => handleConfigChange("message_log_channel_id", value || null)}>
+                    <Select value={config.message_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("message_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -735,12 +735,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Voice Log Channel</Label>
-                    <Select value={config.voice_log_channel_id || ""} onValueChange={(value) => handleConfigChange("voice_log_channel_id", value || null)}>
+                    <Select value={config.voice_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("voice_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -751,12 +751,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Channel Log Channel</Label>
-                    <Select value={config.channel_log_channel_id || ""} onValueChange={(value) => handleConfigChange("channel_log_channel_id", value || null)}>
+                    <Select value={config.channel_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("channel_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -767,12 +767,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Role Log Channel</Label>
-                    <Select value={config.role_log_channel_id || ""} onValueChange={(value) => handleConfigChange("role_log_channel_id", value || null)}>
+                    <Select value={config.role_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("role_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -783,12 +783,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Moderation Log Channel</Label>
-                    <Select value={config.moderation_log_channel_id || ""} onValueChange={(value) => handleConfigChange("moderation_log_channel_id", value || null)}>
+                    <Select value={config.moderation_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("moderation_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -799,12 +799,12 @@ export default function ServerManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Server Log Channel</Label>
-                    <Select value={config.server_log_channel_id || ""} onValueChange={(value) => handleConfigChange("server_log_channel_id", value || null)}>
+                    <Select value={config.server_log_channel_id || "none"} onValueChange={(value) => handleConfigChange("server_log_channel_id", value === "none" ? null : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select channel..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {textChannels.map((channel) => (
                           <SelectItem key={channel.id} value={channel.id}>
                             #{channel.name}
@@ -905,12 +905,12 @@ export default function ServerManagement() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label>Ticket Category</Label>
-                        <Select value={config.ticket_category_id || ""} onValueChange={(value) => handleConfigChange("ticket_category_id", value || null)}>
+                        <Select value={config.ticket_category_id || "none"} onValueChange={(value) => handleConfigChange("ticket_category_id", value === "none" ? null : value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select category..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {categories.map((category) => (
                               <SelectItem key={category.id} value={category.id}>
                                 {category.name}
@@ -921,12 +921,12 @@ export default function ServerManagement() {
                       </div>
                       <div className="space-y-2">
                         <Label>Support Role</Label>
-                        <Select value={config.ticket_support_role_id || ""} onValueChange={(value) => handleConfigChange("ticket_support_role_id", value || null)}>
+                        <Select value={config.ticket_support_role_id || "none"} onValueChange={(value) => handleConfigChange("ticket_support_role_id", value === "none" ? null : value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select role..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {nonManagedRoles.map((role) => (
                               <SelectItem key={role.id} value={role.id}>
                                 {role.name}
@@ -971,12 +971,12 @@ export default function ServerManagement() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label>Auto Role</Label>
-                        <Select value={config.autorole_id || ""} onValueChange={(value) => handleConfigChange("autorole_id", value || null)}>
+                        <Select value={config.autorole_id || "none"} onValueChange={(value) => handleConfigChange("autorole_id", value === "none" ? null : value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select role..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {nonManagedRoles.map((role) => (
                               <SelectItem key={role.id} value={role.id}>
                                 {role.name}
