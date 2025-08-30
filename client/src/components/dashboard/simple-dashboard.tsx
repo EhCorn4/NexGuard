@@ -701,8 +701,8 @@ export function SimpleDashboard() {
                             <div className="space-y-2">
                               <Label htmlFor="general-log-channel" className="text-white">General Log Channel</Label>
                               <Select 
-                                value={config.general_log_channel_id || ""}
-                                onValueChange={(value) => handleConfigChange("general_log_channel_id", value)}
+                                value={config.general_log_channel_id || "none"}
+                                onValueChange={(value) => handleConfigChange("general_log_channel_id", value === "none" ? null : value)}
                               >
                                 <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                                   <SelectValue placeholder="Select general log channel..." />
@@ -713,7 +713,7 @@ export function SimpleDashboard() {
                                       #{channel.name}
                                     </SelectItem>
                                   )) || (
-                                    <SelectItem value="" className="text-gray-400" disabled>
+                                    <SelectItem value="none" className="text-gray-400" disabled>
                                       No channels available
                                     </SelectItem>
                                   )}
@@ -738,8 +738,8 @@ export function SimpleDashboard() {
                               <div className="space-y-2">
                                 <Label htmlFor="member-log-channel" className="text-white text-sm">Channel</Label>
                                 <Select 
-                                  value={config.member_log_channel_id || ""}
-                                  onValueChange={(value) => handleConfigChange("member_log_channel_id", value)}
+                                  value={config.member_log_channel_id || "none"}
+                                  onValueChange={(value) => handleConfigChange("member_log_channel_id", value === "none" ? null : value)}
                                   disabled={!config.member_logging_enabled}
                                 >
                                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
@@ -751,7 +751,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -773,8 +773,8 @@ export function SimpleDashboard() {
                               <div className="space-y-2">
                                 <Label htmlFor="message-log-channel" className="text-white text-sm">Channel</Label>
                                 <Select 
-                                  value={config.message_log_channel_id || ""}
-                                  onValueChange={(value) => handleConfigChange("message_log_channel_id", value)}
+                                  value={config.message_log_channel_id || "none"}
+                                  onValueChange={(value) => handleConfigChange("message_log_channel_id", value === "none" ? null : value)}
                                   disabled={!config.message_logging_enabled}
                                 >
                                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
@@ -786,7 +786,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -808,8 +808,8 @@ export function SimpleDashboard() {
                               <div className="space-y-2">
                                 <Label htmlFor="voice-log-channel" className="text-white text-sm">Channel</Label>
                                 <Select 
-                                  value={config.voice_log_channel_id || ""}
-                                  onValueChange={(value) => handleConfigChange("voice_log_channel_id", value)}
+                                  value={config.voice_log_channel_id || "none"}
+                                  onValueChange={(value) => handleConfigChange("voice_log_channel_id", value === "none" ? null : value)}
                                   disabled={!config.voice_logging_enabled}
                                 >
                                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white text-sm h-8">
@@ -821,7 +821,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -856,7 +856,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -891,7 +891,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -926,7 +926,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -961,7 +961,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
@@ -996,7 +996,7 @@ export function SimpleDashboard() {
                                         #{channel.name}
                                       </SelectItem>
                                     )) : (
-                                      <SelectItem value="" className="text-gray-400" disabled>
+                                      <SelectItem value="none" className="text-gray-400" disabled>
                                         No channels available
                                       </SelectItem>
                                     )}
