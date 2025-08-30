@@ -190,9 +190,9 @@ export default function ServerManagement() {
     updateConfigMutation.mutate({ [field]: value });
   };
 
-  const textChannels = channels?.filter(ch => ch.type === 0) || [];
-  const categories = channels?.filter(ch => ch.type === 4) || [];
-  const nonManagedRoles = roles?.filter(role => !role.managed) || [];
+  const textChannels = (channels && Array.isArray(channels)) ? channels.filter(ch => ch.type === 0) : [];
+  const categories = (channels && Array.isArray(channels)) ? channels.filter(ch => ch.type === 4) : [];
+  const nonManagedRoles = (roles && Array.isArray(roles)) ? roles.filter(role => !role.managed) : [];
 
   if (guildsLoading) {
     return (
@@ -671,7 +671,7 @@ export default function ServerManagement() {
                 <CardDescription>Configure event logging channels</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {(channelsLoading || rolesLoading) ? (
+                {(channelsLoading || rolesLoading || !channels || !roles) ? (
                   <div className="flex items-center justify-center h-32">
                     <div className="text-center">
                       <Settings className="h-6 w-6 animate-spin mx-auto mb-2" />
