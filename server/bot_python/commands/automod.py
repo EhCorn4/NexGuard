@@ -841,24 +841,35 @@ class AutoModCog(commands.Cog):
         return False
     
     async def check_badwords_filter(self, message, settings) -> bool:
-        """Check message against bad words filter"""
-        if not settings.get('enabled', False):
-            return False
-        
+        """Check message against bad words filter - ALWAYS ACTIVE like anti-nuke protection"""
         content = message.content.lower()
-        custom_words = settings.get('custom_words', [])
-        strict_mode = settings.get('strict', False)
         
-        for word in custom_words:
+        # Always use default bad words (like anti-nuke protection)
+        # These are automatically active for all servers
+        words_to_check = DEFAULT_BAD_WORDS.copy()
+        
+        # If server has custom settings, merge with defaults
+        if settings.get('enabled', True):  # Default to enabled
+            custom_words = settings.get('custom_words', [])
+            # Add custom words to the default list (remove duplicates)
+            for word in custom_words:
+                if word not in words_to_check:
+                    words_to_check.append(word)
+        
+        # Always use delete action (like anti-nuke protection)
+        action = 'delete'
+        strict_mode = settings.get('strict', True)  # Default to strict mode
+        
+        for word in words_to_check:
             if strict_mode:
                 # Exact word match
                 if word in content.split():
-                    await self.take_action(message, settings.get('action', 'delete'), f"Bad word detected: {word}")
+                    await self.take_action(message, action, f"Inappropriate content detected")
                     return True
             else:
                 # Contains match
                 if word in content:
-                    await self.take_action(message, settings.get('action', 'delete'), f"Bad word detected: {word}")
+                    await self.take_action(message, action, f"Inappropriate content detected")
                     return True
         
         return False
