@@ -429,37 +429,20 @@ class BotHealthAlerts(commands.Cog):
     async def send_discord_alerts(self, embed: discord.Embed):
         """Send alerts to configured Discord channels"""
         try:
-            # Send to all guilds with appropriate channels
-            for guild in self.bot.guilds:
-                alert_channel = None
-                
-                # Look specifically for general-events or general-logs channels first
-                for channel in guild.text_channels:
-                    if channel.name.lower() in ['general-events', 'general-logs']:
-                        if channel.permissions_for(guild.me).send_messages:
-                            alert_channel = channel
-                            break
-                
-                # If no general-events or general-logs channels, look for other alert channels
-                if not alert_channel:
-                    for channel in guild.text_channels:
-                        if any(keyword in channel.name.lower() for keyword in ['alert', 'health', 'monitor', 'bot', 'events']):
-                            if channel.permissions_for(guild.me).send_messages:
-                                alert_channel = channel
-                                break
-                
-                # If no specific channels, use system channel
-                if not alert_channel and guild.system_channel:
-                    if guild.system_channel.permissions_for(guild.me).send_messages:
-                        alert_channel = guild.system_channel
-                
-                # Send to found channel
-                if alert_channel:
-                    try:
-                        await alert_channel.send(embed=embed)
-                        logger.info(f"Health alert sent to {alert_channel.name} in {guild.name}")
-                    except discord.Forbidden:
-                        logger.warning(f"No permission to send health alert in {guild.name}")
+            # Send only to specific channel ID: 1408340635676708946
+            target_channel_id = 1408340635676708946
+            alert_channel = self.bot.get_channel(target_channel_id)
+            
+            if alert_channel:
+                try:
+                    await alert_channel.send(embed=embed)
+                    logger.info(f"Health alert sent to {alert_channel.name} in {alert_channel.guild.name}")
+                except discord.Forbidden:
+                    logger.warning(f"No permission to send health alert to channel {target_channel_id}")
+                except Exception as e:
+                    logger.error(f"Error sending health alert to channel {target_channel_id}: {e}")
+            else:
+                logger.warning(f"Target health alert channel {target_channel_id} not found")
                         
         except Exception as e:
             logger.error(f"Error sending Discord alerts: {e}")
