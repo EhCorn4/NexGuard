@@ -403,6 +403,32 @@ class NexGuardBot(commands.Bot):
             )
             await self.change_presence(activity=activity, status=discord.Status.online)
     
+    async def force_refresh_member_counts(self):
+        """Force refresh member counts from Discord API"""
+        total_members = 0
+        try:
+            for guild in self.guilds:
+                try:
+                    # Force refresh guild data from Discord API
+                    refreshed_guild = await self.fetch_guild(guild.id)
+                    if refreshed_guild and refreshed_guild.member_count:
+                        total_members += refreshed_guild.member_count
+                        logger.debug(f"🔄 Refreshed {guild.name}: {refreshed_guild.member_count} members")
+                    else:
+                        # Fallback to cached count if refresh fails
+                        total_members += guild.member_count or 0
+                except Exception as e:
+                    logger.warning(f"Failed to refresh {guild.name}: {e}")
+                    # Use cached count as fallback
+                    total_members += guild.member_count or 0
+            
+            logger.info(f"🔄 Force refreshed member counts: {total_members} total users across {len(self.guilds)} guilds")
+            return total_members
+        except Exception as e:
+            logger.error(f"Error in force refresh: {e}")
+            # Fallback to old method
+            return sum(guild.member_count or 0 for guild in self.guilds)
+
     async def update_status_in_db(self):
         """Update bot status in database"""
         if not self.db_pool:
@@ -418,6 +444,13 @@ class NexGuardBot(commands.Bot):
             seconds = total_seconds % 60
             uptime_str = f"{hours}:{minutes:02d}:{seconds:04.1f}"
             
+            # Force refresh member counts every 5 minutes for accuracy
+            if not hasattr(self, '_last_member_refresh') or (datetime.utcnow() - self._last_member_refresh).total_seconds() > 300:
+                total_users = await self.force_refresh_member_counts()
+                self._last_member_refresh = datetime.utcnow()
+            else:
+                total_users = sum(guild.member_count or 0 for guild in self.guilds)
+            
             async with self.db_pool.acquire() as conn:
                 await conn.execute("""
                     UPDATE bot_status SET
@@ -427,7 +460,7 @@ class NexGuardBot(commands.Bot):
                         uptime = $4,
                         updated_at = $5
                     WHERE id = 1
-                """, True, len(self.guilds), sum(guild.member_count for guild in self.guilds), 
+                """, True, len(self.guilds), total_users, 
                 uptime_str, datetime.utcnow())
                 
                 # Reduce logging frequency for status updates to prevent spam

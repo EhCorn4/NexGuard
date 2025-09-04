@@ -1016,6 +1016,73 @@ class UtilityCommands(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
 
+    @app_commands.command(name="refresh-members", description="Force refresh member counts from Discord API")
+    @app_commands.describe(action="Force refresh member counts to get accurate user data")
+    async def refresh_members(self, interaction: discord.Interaction, action: str = "now"):
+        """Force refresh member counts to get accurate user data"""
+        
+        # Check permissions - only bot developers can use this
+        if interaction.user.id not in [409889861441421315]:  # Your Discord ID
+            await interaction.response.send_message(
+                "❌ This is a developer-only command.",
+                ephemeral=True
+            )
+            return
+        
+        await interaction.response.defer()
+        
+        try:
+            # Get current counts
+            old_count = sum(guild.member_count or 0 for guild in self.bot.guilds)
+            
+            # Force refresh
+            new_count = await self.bot.force_refresh_member_counts()
+            
+            # Create result embed
+            embed = discord.Embed(
+                title="🔄 Member Count Refresh Complete",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            
+            embed.add_field(
+                name="Before Refresh",
+                value=f"{old_count:,} users",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="After Refresh", 
+                value=f"{new_count:,} users",
+                inline=True
+            )
+            
+            difference = new_count - old_count
+            embed.add_field(
+                name="Difference",
+                value=f"{'+' if difference > 0 else ''}{difference:,} users",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Total Guilds",
+                value=f"{len(self.bot.guilds)} servers",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="Status",
+                value="✅ API refreshed successfully",
+                inline=True
+            )
+            
+            embed.set_footer(text="Member counts updated from Discord API")
+            
+            await interaction.followup.send(embed=embed)
+            
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error refreshing member counts: {e}")
+
 class EmbedButtonView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)  # No timeout for persistent buttons
