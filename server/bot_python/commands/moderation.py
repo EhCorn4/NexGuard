@@ -228,6 +228,34 @@ class ModerationCommands(commands.Cog):
                 str(interaction.user.id), interaction.user.name, reason, ban_type, duration
             )
             
+            # Send to moderation log channel
+            eventlog_cog = self.bot.get_cog('EventLogCog')
+            if eventlog_cog:
+                if ban_type == "temporary":
+                    log_embed = discord.Embed(
+                        title="🔨 User Temporarily Banned",
+                        description=f"{user.mention} (`{user.id}`) has been temporarily banned by {interaction.user.mention}",
+                        color=0xFF6600,
+                        timestamp=datetime.utcnow()
+                    )
+                    log_embed.add_field(name="⏱️ Duration", value=duration, inline=True)
+                    log_embed.add_field(name="🔚 Expires", value=f"<t:{int(expires_at.timestamp())}:F>", inline=True)
+                else:
+                    log_embed = discord.Embed(
+                        title="🔨 User Permanently Banned",
+                        description=f"{user.mention} (`{user.id}`) has been permanently banned by {interaction.user.mention}",
+                        color=0xFF0000,
+                        timestamp=datetime.utcnow()
+                    )
+                
+                log_embed.add_field(name="👤 Target User", value=f"{user.mention}\n`{user.id}`", inline=True)
+                log_embed.add_field(name="👮 Moderator", value=f"{interaction.user.mention}\n`{interaction.user.id}`", inline=True)
+                log_embed.add_field(name="📝 Reason", value=reason, inline=False)
+                if delete_days > 0:
+                    log_embed.add_field(name="🗑️ Messages Deleted", value=f"Last {delete_days} days", inline=True)
+                log_embed.set_footer(text=f"Moderation Action: {'Temporary Ban' if ban_type == 'temporary' else 'Permanent Ban'}")
+                await eventlog_cog.log_event(interaction.guild, log_embed, 'moderation')
+            
             # Create response embed
             if ban_type == "temporary":
                 embed = discord.Embed(
@@ -301,6 +329,21 @@ class ModerationCommands(commands.Cog):
                 "kick", reason
             )
             
+            # Send to moderation log channel
+            eventlog_cog = self.bot.get_cog('EventLogCog')
+            if eventlog_cog:
+                log_embed = discord.Embed(
+                    title="👢 User Kicked",
+                    description=f"{user.mention} (`{user.id}`) has been kicked by {interaction.user.mention}",
+                    color=0xFF8000,
+                    timestamp=datetime.utcnow()
+                )
+                log_embed.add_field(name="👤 Target User", value=f"{user.mention}\n`{user.id}`", inline=True)
+                log_embed.add_field(name="👮 Moderator", value=f"{interaction.user.mention}\n`{interaction.user.id}`", inline=True)
+                log_embed.add_field(name="📝 Reason", value=reason, inline=False)
+                log_embed.set_footer(text="Moderation Action: Kick")
+                await eventlog_cog.log_event(interaction.guild, log_embed, 'moderation')
+            
             embed = discord.Embed(
                 title="User Kicked",
                 description=f"**{user.name}** has been kicked from the server.",
@@ -372,6 +415,22 @@ class ModerationCommands(commands.Cog):
                 str(interaction.guild.id), str(user.id), user.name,
                 str(interaction.user.id), interaction.user.name, reason, severity
             )
+            
+            # Send to moderation log channel
+            eventlog_cog = self.bot.get_cog('EventLogCog')
+            if eventlog_cog:
+                log_embed = discord.Embed(
+                    title="⚠️ User Warned",
+                    description=f"{user.mention} (`{user.id}`) has been warned by {interaction.user.mention}",
+                    color=0xFFFF00,
+                    timestamp=datetime.utcnow()
+                )
+                log_embed.add_field(name="👤 Target User", value=f"{user.mention}\n`{user.id}`", inline=True)
+                log_embed.add_field(name="👮 Moderator", value=f"{interaction.user.mention}\n`{interaction.user.id}`", inline=True)
+                log_embed.add_field(name="📝 Reason", value=reason, inline=False)
+                log_embed.add_field(name="🔥 Severity", value=severity.capitalize(), inline=True)
+                log_embed.set_footer(text="Moderation Action: Warn")
+                await eventlog_cog.log_event(interaction.guild, log_embed, 'moderation')
             
             embed = discord.Embed(
                 title="User Warned",
@@ -446,6 +505,23 @@ class ModerationCommands(commands.Cog):
                 str(interaction.guild.id), str(user.id), str(interaction.user.id), 
                 "timeout", reason, f"{duration}m"
             )
+            
+            # Send to moderation log channel
+            eventlog_cog = self.bot.get_cog('EventLogCog')
+            if eventlog_cog:
+                log_embed = discord.Embed(
+                    title="⏰ User Timed Out",
+                    description=f"{user.mention} (`{user.id}`) has been timed out by {interaction.user.mention}",
+                    color=0xFF8000,
+                    timestamp=datetime.utcnow()
+                )
+                log_embed.add_field(name="👤 Target User", value=f"{user.mention}\n`{user.id}`", inline=True)
+                log_embed.add_field(name="👮 Moderator", value=f"{interaction.user.mention}\n`{interaction.user.id}`", inline=True)
+                log_embed.add_field(name="⏱️ Duration", value=f"{duration} minutes", inline=True)
+                log_embed.add_field(name="📝 Reason", value=reason, inline=False)
+                log_embed.add_field(name="🔚 Expires", value=f"<t:{int((datetime.utcnow() + timedelta(minutes=duration)).timestamp())}:F>", inline=False)
+                log_embed.set_footer(text="Moderation Action: Timeout")
+                await eventlog_cog.log_event(interaction.guild, log_embed, 'moderation')
             
             embed = discord.Embed(
                 title="User Timed Out",
