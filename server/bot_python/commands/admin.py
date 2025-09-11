@@ -842,16 +842,53 @@ class AdminCommands(commands.Cog):
                                 
                             # Use the exact same database operation as /eventlog command
                             async with self.bot.db_pool.acquire() as conn:
-                                # Use pre-validated column name with safe query construction
-                                # Column name is validated against allowed_columns set above for security
-                                # Build query with explicit string formatting to avoid f-string SQL construction
-                                column_identifier = f'"{db_column}"'
-                                query = """
-                                    INSERT INTO guild_settings (guild_id, {}) 
-                                    VALUES ($1, $2) 
-                                    ON CONFLICT (guild_id) DO UPDATE SET 
-                                    {} = EXCLUDED.{}
-                                """.format(column_identifier, column_identifier, column_identifier)
+                                # Use predefined SQL queries to avoid dynamic string construction
+                                # This approach follows security best practices by using a mapping
+                                column_queries = {
+                                    'general_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, general_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        general_log_channel_id = EXCLUDED.general_log_channel_id
+                                    """,
+                                    'member_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, member_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        member_log_channel_id = EXCLUDED.member_log_channel_id
+                                    """,
+                                    'message_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, message_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        message_log_channel_id = EXCLUDED.message_log_channel_id
+                                    """,
+                                    'voice_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, voice_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        voice_log_channel_id = EXCLUDED.voice_log_channel_id
+                                    """,
+                                    'channel_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, channel_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        channel_log_channel_id = EXCLUDED.channel_log_channel_id
+                                    """,
+                                    'role_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, role_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        role_log_channel_id = EXCLUDED.role_log_channel_id
+                                    """,
+                                    'moderation_log_channel_id': """
+                                        INSERT INTO guild_settings (guild_id, moderation_log_channel_id) 
+                                        VALUES ($1, $2) 
+                                        ON CONFLICT (guild_id) DO UPDATE SET 
+                                        moderation_log_channel_id = EXCLUDED.moderation_log_channel_id
+                                    """
+                                }
+                                query = column_queries[db_column]
                                 await conn.execute(query, str(guild.id), target_channel.id)
                             
                             # Extract log type name for display (remove _log_channel_id suffix)
