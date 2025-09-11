@@ -574,6 +574,26 @@ class EventLogger(commands.Cog):
         
         await interaction.response.defer()
         
+        # Map log types to column names to avoid dynamic SQL construction
+        log_type_columns = {
+            'general': 'general_log_channel_id',
+            'member': 'member_log_channel_id',
+            'message': 'message_log_channel_id',
+            'voice': 'voice_log_channel_id',
+            'channel': 'channel_log_channel_id',
+            'role': 'role_log_channel_id',
+            'moderation': 'moderation_log_channel_id'
+        }
+        
+        if log_type not in log_type_columns:
+            await interaction.followup.send(
+                "❌ Invalid log type specified.",
+                ephemeral=True
+            )
+            return
+            
+        column_name = log_type_columns[log_type]
+        
         try:
             if action == "set":
                 if not channel:
@@ -585,12 +605,14 @@ class EventLogger(commands.Cog):
                 
                 # Update database with new log channel
                 async with self.bot.db_pool.acquire() as conn:
-                    await conn.execute(f"""
-                        INSERT INTO guild_settings (guild_id, {log_type}_log_channel_id)
+                    # Use parameterized query with pre-validated column name
+                    query = f"""
+                        INSERT INTO guild_settings (guild_id, {column_name})
                         VALUES ($1, $2)
                         ON CONFLICT (guild_id) DO UPDATE SET
-                        {log_type}_log_channel_id = EXCLUDED.{log_type}_log_channel_id
-                    """, str(interaction.guild.id), channel.id)
+                        {column_name} = EXCLUDED.{column_name}
+                    """
+                    await conn.execute(query, str(interaction.guild.id), channel.id)
                 
                 embed = discord.Embed(
                     title="Event Logging Configured",
@@ -654,11 +676,13 @@ class EventLogger(commands.Cog):
             elif action == "clear":
                 # Clear log channel
                 async with self.bot.db_pool.acquire() as conn:
-                    await conn.execute(f"""
+                    # Use parameterized query with pre-validated column name
+                    query = f"""
                         UPDATE guild_settings 
-                        SET {log_type}_log_channel_id = NULL
+                        SET {column_name} = NULL
                         WHERE guild_id = $1
-                    """, str(interaction.guild.id))
+                    """
+                    await conn.execute(query, str(interaction.guild.id))
                 
                 embed = discord.Embed(
                     title="Event Logging Cleared",
