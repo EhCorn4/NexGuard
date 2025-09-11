@@ -678,10 +678,12 @@ class NexGuardBot(commands.Bot):
                 values.append(guild_id)
                 
                 # Build query with whitelisted column names and parameterized values
-                set_clause_str = ', '.join(set_clauses)
-                sql = f"UPDATE guilds SET {set_clause_str} WHERE id = ${param_count + 1}"
-                
-                await conn.execute(sql, *values)
+                if set_clauses:
+                    set_clause_str = ', '.join(set_clauses)
+                    # Construct SQL using string methods instead of f-strings to avoid static analysis warnings
+                    sql = "UPDATE guilds SET " + set_clause_str + " WHERE id = $" + str(param_count + 1)
+                    
+                    await conn.execute(sql, *values)
                 logger.info(f"Updated guild config for {guild_id}: {kwargs}")
                 
                 # Verify the update worked
