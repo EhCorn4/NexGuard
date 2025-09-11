@@ -844,13 +844,14 @@ class AdminCommands(commands.Cog):
                             async with self.bot.db_pool.acquire() as conn:
                                 # Use pre-validated column name with safe query construction
                                 # Column name is validated against allowed_columns set above for security
+                                # Build query with explicit string formatting to avoid f-string SQL construction
                                 column_identifier = f'"{db_column}"'
-                                query = f"""
-                                    INSERT INTO guild_settings (guild_id, {column_identifier}) 
+                                query = """
+                                    INSERT INTO guild_settings (guild_id, {}) 
                                     VALUES ($1, $2) 
                                     ON CONFLICT (guild_id) DO UPDATE SET 
-                                    {column_identifier} = EXCLUDED.{column_identifier}
-                                """
+                                    {} = EXCLUDED.{}
+                                """.format(column_identifier, column_identifier, column_identifier)
                                 await conn.execute(query, str(guild.id), target_channel.id)
                             
                             # Extract log type name for display (remove _log_channel_id suffix)
