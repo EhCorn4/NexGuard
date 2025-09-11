@@ -647,17 +647,31 @@ class NexGuardBot(commands.Bot):
         if not self.db_pool:
             return
             
+        # Whitelist of allowed column names to prevent SQL injection
+        allowed_columns = {
+            'prefix', 'moderation_enabled', 'welcome_channel_id', 'automod_enabled',
+            'log_channel_id', 'error_log_channel_id', 'welcome_enabled', 'auto_role_id', 
+            'auto_role_enabled', 'error_logging_enabled', 'name', 'settings'
+        }
+            
         try:
             async with self.db_pool.acquire() as conn:
-                # Build update query dynamically
+                # Build update query dynamically with validated column names
                 set_clauses = []
                 values = []
                 param_count = 1
                 
                 for key, value in kwargs.items():
+                    if key not in allowed_columns:
+                        logger.warning(f"Attempted to update invalid column '{key}' for guild {guild_id}")
+                        continue
                     set_clauses.append(f"{key} = ${param_count}")
                     values.append(value)
                     param_count += 1
+                
+                if not set_clauses:
+                    logger.warning(f"No valid columns to update for guild {guild_id}")
+                    return
                 
                 set_clauses.append(f"updated_at = ${param_count}")
                 values.append(datetime.utcnow())
