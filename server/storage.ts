@@ -1,6 +1,6 @@
 import { 
   users, newsUpdates, developers, features, testimonials, feedback, 
-  botStatus, commands, changelogs, tickets, moderationLogs,
+  botStatus, commands, changelogs, tickets, moderationLogs, channelAnalytics,
   type User, type UpsertUser, type InsertUser,
   type NewsUpdate, type Developer, type Feature, 
   type Testimonial, type InsertTestimonial,
@@ -228,11 +228,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChannelAnalytics(guildId: string): Promise<any> {
-    const channels = await this.db
-      .select()
-      .from(channelAnalytics)
-      .where(eq(channelAnalytics.guildId, guildId))
-      .orderBy(desc(channelAnalytics.messageCount));
+    try {
+      const channels = await db
+        .select()
+        .from(channelAnalytics)
+        .where(eq(channelAnalytics.guildId, guildId))
+        .orderBy(desc(channelAnalytics.messageCount));
     
     // Separate text and voice channels
     const textChannels = channels
@@ -270,20 +271,37 @@ export class DatabaseStorage implements IStorage {
     const totalActiveUsers = channels.reduce((sum, channel) => sum + (channel.activeUsers || 0), 0);
     const avgMessagesPerChannel = channels.length > 0 ? Math.round(totalMessages / channels.length) : 0;
     
-    return {
-      textChannels,
-      voiceChannels,
-      mostActive: mostActiveChannel.channelName,
-      quietestChannel: quietestChannel.channelName,
-      summary: {
-        totalChannels: channels.length,
-        totalMessages,
-        totalActiveUsers,
-        avgMessagesPerChannel,
-        textChannelCount: textChannels.length,
-        voiceChannelCount: voiceChannels.length
-      }
-    };
+      return {
+        textChannels,
+        voiceChannels,
+        mostActiveChannel: mostActiveChannel.channelName,
+        quietestChannel: quietestChannel.channelName,
+        summary: {
+          totalChannels: channels.length,
+          totalMessages,
+          totalActiveUsers,
+          avgMessagesPerChannel,
+          textChannelCount: textChannels.length,
+          voiceChannelCount: voiceChannels.length
+        }
+      };
+    } catch (error) {
+      console.error(`Failed to fetch channel analytics for guild ${guildId}:`, error);
+      return {
+        textChannels: [],
+        voiceChannels: [],
+        mostActiveChannel: 'N/A',
+        quietestChannel: 'N/A',
+        summary: {
+          totalChannels: 0,
+          totalMessages: 0,
+          totalActiveUsers: 0,
+          avgMessagesPerChannel: 0,
+          textChannelCount: 0,
+          voiceChannelCount: 0
+        }
+      };
+    }
   }
 
   private calculateActivityScore(channel: any): number {
