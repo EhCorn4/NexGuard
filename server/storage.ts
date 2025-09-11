@@ -228,12 +228,82 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChannelAnalytics(guildId: string): Promise<any> {
+    const channels = await this.db
+      .select()
+      .from(channelAnalytics)
+      .where(eq(channelAnalytics.guildId, guildId))
+      .orderBy(desc(channelAnalytics.messageCount));
+    
+    // Separate text and voice channels
+    const textChannels = channels
+      .filter(channel => channel.channelType === 'text')
+      .map(channel => ({
+        id: channel.channelId,
+        name: channel.channelName,
+        messageCount: channel.messageCount,
+        activeUsers: channel.activeUsers,
+        lastActivity: channel.lastActivity,
+        activityScore: this.calculateActivityScore(channel)
+      }));
+    
+    const voiceChannels = channels
+      .filter(channel => channel.channelType === 'voice')
+      .map(channel => ({
+        id: channel.channelId,
+        name: channel.channelName,
+        activeUsers: channel.activeUsers,
+        lastActivity: channel.lastActivity,
+        activityScore: this.calculateActivityScore(channel)
+      }));
+    
+    // Find most and least active channels
+    const mostActiveChannel = channels.reduce((prev, current) => 
+      (current.messageCount || 0) > (prev.messageCount || 0) ? current : prev
+    , channels[0] || { channelName: 'N/A' });
+    
+    const quietestChannel = channels.reduce((prev, current) => 
+      (current.messageCount || 0) < (prev.messageCount || 0) ? current : prev
+    , channels[channels.length - 1] || { channelName: 'N/A' });
+    
+    // Calculate summary statistics
+    const totalMessages = channels.reduce((sum, channel) => sum + (channel.messageCount || 0), 0);
+    const totalActiveUsers = channels.reduce((sum, channel) => sum + (channel.activeUsers || 0), 0);
+    const avgMessagesPerChannel = channels.length > 0 ? Math.round(totalMessages / channels.length) : 0;
+    
     return {
-      textChannels: [],
-      voiceChannels: [],
-      mostActive: "general",
-      quietestChannel: "dev-chat"
+      textChannels,
+      voiceChannels,
+      mostActive: mostActiveChannel.channelName,
+      quietestChannel: quietestChannel.channelName,
+      summary: {
+        totalChannels: channels.length,
+        totalMessages,
+        totalActiveUsers,
+        avgMessagesPerChannel,
+        textChannelCount: textChannels.length,
+        voiceChannelCount: voiceChannels.length
+      }
     };
+  }
+
+  private calculateActivityScore(channel: any): number {
+    const messageWeight = 0.6;
+    const userWeight = 0.3;
+    const recentActivityWeight = 0.1;
+    
+    const messages = channel.messageCount || 0;
+    const users = channel.activeUsers || 0;
+    const daysSinceActivity = channel.lastActivity 
+      ? Math.max(0, Math.min(30, (Date.now() - new Date(channel.lastActivity).getTime()) / (1000 * 60 * 60 * 24)))
+      : 30;
+    
+    const recentActivityScore = Math.max(0, 100 - (daysSinceActivity * 3.33)); // 0-100 scale
+    
+    return Math.round(
+      (messages * messageWeight) + 
+      (users * userWeight * 10) + 
+      (recentActivityScore * recentActivityWeight)
+    );
   }
 }
 
