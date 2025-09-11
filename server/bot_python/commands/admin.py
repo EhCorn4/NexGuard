@@ -830,14 +830,26 @@ class AdminCommands(commands.Cog):
                         
                         # Configure the channel using eventlog system (same as /eventlog command)
                         if target_channel:
+                            # Validate column name against allowed values for security best practices
+                            allowed_columns = {
+                                'general_log_channel_id', 'member_log_channel_id', 'message_log_channel_id',
+                                'voice_log_channel_id', 'channel_log_channel_id', 'role_log_channel_id', 
+                                'moderation_log_channel_id'
+                            }
+                            if db_column not in allowed_columns:
+                                setup_errors.append(f"❌ Invalid column name: {db_column}")
+                                continue
+                                
                             # Use the exact same database operation as /eventlog command
                             async with self.bot.db_pool.acquire() as conn:
-                                await conn.execute(f"""
-                                    INSERT INTO guild_settings (guild_id, {db_column})
+                                # Use identifier quoting for column names to follow best practices
+                                query = f"""
+                                    INSERT INTO guild_settings (guild_id, "{db_column}")
                                     VALUES ($1, $2)
                                     ON CONFLICT (guild_id) DO UPDATE SET
-                                    {db_column} = EXCLUDED.{db_column}
-                                """, str(guild.id), target_channel.id)
+                                    "{db_column}" = EXCLUDED."{db_column}"
+                                """
+                                await conn.execute(query, str(guild.id), target_channel.id)
                             
                             # Extract log type name for display (remove _log_channel_id suffix)
                             log_type_display = db_column.replace('_log_channel_id', '').replace('_', ' ').title()
