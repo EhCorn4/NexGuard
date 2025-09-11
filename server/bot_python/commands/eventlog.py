@@ -605,13 +605,25 @@ class EventLogger(commands.Cog):
                 
                 # Update database with new log channel
                 async with self.bot.db_pool.acquire() as conn:
-                    # Use parameterized query with pre-validated column name
-                    query = f"""
-                        INSERT INTO guild_settings (guild_id, {column_name})
-                        VALUES ($1, $2)
-                        ON CONFLICT (guild_id) DO UPDATE SET
-                        {column_name} = EXCLUDED.{column_name}
-                    """
+                    # Use explicit query construction with pre-validated column name to avoid f-string
+                    # This is safe because column_name comes from a predefined whitelist
+                    if column_name == 'general_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, general_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET general_log_channel_id = EXCLUDED.general_log_channel_id"""
+                    elif column_name == 'member_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, member_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET member_log_channel_id = EXCLUDED.member_log_channel_id"""
+                    elif column_name == 'message_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, message_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET message_log_channel_id = EXCLUDED.message_log_channel_id"""
+                    elif column_name == 'voice_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, voice_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET voice_log_channel_id = EXCLUDED.voice_log_channel_id"""
+                    elif column_name == 'channel_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, channel_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_log_channel_id = EXCLUDED.channel_log_channel_id"""
+                    elif column_name == 'role_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, role_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_log_channel_id = EXCLUDED.role_log_channel_id"""
+                    elif column_name == 'moderation_log_channel_id':
+                        query = """INSERT INTO guild_settings (guild_id, moderation_log_channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET moderation_log_channel_id = EXCLUDED.moderation_log_channel_id"""
+                    else:
+                        raise ValueError(f"Invalid column name: {column_name}")
+                    
                     await conn.execute(query, str(interaction.guild.id), channel.id)
                 
                 embed = discord.Embed(
@@ -676,12 +688,25 @@ class EventLogger(commands.Cog):
             elif action == "clear":
                 # Clear log channel
                 async with self.bot.db_pool.acquire() as conn:
-                    # Use parameterized query with pre-validated column name
-                    query = f"""
-                        UPDATE guild_settings 
-                        SET {column_name} = NULL
-                        WHERE guild_id = $1
-                    """
+                    # Use explicit query construction with pre-validated column name to avoid f-string
+                    # This is safe because column_name comes from a predefined whitelist
+                    if column_name == 'general_log_channel_id':
+                        query = """UPDATE guild_settings SET general_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'member_log_channel_id':
+                        query = """UPDATE guild_settings SET member_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'message_log_channel_id':
+                        query = """UPDATE guild_settings SET message_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'voice_log_channel_id':
+                        query = """UPDATE guild_settings SET voice_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'channel_log_channel_id':
+                        query = """UPDATE guild_settings SET channel_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'role_log_channel_id':
+                        query = """UPDATE guild_settings SET role_log_channel_id = NULL WHERE guild_id = $1"""
+                    elif column_name == 'moderation_log_channel_id':
+                        query = """UPDATE guild_settings SET moderation_log_channel_id = NULL WHERE guild_id = $1"""
+                    else:
+                        raise ValueError(f"Invalid column name: {column_name}")
+                    
                     await conn.execute(query, str(interaction.guild.id))
                 
                 embed = discord.Embed(
