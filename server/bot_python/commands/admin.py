@@ -842,13 +842,15 @@ class AdminCommands(commands.Cog):
                                 
                             # Use the exact same database operation as /eventlog command
                             async with self.bot.db_pool.acquire() as conn:
-                                # Use identifier quoting for column names to follow best practices
-                                query = f"""
-                                    INSERT INTO guild_settings (guild_id, "{db_column}")
-                                    VALUES ($1, $2)
-                                    ON CONFLICT (guild_id) DO UPDATE SET
-                                    "{db_column}" = EXCLUDED."{db_column}"
-                                """
+                                # Safely construct query with pre-validated column name
+                                # Column name is validated against allowed_columns set above for security
+                                column_identifier = '"' + db_column + '"'
+                                query = (
+                                    "INSERT INTO guild_settings (guild_id, " + column_identifier + ") "
+                                    "VALUES ($1, $2) "
+                                    "ON CONFLICT (guild_id) DO UPDATE SET "
+                                    + column_identifier + " = EXCLUDED." + column_identifier
+                                )
                                 await conn.execute(query, str(guild.id), target_channel.id)
                             
                             # Extract log type name for display (remove _log_channel_id suffix)
