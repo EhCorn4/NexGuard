@@ -677,10 +677,11 @@ class NexGuardBot(commands.Bot):
                 values.append(datetime.utcnow())
                 values.append(guild_id)
                 
-                query = f"""
-                    UPDATE guilds SET {', '.join(set_clauses)}
-                    WHERE id = ${param_count + 1}
-                """
+                # Build query using string formatting with validated column names only
+                query = """
+                    UPDATE guilds SET {}
+                    WHERE id = ${}
+                """.format(', '.join(set_clauses), param_count + 1)
                 
                 await conn.execute(query, *values)
                 logger.info(f"Updated guild config for {guild_id}: {kwargs}")
