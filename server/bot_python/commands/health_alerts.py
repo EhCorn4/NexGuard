@@ -6,6 +6,7 @@ import asyncio
 import logging
 import aiohttp
 import json
+import math
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 import smtplib
@@ -53,6 +54,22 @@ class BotHealthAlerts(commands.Cog):
         self.heartbeat_loop.start()
         self.connection_monitor.start()
         logger.info("Bot health alerts system initialized")
+    
+    def sanitize_health_data(self, data):
+        """Sanitize health data to remove NaN and infinity values that can't be JSON serialized"""
+        if isinstance(data, dict):
+            sanitized = {}
+            for key, value in data.items():
+                sanitized[key] = self.sanitize_health_data(value)
+            return sanitized
+        elif isinstance(data, list):
+            return [self.sanitize_health_data(item) for item in data]
+        elif isinstance(data, float):
+            if math.isnan(data) or math.isinf(data):
+                return 0.0  # Replace NaN/infinity with 0.0
+            return data
+        else:
+            return data
     
     async def cog_unload(self):
         """Clean up when cog is unloaded"""
@@ -258,14 +275,22 @@ class BotHealthAlerts(commands.Cog):
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
             
+            # Handle NaN values that can occur under system load
+            if math.isnan(cpu_percent) or math.isinf(cpu_percent):
+                cpu_percent = 0.0
+            if math.isnan(memory.percent) or math.isinf(memory.percent):
+                memory_percent = 0.0
+            else:
+                memory_percent = memory.percent
+            
             # Define health thresholds
             cpu_healthy = cpu_percent < 90
-            memory_healthy = memory.percent < 90
+            memory_healthy = memory_percent < 90
             
             return {
                 'healthy': cpu_healthy and memory_healthy,
                 'cpu_percent': cpu_percent,
-                'memory_percent': memory.percent,
+                'memory_percent': memory_percent,
                 'cpu_healthy': cpu_healthy,
                 'memory_healthy': memory_healthy
             }
@@ -300,9 +325,14 @@ class BotHealthAlerts(commands.Cog):
     async def check_discord_connection(self) -> Dict:
         """Check Discord connection status"""
         try:
+            # Handle potential NaN values in bot latency
+            latency_ms = 0
+            if self.bot.latency and not math.isnan(self.bot.latency) and not math.isinf(self.bot.latency):
+                latency_ms = round(self.bot.latency * 1000, 2)
+            
             return {
                 'connected': not self.bot.is_closed(),
-                'latency_ms': round(self.bot.latency * 1000, 2) if self.bot.latency else 0,
+                'latency_ms': latency_ms,
                 'guild_count': len(self.bot.guilds),
                 'ready': self.bot.is_ready()
             }
@@ -518,15 +548,18 @@ class BotHealthAlerts(commands.Cog):
                     )
                 """)
                 
+                # Sanitize health data before JSON serialization
+                sanitized_health_status = self.sanitize_health_data(health_status)
+                
                 await conn.execute("""
                     INSERT INTO bot_health_logs (
                         timestamp, overall_healthy, consecutive_failures, health_data
                     ) VALUES ($1, $2, $3, $4)
                 """, 
                     datetime.utcnow(),
-                    health_status.get('overall_healthy', False),
+                    sanitized_health_status.get('overall_healthy', False),
                     self.consecutive_failures,
-                    json.dumps(health_status)
+                    json.dumps(sanitized_health_status)
                 )
                 
         except Exception as e:
@@ -548,10 +581,13 @@ class BotHealthAlerts(commands.Cog):
                     )
                 """)
                 
+                # Sanitize health data before JSON serialization
+                sanitized_health_status = self.sanitize_health_data(health_status)
+                
                 await conn.execute("""
                     INSERT INTO bot_health_alerts (timestamp, alert_type, health_data)
                     VALUES ($1, $2, $3)
-                """, datetime.utcnow(), alert_type, json.dumps(health_status))
+                """, datetime.utcnow(), alert_type, json.dumps(sanitized_health_status))
                 
         except Exception as e:
             logger.error(f"Error logging health alert: {e}")
