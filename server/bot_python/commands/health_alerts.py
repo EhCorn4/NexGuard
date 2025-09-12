@@ -625,11 +625,23 @@ class BotHealthAlerts(commands.Cog):
     async def on_command_error(self, ctx, error):
         """Track command errors for health monitoring"""
         self.error_count += 1
-        self.total_requests += 1
+        # Don't increment total_requests here - it's handled by on_command
     
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
         """Track successful commands"""
+        # Don't increment total_requests here - it's handled by on_command
+        pass
+        
+    @commands.Cog.listener() 
+    async def on_command(self, ctx):
+        """Track all traditional command attempts"""
+        # This fires for every command attempt, successful or not
+        self.total_requests += 1
+        
+    @commands.Cog.listener()
+    async def on_app_command_completion(self, interaction: discord.Interaction, command):
+        """Track app command (slash command) completions"""
         self.total_requests += 1
     
     @discord.app_commands.command(name="health")
