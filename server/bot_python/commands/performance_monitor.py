@@ -418,7 +418,7 @@ class PerformanceMonitor(commands.Cog):
     async def send_webhook_alert(self, alert: Dict):
         """Send alert via webhook for external monitoring"""
         try:
-            webhook_url = "http://localhost:5001/api/bot/performance-alert"
+            webhook_url = "http://localhost:5000/api/bot/performance-alert"
             
             async with aiohttp.ClientSession() as session:
                 await session.post(webhook_url, json={

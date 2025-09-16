@@ -5911,10 +5911,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Register API endpoints for external integrations
-  app.use('/api', apiEndpoints);
-  
-  // Bot webhook endpoints for internal communication
+  // Bot webhook endpoints for internal communication (must come BEFORE general API router)
   app.post('/api/bot/heartbeat', (req, res) => {
     console.log('Bot heartbeat received:', req.body);
     res.json({ success: true, timestamp: new Date().toISOString() });
@@ -5929,6 +5926,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Health alert received:', req.body);
     res.json({ success: true, alert_received: true });
   });
+  
+  // Register API endpoints for external integrations (after specific bot endpoints)
+  app.use('/api', apiEndpoints);
   
   app.post('/api/bot/moderation/ban', (req, res) => {
     console.log('Ban request received:', req.body);

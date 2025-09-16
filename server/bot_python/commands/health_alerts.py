@@ -496,7 +496,7 @@ class BotHealthAlerts(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 try:
                     await session.post(
-                        'http://localhost:5001/api/bot/health-alert',
+                        'http://localhost:5000/api/bot/health-alert',
                         json=payload,
                         timeout=aiohttp.ClientTimeout(total=5)
                     )
@@ -521,7 +521,7 @@ class BotHealthAlerts(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 try:
                     await session.post(
-                        'http://localhost:5001/api/bot/heartbeat',
+                        'http://localhost:5000/api/bot/heartbeat',
                         json=heartbeat_data,
                         timeout=aiohttp.ClientTimeout(total=3)
                     )
