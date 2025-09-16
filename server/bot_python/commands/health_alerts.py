@@ -509,20 +509,28 @@ class BotHealthAlerts(commands.Cog):
     async def send_heartbeat(self):
         """Send heartbeat to monitoring systems"""
         try:
+            # Calculate latency safely, avoiding NaN values
+            latency_ms = 0
+            if self.bot.latency and not math.isnan(self.bot.latency) and not math.isinf(self.bot.latency):
+                latency_ms = round(self.bot.latency * 1000, 2)
+            
             heartbeat_data = {
                 'timestamp': datetime.utcnow().isoformat(),
                 'status': 'alive',
                 'guilds': len(self.bot.guilds),
-                'latency': round(self.bot.latency * 1000, 2) if self.bot.latency else 0,
+                'latency': latency_ms,
                 'version': '2.5.1'
             }
+            
+            # Sanitize data before sending to prevent JSON serialization errors
+            sanitized_heartbeat_data = self.sanitize_health_data(heartbeat_data)
             
             # Send to webhook endpoint
             async with aiohttp.ClientSession() as session:
                 try:
                     await session.post(
                         'http://localhost:5000/api/bot/heartbeat',
-                        json=heartbeat_data,
+                        json=sanitized_heartbeat_data,
                         timeout=aiohttp.ClientTimeout(total=3)
                     )
                 except Exception as e:
