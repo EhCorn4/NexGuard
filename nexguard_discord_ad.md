@@ -46,11 +46,9 @@ Transform your Discord server with **NexGuard**, the most comprehensive bot mana
 • Educational institutions & study groups
 • Large communities requiring advanced moderation
 
-**📈 Current Stats:**
-• 19+ active servers • 835+ protected users
+**📈 Performance Stats:**
 • <2 second response time • 99.9% uptime
-• 949+ behavioral profiles analyzed
-• 47+ threats automatically prevented
+• Enterprise-grade reliability & stability
 
 **🔗 Get Started Today:**
 Invite: https://discord.com/oauth2/authorize?client_id=1389775821794705429&permissions=8&scope=bot%20applications.commands
