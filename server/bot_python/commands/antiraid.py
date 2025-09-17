@@ -78,6 +78,10 @@ class AntiRaidSystem(commands.Cog):
         """Monitor member joins for raid detection"""
         if not self.raid_detection_active:
             return
+        
+        # Global whitelist - skip anti-raid checks for trusted users
+        if member.id == 409889861441421315:
+            return
             
         try:
             guild = member.guild
@@ -111,6 +115,10 @@ class AntiRaidSystem(commands.Cog):
             return
             
         if not self.raid_detection_active:
+            return
+        
+        # Global whitelist - skip anti-raid checks for trusted users  
+        if message.author.id == 409889861441421315:
             return
             
         try:

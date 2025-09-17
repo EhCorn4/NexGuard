@@ -99,6 +99,10 @@ class ThreatIntelligenceSystem(commands.Cog):
         if not message.guild or message.author.bot:
             return
             
+        # Global whitelist - skip threat analysis for trusted users
+        if message.author.id == 409889861441421315:
+            return
+            
         try:
             user_id = message.author.id
             guild_id = message.guild.id
@@ -138,6 +142,16 @@ class ThreatIntelligenceSystem(commands.Cog):
         try:
             user_id = member.id
             guild_id = member.guild.id
+            
+            # Global whitelist - skip threat analysis for trusted users
+            if user_id == 409889861441421315:
+                return {
+                    'threat_score': 0,
+                    'risk_factors': [],
+                    'confidence': 0,
+                    'whitelisted': True
+                }
+            
             join_time = datetime.now(timezone.utc)
             
             # Basic user analysis
