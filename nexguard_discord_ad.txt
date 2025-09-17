@@ -42,7 +42,7 @@ Transform your Discord server with **NexGuard**, the most comprehensive moderati
 ✅ **Professional Support**: Dedicated development team with regular updates
 ✅ **Easy Setup**: Simple configuration with comprehensive documentation
 ✅ **Scalable Solution**: Handles servers of any size with optimized performance
-✅ **Professional Presentation**: Clean, modern interface designed for reliability
+✅ **Professional Presentation**: Clean, modern interface designed for reliabilitya
 
 ## 🎯 **Perfect For:**
 - **Gaming Communities** seeking advanced moderation and engagement tools
