@@ -43,10 +43,10 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 result = await conn.fetchrow('''
-                    SELECT moderator_role_id FROM guilds WHERE id = $1
+                    SELECT mod_role_id FROM guilds WHERE id = $1
                 ''', guild_id)
                 
-                return int(result['moderator_role_id']) if result and result['moderator_role_id'] else None
+                return int(result['mod_role_id']) if result and result['mod_role_id'] else None
         except Exception as e:
             logger.error(f"Error getting mod role ID: {e}")
             return None
@@ -75,10 +75,10 @@ class ModRoleCog(commands.Cog):
         try:
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute('''
-                    INSERT INTO guilds (id, name, moderator_role_id, joined_at, updated_at)
+                    INSERT INTO guilds (id, name, mod_role_id, joined_at, updated_at)
                     VALUES ($1, 'Unknown', $2, NOW(), NOW())
                     ON CONFLICT (id) 
-                    DO UPDATE SET moderator_role_id = $2, updated_at = NOW()
+                    DO UPDATE SET mod_role_id = $2, updated_at = NOW()
                 ''', guild_id, str(role_id) if role_id else None)
         except Exception as e:
             logger.error(f"Error setting mod role ID: {e}")

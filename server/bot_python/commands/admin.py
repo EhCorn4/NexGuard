@@ -355,8 +355,8 @@ class AdminCommands(commands.Cog):
             # Role Configuration (including new hierarchical roles)
             roles_config = []
             
-            # Mod role (basic moderation) - check both possible column names
-            mod_role_id = config.get('moderator_role_id') or config.get('mod_role_id')
+            # Mod role (basic moderation) - check correct column name first
+            mod_role_id = config.get('mod_role_id') or config.get('moderator_role_id')
             if mod_role_id:
                 mod_role = interaction.guild.get_role(int(mod_role_id))
                 roles_config.append(f"**Moderation Role:** {mod_role.mention if mod_role else '⚠️ Role not found'}")
