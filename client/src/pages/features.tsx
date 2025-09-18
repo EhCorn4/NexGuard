@@ -85,13 +85,6 @@ const Features = memo(function Features() {
           </div>
         </div>
         
-        {/* Debug info */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-4 p-4 bg-slate-800 rounded-lg text-white">
-            <p>Debug: Loading: {isLoading.toString()}, Features count: {features?.length || 0}</p>
-            <p>Features data: {features ? 'Available' : 'Null/Undefined'}</p>
-          </div>
-        )}
         
         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (

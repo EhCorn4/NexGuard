@@ -1,0 +1,323 @@
+Query URL: /api/bot/status
+index-DR_d1DTP.js:176 Fetching auth user
+index-DR_d1DTP.js:49 Query URL: /api/features
+index-DR_d1DTP.js:49 Query URL: /api/developers
+index-DR_d1DTP.js:49 Query URL: /api/config
+features:29  GET https://nexguard.replit.app/api/bot/status net::ERR_ABORTED 500 (Internal Server Error)Understand this error
+features:30  GET https://nexguard.replit.app/api/features net::ERR_ABORTED 500 (Internal Server Error)Understand this error
+index-DR_d1DTP.js:176 SW registered:  ServiceWorkerRegistration {installing: null, waiting: null, active: ServiceWorker, navigationPreload: NavigationPreloadManager, scope: 'https://nexguard.replit.app/', …}
+features:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">Understand this warning
+features:1 Error while trying to use the following icon from the Manifest: https://nexguard.replit.app/icon-192.png (Download error or resource isn't a valid image)Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/features 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/config 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+Ob @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:176  GET https://nexguard.replit.app/api/auth/user 500 (Internal Server Error)
+doFetch @ index-DR_d1DTP.js:176
+fetchUser @ index-DR_d1DTP.js:176
+initialize @ index-DR_d1DTP.js:176
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:176 Auth fetch response: 500 
+index-DR_d1DTP.js:176 Auth fetch error: 500 
+index-DR_d1DTP.js:176 Auth state updated: {user: null, isLoading: false, error: Error: 500: 
+    at wr.doFetch (https://nexguard.replit.app/assets/index-DR_d1DTP.js:176:5347)
+    …, isAuthenticated: false}
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/developers 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/bot/status 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+Rs @ index-DR_d1DTP.js:49
+onSubscribe @ index-DR_d1DTP.js:49
+subscribe @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+t0 @ index-DR_d1DTP.js:39
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49 Query URL: /api/features
+index-DR_d1DTP.js:49 Query URL: /api/config
+index-DR_d1DTP.js:49 Query URL: /api/developers
+index-DR_d1DTP.js:49 Query URL: /api/bot/status
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/developers 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/bot/status 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+Rs @ index-DR_d1DTP.js:49
+onSubscribe @ index-DR_d1DTP.js:49
+subscribe @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+t0 @ index-DR_d1DTP.js:39
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/features 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/config 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+Ob @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49 Query URL: /api/developers
+index-DR_d1DTP.js:49 Query URL: /api/bot/status
+index-DR_d1DTP.js:49 Query URL: /api/features
+index-DR_d1DTP.js:49 Query URL: /api/config
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/features 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/developers 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/bot/status 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+Rs @ index-DR_d1DTP.js:49
+onSubscribe @ index-DR_d1DTP.js:49
+subscribe @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+t0 @ index-DR_d1DTP.js:39
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49  GET https://nexguard.replit.app/api/config 500 (Internal Server Error)
+(anonymous) @ index-DR_d1DTP.js:49
+s @ index-DR_d1DTP.js:49
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.then
+(anonymous) @ index-DR_d1DTP.js:49
+Promise.catch
+w @ index-DR_d1DTP.js:49
+start @ index-DR_d1DTP.js:49
+fetch @ index-DR_d1DTP.js:49
+fetchQuery @ index-DR_d1DTP.js:49
+prefetchQuery @ index-DR_d1DTP.js:49
+Ob @ index-DR_d1DTP.js:49
+(anonymous) @ index-DR_d1DTP.js:176
+_l @ index-DR_d1DTP.js:41
+Eo @ index-DR_d1DTP.js:41
+pm @ index-DR_d1DTP.js:41
+fr @ index-DR_d1DTP.js:39
+lP @ index-DR_d1DTP.js:41
+vr @ index-DR_d1DTP.js:41
+N0 @ index-DR_d1DTP.js:41
+E @ index-DR_d1DTP.js:26
+j @ index-DR_d1DTP.js:26Understand this error
+index-DR_d1DTP.js:49 Query URL: /api/bot/status
