@@ -56,8 +56,15 @@ class NexGuardBot(commands.Bot):
     async def setup_database(self):
         """Setup database connection pool"""
         try:
+            # Import shared config to ensure consistent database usage across environments
+            import sys
+            import os
+            sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+            from shared_config import config
+            
+            database_url = config.get_database_url()
             self.db_pool = await asyncpg.create_pool(
-                os.getenv('DATABASE_URL'),
+                database_url,
                 min_size=1,
                 max_size=10,
                 command_timeout=60
