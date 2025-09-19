@@ -152,6 +152,13 @@ function Router() {
                   </PerformanceWrapper>
                 </PageTransition>
               )} />
+              <Route path="/settings" component={() => (
+                <PageTransition key="settings">
+                  <PerformanceWrapper skeletonType="card" skeletonCount={3}>
+                    <ServerManagement />
+                  </PerformanceWrapper>
+                </PageTransition>
+              )} />
 
               <Route path="/terms-of-service" component={() => (
                 <PageTransition key="terms-of-service">
