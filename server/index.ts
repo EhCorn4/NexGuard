@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 // import { NexGuardBot } from "./bot/index";
 import { spawn } from 'child_process';
+import { config } from "@shared/config";
 
 const app = express();
 app.use(express.json());
@@ -217,7 +218,7 @@ app.use((req, res, next) => {
     console.log(`🚀 NexGuard Discord Bot Management Server started successfully!`);
     console.log(`📍 Server listening on: http://0.0.0.0:${port}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🗄️  Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+    console.log(`🗄️  Database: ${config.databaseUrl ? 'Connected' : 'Not configured'}`);
     console.log(`🤖 Discord Bot: Starting...`);
     log(`serving on port ${port}`);
   });
