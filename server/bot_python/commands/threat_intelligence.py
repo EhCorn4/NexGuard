@@ -252,7 +252,7 @@ class ThreatIntelligenceSystem(commands.Cog):
             risk_factors.append(f"Suspicious messaging: {message_score}")
         
         # Behavioral anomaly detection
-        behavioral_score = self._detect_behavioral_anomalies(user_id, guild_id)
+        behavioral_score = self._detect_behavioral_anomalies(user_id, event_data)
         score += behavioral_score * self.THREAT_WEIGHTS['behavioral_anomaly'] // 100
         if behavioral_score > 70:
             risk_factors.append(f"Behavioral anomaly: {behavioral_score}")
