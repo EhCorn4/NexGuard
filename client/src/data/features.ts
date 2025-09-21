@@ -1,4 +1,11 @@
 // Static features data for NexGuard bot
+import { 
+  Gavel, Activity, Users, Book, Bot, Monitor, Shield, 
+  Zap, FileText, Settings, AlertTriangle, BarChart3,
+  Headphones, Ticket, Gauge, Globe, Megaphone, Network,
+  type LucideIcon 
+} from "lucide-react";
+
 export interface FeatureUI {
   slug: string;
   title: string;
@@ -6,6 +13,29 @@ export interface FeatureUI {
   icon: string;
   benefits: string[];
 }
+
+// Icon mapping from string to lucide-react component
+export const FEATURE_ICONS: Record<string, LucideIcon> = {
+  gavel: Gavel,
+  activity: Activity,
+  users: Users,
+  book: Book,
+  bot: Bot,
+  monitor: Monitor,
+  shield: Shield,
+  zap: Zap,
+  "file-text": FileText,
+  settings: Settings,
+  "alert-triangle": AlertTriangle,
+  "bar-chart-3": BarChart3,
+  headphones: Headphones,
+  ticket: Ticket,
+  "chart-bar": BarChart3,
+  gauge: Gauge,
+  api: Globe,
+  megaphone: Megaphone,
+  network: Network,
+} as const;
 
 export const FEATURES: FeatureUI[] = [
   {
