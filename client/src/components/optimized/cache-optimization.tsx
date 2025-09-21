@@ -10,11 +10,7 @@ export function usePrefetchCriticalData() {
       staleTime: 30 * 1000, // 30 seconds
     });
 
-    // Prefetch features data
-    queryClient.prefetchQuery({
-      queryKey: ["/api/features"],
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    });
+    // Features page now uses static data - no prefetch needed
 
     // Prefetch developers data
     queryClient.prefetchQuery({
