@@ -2,17 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import type { Feature } from "@shared/schema";
 
 function Features() {
+  console.log('🔥 FEATURES COMPONENT STARTED 🔥');
+  
   const { data: features, isLoading, error } = useQuery<Feature[]>({
     queryKey: ["/api/features"],
     retry: 3,
   });
 
-  console.log('=== FEATURES DEBUG ===', { 
-    isLoading, 
-    error: error?.toString(), 
-    featuresCount: features?.length,
-    firstFeature: features?.[0]?.title
-  });
+  console.log('🔥 FEATURES STATE:', { isLoading, error: error?.message, count: features?.length });
 
   if (isLoading) {
     return (
