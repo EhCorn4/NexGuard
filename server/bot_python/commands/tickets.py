@@ -859,8 +859,15 @@ class TicketsCog(commands.Cog):
                         (channel.name.count('-') == 1 or  # panel-username format
                          channel.name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-", "lspdapplication-", "civapplication-"])))):
                         
-                        # Check if channel has recent messages with NexGuard ticket control buttons
+                        # Check permissions before attempting to read channel history
                         try:
+                            # Check if bot has required permissions
+                            if not channel.permissions_for(guild.me).read_message_history:
+                                continue  # Skip silently if no read permission
+                            
+                            if not channel.permissions_for(guild.me).view_channel:
+                                continue  # Skip silently if can't view channel
+                            
                             async for message in channel.history(limit=20):
                                 if (message.author == self.bot.user and 
                                     message.components):
@@ -879,8 +886,13 @@ class TicketsCog(commands.Cog):
                                     else:
                                         continue
                                     break
+                        except discord.Forbidden:
+                            # Silently skip channels we can't access - this is normal
+                            continue
                         except Exception as e:
-                            logger.warning(f"Could not check channel {channel.name}: {e}")
+                            # Only log unexpected errors, not permission issues
+                            if "403" not in str(e) and "Missing Access" not in str(e):
+                                logger.warning(f"Unexpected error checking channel {channel.name}: {e}")
                             continue
             
             if restored_count > 0:
@@ -1603,8 +1615,15 @@ class TicketsCog(commands.Cog):
                     if (channel.name.startswith(tuple(["support-", "billing-", "general-", "admin-", "technical-"])) or 
                         "ticket" in channel.name.lower()):
                         
-                        # Check if channel has recent messages with ticket control buttons
+                        # Check permissions before attempting to read channel history
                         try:
+                            # Check if bot has required permissions
+                            if not channel.permissions_for(guild.me).read_message_history:
+                                continue  # Skip silently if no read permission
+                            
+                            if not channel.permissions_for(guild.me).view_channel:
+                                continue  # Skip silently if can't view channel
+                            
                             async for message in channel.history(limit=10):
                                 if (message.author == self.bot.user and 
                                     message.components and 
@@ -1615,8 +1634,13 @@ class TicketsCog(commands.Cog):
                                     self.bot.add_view(control_view)
                                     restored_count += 1
                                     break
+                        except discord.Forbidden:
+                            # Silently skip channels we can't access - this is normal
+                            continue
                         except Exception as e:
-                            logger.warning(f"Could not check channel {channel.name}: {e}")
+                            # Only log unexpected errors, not permission issues
+                            if "403" not in str(e) and "Missing Access" not in str(e):
+                                logger.warning(f"Unexpected error checking channel {channel.name}: {e}")
                             continue
             
             if restored_count > 0:
