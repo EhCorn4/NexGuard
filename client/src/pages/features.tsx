@@ -39,74 +39,16 @@ const iconMap = {
   "plug": Plug,
 };
 
-const Features = memo(function Features() {
-  const { data: features, isLoading, error } = useQuery<Feature[]>({
-    queryKey: ["/api/features"],
-  });
+function Features() {
+  console.log('*** FEATURES COMPONENT LOADED ***');
   
-  // Debug logging
-  console.log('Features component - data:', features);
-  console.log('Features component - isLoading:', isLoading);
-  console.log('Features component - error:', error);
-
-  // Fetch live bot status
-  const { data: botStatus } = useQuery({
-    queryKey: ['/api/bot/status'],
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  // Type-safe bot status data
-  const safeGuildsCount = (botStatus as any)?.guildsCount || 0;
-  const safeUsersCount = (botStatus as any)?.usersCount || 0;
-  const safeIsOnline = (botStatus as any)?.isOnline || false;
-
-  if (error) {
-    console.log('Features component - error condition reached:', error);
-    return (
-      <div className="min-h-screen bg-[hsl(var(--nexguard-darker))] pt-24 px-4">
-        <div className="container mx-auto">
-          <Alert className="max-w-2xl mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Failed to load features. Please try again later.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-900 pt-24 px-4">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8 text-center">Bot Features</h1>
-        
-        {/* Debug Info */}
-        <div className="bg-slate-800 p-4 rounded-lg mb-8 text-white">
-          <p>Loading: {isLoading ? 'true' : 'false'}</p>
-          <p>Error: {error ? String(error) : 'none'}</p>
-          <p>Features count: {features ? features.length : '0'}</p>
-        </div>
-        
-        {/* Simple feature list */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <p className="text-white">Loading features...</p>
-          ) : features ? (
-            features.map((feature) => (
-              <div key={feature.id} className="bg-slate-800 p-6 rounded-lg text-white">
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
-                <p className="text-sm text-gray-500 mt-2">Icon: {feature.icon}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-red-400">No features data available</p>
-          )}
-        </div>
-      </div>
+    <div className="min-h-screen bg-red-500 text-white p-8">
+      <h1 className="text-6xl font-bold">FEATURES PAGE TEST</h1>
+      <p className="text-2xl mt-4">This is a simple test page</p>
+      <p className="text-lg mt-4">If you can see this, the routing is working</p>
     </div>
   );
-});
+}
 
 export default Features;
