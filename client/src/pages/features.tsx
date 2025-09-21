@@ -43,6 +43,11 @@ const Features = memo(function Features() {
   const { data: features, isLoading, error } = useQuery<Feature[]>({
     queryKey: ["/api/features"],
   });
+  
+  // Debug logging
+  console.log('Features component - data:', features);
+  console.log('Features component - isLoading:', isLoading);
+  console.log('Features component - error:', error);
 
   // Fetch live bot status
   const { data: botStatus } = useQuery({
@@ -56,6 +61,7 @@ const Features = memo(function Features() {
   const safeIsOnline = (botStatus as any)?.isOnline || false;
 
   if (error) {
+    console.log('Features component - error condition reached:', error);
     return (
       <div className="min-h-screen bg-[hsl(var(--nexguard-darker))] pt-24 px-4">
         <div className="container mx-auto">
@@ -71,58 +77,33 @@ const Features = memo(function Features() {
   }
 
   return (
-    <div className="min-h-screen hero-gradient circuit-pattern pt-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--nexguard-cyan))]/5 to-[hsl(var(--nexguard-purple))]/5 animate-pulse-slow"></div>
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <PageHeader 
-          title="Bot Features"
-          description={`NexGuard offers comprehensive Discord bot functionality with 66+ slash commands, enterprise security systems, professional ticket system, live server statistics channels, reaction roles, comprehensive event logging, advanced automod protection, performance monitoring, and real-time analytics to enhance your server management experience across ${safeGuildsCount}+ servers.`}
-        />
+    <div className="min-h-screen bg-slate-900 pt-24 px-4">
+      <div className="container mx-auto">
+        <h1 className="text-4xl font-bold text-white mb-8 text-center">Bot Features</h1>
         
-        {/* Bot Status Section */}
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center gap-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-6 py-3">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${safeIsOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
-            <span className="text-sm text-gray-300">{safeIsOnline ? 'Bot Online & Ready' : 'Bot Offline'}</span>
-            <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">66 Commands</span>
-            <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">{safeGuildsCount}+ Servers</span>
-            <div className="w-px h-4 bg-slate-600"></div>
-            <span className="text-sm text-[hsl(var(--nexguard-cyan))]">{safeUsersCount}+ Users</span>
-          </div>
+        {/* Debug Info */}
+        <div className="bg-slate-800 p-4 rounded-lg mb-8 text-white">
+          <p>Loading: {isLoading ? 'true' : 'false'}</p>
+          <p>Error: {error ? String(error) : 'none'}</p>
+          <p>Features count: {features ? features.length : '0'}</p>
         </div>
         
-        
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Simple feature list */}
+        <div className="space-y-4">
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <StaggerItem key={i}>
-                <div className="space-y-4">
-                  <Skeleton className="h-20 w-20 rounded-lg" />
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                </div>
-              </StaggerItem>
+            <p className="text-white">Loading features...</p>
+          ) : features ? (
+            features.map((feature) => (
+              <div key={feature.id} className="bg-slate-800 p-6 rounded-lg text-white">
+                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                <p className="text-gray-300">{feature.description}</p>
+                <p className="text-sm text-gray-500 mt-2">Icon: {feature.icon}</p>
+              </div>
             ))
           ) : (
-            features?.map((feature, index) => {
-              const IconComponent = iconMap[feature.icon as keyof typeof iconMap] || Settings;
-              return (
-                <StaggerItem key={feature.id} index={index}>
-                  <FeatureCard
-                    icon={IconComponent}
-                    title={feature.title}
-                    description={feature.description}
-                    benefits={feature.benefits || []}
-                  />
-                </StaggerItem>
-              );
-            })
+            <p className="text-red-400">No features data available</p>
           )}
-        </StaggerContainer>
+        </div>
       </div>
     </div>
   );
