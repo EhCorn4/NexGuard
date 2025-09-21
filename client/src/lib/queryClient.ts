@@ -3,6 +3,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    // console.error('API Error:', res.status, text);
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -39,18 +40,22 @@ export const getQueryFn: <T>(options: {
       url = queryKey[0] as string;
     }
     
-    console.log('Query URL:', url);
+    // console.log('Query URL:', url);
+    // console.log('QueryKey:', queryKey);
     
     const res = await fetch(url, {
       credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      // console.log('Query returned 401, returning null');
       return null;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    const data = await res.json();
+    // console.log('Query successful, data:', data);
+    return data;
   };
 
 export const queryClient = new QueryClient({
