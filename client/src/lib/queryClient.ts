@@ -3,7 +3,6 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    console.error('API Error:', res.status, text);
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -41,21 +40,17 @@ export const getQueryFn: <T>(options: {
     }
     
     console.log('Query URL:', url);
-    console.log('QueryKey:', queryKey);
     
     const res = await fetch(url, {
       credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      // console.log('Query returned 401, returning null');
       return null;
     }
 
     await throwIfResNotOk(res);
-    const data = await res.json();
-    console.log('Query successful for', url, '- got', data?.length || 'unknown', 'items');
-    return data;
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({
@@ -90,7 +85,11 @@ export function prefetchCriticalData() {
     staleTime: 30 * 1000, // Fresh data every 30 seconds
   });
   
-  // Features page now uses static data - no prefetch needed
+  // Features data - static content
+  queryClient.prefetchQuery({
+    queryKey: ["/api/features"],
+    staleTime: 10 * 60 * 1000, // 10 minutes for mostly static content
+  });
   
   // Config data
   queryClient.prefetchQuery({

@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { GradientText } from "@/components/ui/gradient-text";
 import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
-// import nexguardLogo from "@assets/Nexguard_1751937048860.png";
+import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
 import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
