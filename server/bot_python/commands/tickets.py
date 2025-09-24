@@ -213,13 +213,23 @@ class TicketButton(discord.ui.Button):
                 ephemeral=True
             )
                 
+        except discord.Forbidden as e:
+            logger.error(f"Permission error creating ticket: {e}")
+            try:
+                error_msg = "❌ Failed to create ticket. The bot may be missing permissions to create channels or access the category. Please contact an administrator."
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(error_msg, ephemeral=True)
+                else:
+                    await interaction.followup.send(error_msg, ephemeral=True)
+            except:
+                pass
         except Exception as e:
             logger.error(f"Error creating ticket: {e}")
             try:
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("❌ Failed to create ticket.", ephemeral=True)
+                    await interaction.response.send_message("❌ Failed to create ticket. Please try again or contact support.", ephemeral=True)
                 else:
-                    await interaction.followup.send("❌ Failed to create ticket.", ephemeral=True)
+                    await interaction.followup.send("❌ Failed to create ticket. Please try again or contact support.", ephemeral=True)
             except:
                 pass
 
@@ -1605,6 +1615,10 @@ class TicketsCog(commands.Cog):
                         
                         # Check if channel has recent messages with ticket control buttons
                         try:
+                            # Check bot permissions first
+                            if not channel.permissions_for(guild.me).read_message_history:
+                                continue
+                                
                             async for message in channel.history(limit=10):
                                 if (message.author == self.bot.user and 
                                     message.components and 
@@ -1615,8 +1629,12 @@ class TicketsCog(commands.Cog):
                                     self.bot.add_view(control_view)
                                     restored_count += 1
                                     break
+                        except discord.Forbidden:
+                            # Bot no longer has access to this channel - skip silently
+                            continue
                         except Exception as e:
-                            logger.warning(f"Could not check channel {channel.name}: {e}")
+                            if "Missing Access" not in str(e):
+                                logger.warning(f"Could not check channel {channel.name}: {e}")
                             continue
             
             if restored_count > 0:
