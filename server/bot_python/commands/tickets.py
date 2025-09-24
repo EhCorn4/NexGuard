@@ -225,6 +225,16 @@ class TicketButton(discord.ui.Button):
                 ephemeral=True
             )
                 
+        except asyncio.TimeoutError:
+            logger.error("Database query timeout creating ticket")
+            try:
+                error_msg = "❌ Request timed out. Please try again."
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(error_msg, ephemeral=True)
+                else:
+                    await interaction.followup.send(error_msg, ephemeral=True)
+            except:
+                pass
         except discord.Forbidden as e:
             logger.error(f"Permission error creating ticket: {e}")
             try:
