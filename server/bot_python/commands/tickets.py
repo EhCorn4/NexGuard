@@ -66,7 +66,7 @@ class TicketButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Create ticket when button pressed"""
         try:
-            # Immediate response to prevent timeout
+            # Immediate response to prevent timeout - this must happen within 3 seconds
             if not interaction.response.is_done():
                 await interaction.response.defer(ephemeral=True)
             
@@ -74,17 +74,29 @@ class TicketButton(discord.ui.Button):
                 await interaction.followup.send("❌ This can only be used in a server.", ephemeral=True)
                 return
             
-            # Get panel configuration from database
+            # Add timeout protection for database operations
+            start_time = asyncio.get_event_loop().time()
+            
+            # Get panel configuration from database with timeout protection
             bot = interaction.client
             if not hasattr(bot, 'db_pool') or not getattr(bot, 'db_pool', None):
                 await interaction.followup.send("❌ Database not available.", ephemeral=True)
                 return
+            
+            # Check if we're approaching timeout (Discord gives us 15 minutes total)
+            elapsed = asyncio.get_event_loop().time() - start_time
+            if elapsed > 10:  # If more than 10 seconds have passed, timeout
+                await interaction.followup.send("❌ Request timed out. Please try again.", ephemeral=True)
+                return
                 
             async with getattr(bot, 'db_pool').acquire() as conn:
-                panel = await conn.fetchrow("""
-                    SELECT * FROM ticket_panels 
-                    WHERE guild_id = $1 AND panel_id = $2
-                """, str(interaction.guild.id), self.panel_id)
+                panel = await asyncio.wait_for(
+                    conn.fetchrow("""
+                        SELECT * FROM ticket_panels 
+                        WHERE guild_id = $1 AND panel_id = $2
+                    """, str(interaction.guild.id), self.panel_id),
+                    timeout=5.0  # 5 second timeout for database query
+                )
                 
                 if not panel:
                     await interaction.followup.send("❌ Panel configuration not found.", ephemeral=True)
