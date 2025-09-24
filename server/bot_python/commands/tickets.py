@@ -157,10 +157,13 @@ class TicketButton(discord.ui.Button):
                 await interaction.followup.send("❌ This can only be used in a server.", ephemeral=True)
                 return
                 
+            # Cast overwrites to the expected type for Discord.py
+            channel_overwrites = dict(overwrites) if overwrites else None
+            
             channel = await interaction.guild.create_text_channel(
                 name=channel_name,
                 category=category,
-                overwrites=overwrites,
+                overwrites=channel_overwrites,
                 reason=f"Ticket by {interaction.user}"
             )
             
@@ -770,8 +773,11 @@ class TicketsCog(commands.Cog):
                     for panel in panels[:10]:  # Limit to 10 for embed limits
                         value = f"**Title:** {panel['title']}\n"
                         if panel['category_id']:
-                            category = interaction.guild.get_channel(int(panel['category_id']))
-                            value += f"**Category:** {category.mention if category else 'Deleted'}\n"
+                            category_channel = interaction.guild.get_channel(int(panel['category_id']))
+                            if isinstance(category_channel, discord.CategoryChannel):
+                                value += f"**Category:** {category_channel.mention}\n"
+                            else:
+                                value += f"**Category:** Deleted\n"
                         
                         embed.add_field(
                             name=f"Panel: {panel['panel_id']}",
