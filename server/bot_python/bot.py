@@ -46,10 +46,16 @@ class NexGuardBot(commands.Bot):
         # Start background tasks
         self.update_bot_status.start()
         
-        # Sync commands
+        # Sync commands with better error handling
         try:
             synced = await self.tree.sync()
             logger.info(f"Synced {len(synced)} command(s)")
+        except discord.HTTPException as e:
+            if e.status == 400 and "Entry Point command" in str(e):
+                logger.warning(f"Command sync skipped due to Entry Point command limitation: {e}")
+                logger.info("Bot will continue to function with existing commands")
+            else:
+                logger.error(f"Failed to sync commands: {e}")
         except Exception as e:
             logger.error(f"Failed to sync commands: {e}")
     
