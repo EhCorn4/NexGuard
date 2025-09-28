@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["postgresql", "unzip"]
+packages = ["libsodium", "postgresql", "unzip"]
 
 [deployment]
 deploymentTarget = "gce"
@@ -21,6 +21,10 @@ localPort = 5001
 [[ports]]
 localPort = 35339
 externalPort = 3001
+
+[[ports]]
+localPort = 39461
+externalPort = 3003
 
 [[ports]]
 localPort = 44577
