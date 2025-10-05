@@ -752,6 +752,10 @@ class AutoModCog(commands.Cog):
         if message.author.bot or not message.guild:
             return
         
+        # Global whitelist - skip AutoMod checks for trusted users
+        if message.author.id in [409889861441421315, 1365321309130588160, 904858290461241375]:
+            return
+        
         # Skip if no database connection
         if not self.bot.db_pool:
             return
