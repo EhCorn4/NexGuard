@@ -80,7 +80,7 @@ class AntiRaidSystem(commands.Cog):
             return
         
         # Global whitelist - skip anti-raid checks for trusted users
-        if member.id in [409889861441421315, 1365321309130588160]:
+        if member.id in [409889861441421315, 1365321309130588160, 904858290461241375]:
             return
             
         try:
@@ -118,7 +118,7 @@ class AntiRaidSystem(commands.Cog):
             return
         
         # Global whitelist - skip anti-raid checks for trusted users  
-        if message.author.id in [409889861441421315, 1365321309130588160]:
+        if message.author.id in [409889861441421315, 1365321309130588160, 904858290461241375]:
             return
             
         try:

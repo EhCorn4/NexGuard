@@ -340,7 +340,7 @@ class AntiNukeSystem(commands.Cog):
         """Check if user is trusted (whitelist, owner, or has trusted role)"""
         try:
             # Global whitelist for specific trusted users
-            if user.id in [409889861441421315, 1365321309130588160]:  # Globally whitelisted users
+            if user.id in [409889861441421315, 1365321309130588160, 904858290461241375]:  # Globally whitelisted users
                 return True
             
             # Guild owner is always trusted
