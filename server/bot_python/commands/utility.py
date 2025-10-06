@@ -1016,6 +1016,57 @@ class UtilityCommands(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"❌ Failed to send embed: {str(e)}", ephemeral=True)
 
+    @app_commands.command(name="jsonembed", description="Create an embed from JSON code (Discord embed format)")
+    @app_commands.describe(
+        json_code="Paste your Discord embed JSON code here",
+        channel="Channel to send the embed to (optional)"
+    )
+    async def jsonembed(self, interaction: discord.Interaction, json_code: str, channel: Optional[discord.TextChannel] = None):
+        """Create an embed from JSON code using Discord's embed format"""
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ You need Manage Messages permission to use this command.", ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Parse JSON
+            embed_data = json.loads(json_code)
+            
+            # Create embed from JSON
+            embed = discord.Embed.from_dict(embed_data)
+            
+            # Send to specified channel or current channel
+            target_channel = channel or interaction.channel
+            
+            await target_channel.send(embed=embed)
+            
+            # Confirm to user
+            confirm_embed = discord.Embed(
+                title="✅ JSON Embed Created",
+                description=f"Your embed has been sent to {target_channel.mention}",
+                color=0x00FF00,
+                timestamp=datetime.utcnow()
+            )
+            
+            if embed_data.get('title'):
+                confirm_embed.add_field(name="Title", value=embed_data.get('title')[:100], inline=False)
+            
+            confirm_embed.set_footer(text="Created from JSON code")
+            
+            await interaction.followup.send(embed=confirm_embed, ephemeral=True)
+            
+        except json.JSONDecodeError as e:
+            await interaction.followup.send(
+                f"❌ Invalid JSON format: {str(e)}\n\n**Tip:** Make sure your JSON is properly formatted with correct quotes and brackets.",
+                ephemeral=True
+            )
+        except Exception as e:
+            await interaction.followup.send(
+                f"❌ Failed to create embed: {str(e)}\n\n**Tip:** Make sure you're using Discord's embed JSON format.",
+                ephemeral=True
+            )
+
     @app_commands.command(name="refresh-members", description="Force refresh member counts from Discord API")
     @app_commands.describe(action="Force refresh member counts to get accurate user data")
     async def refresh_members(self, interaction: discord.Interaction, action: str = "now"):
