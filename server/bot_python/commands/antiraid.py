@@ -82,6 +82,10 @@ class AntiRaidSystem(commands.Cog):
         # Global whitelist - skip anti-raid checks for trusted users
         if member.id in [409889861441421315, 1365321309130588160, 904858290461241375]:
             return
+        
+        # Server owner bypass - owners are always trusted
+        if member.id == member.guild.owner_id:
+            return
             
         try:
             guild = member.guild
@@ -119,6 +123,10 @@ class AntiRaidSystem(commands.Cog):
         
         # Global whitelist - skip anti-raid checks for trusted users  
         if message.author.id in [409889861441421315, 1365321309130588160, 904858290461241375]:
+            return
+        
+        # Server owner bypass - owners are always trusted
+        if message.author.id == message.guild.owner_id:
             return
             
         try:
