@@ -1,7 +1,22 @@
 import { ArrowRight, Shield, Zap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+
+interface PublicStats {
+  totalServers: number;
+  totalMembers: number;
+}
 
 export default function Landing() {
+  const { data: stats } = useQuery<PublicStats>({
+    queryKey: ['/api/bot/public-stats'],
+    refetchInterval: 60_000,
+  });
+
+  const totalServers = stats?.totalServers ?? 0;
+  const totalMembers = stats?.totalMembers ?? 0;
+  const formattedMembers = totalMembers.toLocaleString();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 pt-24">
       <div className="max-w-7xl mx-auto px-4 py-16">
@@ -10,8 +25,8 @@ export default function Landing() {
             Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">NexGuard</span>
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Professional Discord bot management system with advanced security, threat intelligence, 
-            and comprehensive server protection across 18 Discord servers.
+            Professional Discord bot management system with advanced security, threat intelligence,
+            and comprehensive server protection across {totalServers} Discord servers.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -49,7 +64,7 @@ export default function Landing() {
             
             <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
               <Users className="w-12 h-12 text-green-400 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold text-white mb-2">949 Users Protected</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{formattedMembers} Users Protected</h3>
               <p className="text-gray-400">
                 Actively protecting Discord communities with real-time threat intelligence.
               </p>

@@ -142,6 +142,11 @@ export function SimpleDashboard() {
     refetchInterval: 15000,
   });
 
+  const { data: publicStats } = useQuery<{ totalServers: number; totalMembers: number }>({
+    queryKey: ['/api/bot/public-stats'],
+    refetchInterval: 60000,
+  });
+
   // Fetch bot guilds
   const { data: guilds, isLoading: guildsLoading } = useQuery<Guild[]>({
     queryKey: ["/api/bot/guilds"],
@@ -369,7 +374,7 @@ export function SimpleDashboard() {
               <Server className="h-4 w-4 text-cyan-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{botStatus?.guildsCount || 0}</div>
+              <div className="text-2xl font-bold text-white">{publicStats?.totalServers ?? botStatus?.guildsCount ?? 0}</div>
               <p className="text-xs text-gray-400">
                 Discord servers protected
               </p>
@@ -382,7 +387,7 @@ export function SimpleDashboard() {
               <Users className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{botStatus?.usersCount || 0}</div>
+              <div className="text-2xl font-bold text-white">{(publicStats?.totalMembers ?? botStatus?.usersCount ?? 0).toLocaleString()}</div>
               <p className="text-xs text-gray-400">
                 Users under protection
               </p>

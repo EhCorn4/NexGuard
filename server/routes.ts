@@ -6209,6 +6209,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public stats endpoint - aggregates real member_count data from guilds table
+  app.get("/api/bot/public-stats", async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT
+          COUNT(*)::int AS total_servers,
+          COALESCE(SUM(member_count), 0)::int AS total_members
+        FROM guilds
+        WHERE name IS NOT NULL AND name != ''
+      `);
+
+      const row = result.rows[0] as { total_servers: number; total_members: number } | undefined;
+
+      res.json({
+        totalServers: row?.total_servers ?? 0,
+        totalMembers: row?.total_members ?? 0,
+      });
+    } catch (error) {
+      console.error("Error fetching public stats:", error);
+      res.status(500).json({ error: "Failed to fetch public stats" });
+    }
+  });
+
   // Bot configuration endpoints
   app.get("/api/bot/guilds", isAuthenticated, async (req: any, res) => {
     try {

@@ -19,9 +19,15 @@ const Home = memo(function Home() {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Type-safe bot status data
-  const safeGuildsCount = (botStatus as any)?.guildsCount || 0;
-  const safeUsersCount = (botStatus as any)?.usersCount || 0;
+  // Fetch real aggregated stats from the guilds.member_count column
+  const { data: publicStats } = useQuery<{ totalServers: number; totalMembers: number }>({
+    queryKey: ['/api/bot/public-stats'],
+    refetchInterval: 60000,
+  });
+
+  // Type-safe bot status data — prefer real member_count aggregates, fall back to bot_status
+  const safeGuildsCount = publicStats?.totalServers ?? (botStatus as any)?.guildsCount ?? 0;
+  const safeUsersCount = publicStats?.totalMembers ?? (botStatus as any)?.usersCount ?? 0;
   const safeIsOnline = (botStatus as any)?.isOnline || false;
 
   const formatNumber = (num: number) => {
