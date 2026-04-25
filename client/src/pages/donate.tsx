@@ -5,28 +5,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Coffee, Shield, Users, Zap } from "lucide-react";
 import { SiPaypal } from "react-icons/si";
 import { memo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Donate = memo(function Donate() {
   const paypalUrl = "https://paypal.me/ehcorn4?country.x=CA&locale.x=en_US";
+
+  // Real aggregated stats from the guilds.member_count column
+  const { data: publicStats } = useQuery<{ totalServers: number; totalMembers: number }>({
+    queryKey: ['/api/bot/public-stats'],
+    refetchInterval: 60000,
+  });
+
+  const totalServers = publicStats?.totalServers ?? 0;
+  const totalMembers = publicStats?.totalMembers ?? 0;
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
 
   const impactStats = [
     {
       icon: <Shield className="text-[hsl(var(--nexguard-cyan))]" size={32} />,
       title: "Servers Protected",
       description: "Discord communities using NexGuard",
-      stat: "9+ Servers"
+      stat: `${totalServers}+ Servers`
     },
     {
       icon: <Zap className="text-[hsl(var(--nexguard-cyan))]" size={32} />,
       title: "Commands Available",
       description: "Moderation and utility commands",
-      stat: "45+ Commands"
+      stat: "67+ Commands"
     },
     {
       icon: <Users className="text-[hsl(var(--nexguard-cyan))]" size={32} />,
       title: "Users Helped",
       description: "Community members protected",
-      stat: "168+ Users"
+      stat: `${formatNumber(totalMembers)}+ Users`
     }
   ];
 

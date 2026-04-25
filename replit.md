@@ -7,6 +7,7 @@ NexGuard is a comprehensive Discord bot complemented by a professional website, 
 - **Server Owner Protection Bypass**: Server owners now automatically bypass anti-nuke and anti-raid protection systems, ensuring they can manage their servers without triggering security alerts
 - **JSON Embed Command**: Created `/jsonembed` command allowing users to paste Discord JSON embed code for instant embed creation (command pending Discord API sync due to Entry Point limitation)
 - **Enhanced Security Whitelist**: Maintained global whitelist system (3 trusted user IDs) while adding server owner automatic bypass for improved user experience
+- **Live Member-Count Stats on Website**: Added public `GET /api/bot/public-stats` endpoint that aggregates real `member_count` data from the `guilds` table (`COUNT(*)` and `SUM(member_count)`); home page, landing page, invite page, donate page, and dashboard cards now display real "Servers Protected" and "Users Secured" numbers with auto-refresh, replacing hardcoded/stale values
 
 ## Previous Changes (v3.1.1 - August 30, 2025) ✅ COMPLETED
 - **Dashboard Interface Cleanup**: Resolved Discord API limitations affecting member count and bot status display accuracy
