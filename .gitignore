@@ -2,5 +2,25 @@ node_modules
 dist
 .DS_Store
 server/public
+
+# Environment variables and secrets - never commit these
+.env
+.env.*
+*.env
+
+# Replit-specific runtime files
+.upm
+.config
+.pythonlibs
+.cache
+cookies.txt
 vite.config.ts.*
 *.tar.gz
+
+# Python bytecode
+__pycache__
+*.pyc
+*.pyo
+
+# Logs
+*.log
