@@ -9,6 +9,7 @@ server/public
 *.env
 
 # Replit-specific runtime files
+.replit
 .upm
 .config
 .pythonlibs
