@@ -1,16 +1,12 @@
 import { Link } from "wouter";
-import { GradientText } from "@/components/ui/gradient-text";
 import { Button } from "@/components/ui/button";
 import { SiDiscord } from "react-icons/si";
-import nexguardLogo from "@assets/Nexguard_1751937048860.png";
 import nexguardBanner from "@assets/file_00000000ee7c61f7a421642c4ce3b538_1751936999714.png";
 import nexguardIcon from "@assets/file_0000000003fc61f58b4fd114190f81c9_1751936993313.png";
-import blrpLogo from "@assets/BLRP_new2_1751996269430.png";
 import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SEOHead } from "@/components/optimized/seo-head";
 import { OptimizedImage } from "@/components/optimized/image-optimization";
-import { PrefetchOnHover } from "@/components/optimized/cache-optimization";
 
 const Home = memo(function Home() {
   // Fetch live bot status
@@ -131,58 +127,6 @@ const Home = memo(function Home() {
             </div>
           </div>
 
-          {/* Community Highlight Section */}
-          <div className="mt-20 max-w-3xl mx-auto">
-            <div className="text-center mb-8">
-              <GradientText className="text-2xl md:text-3xl font-bold mb-4">
-                Community Highlight
-              </GradientText>
-              <p className="text-gray-400 text-lg">
-                Featuring our amazing beta testing community
-              </p>
-            </div>
-            
-            <a 
-              href="https://discord.gg/mQCaHdfxef" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block group"
-            >
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 text-center transform hover:scale-105 transition-all duration-300 cursor-pointer group-hover:bg-slate-800/70 group-hover:shadow-lg group-hover:shadow-cyan-500/20">
-                <div className="flex justify-center mb-6">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gradient-to-br from-cyan-400 to-purple-500 p-1 group-hover:shadow-md group-hover:shadow-cyan-400/50 transition-all duration-300">
-                    <img 
-                      src={blrpLogo} 
-                      alt="BlueLine RolePlay Logo" 
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  </div>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-300 transition-colors duration-300">
-                  BlueLine RolePlay (BLRP)
-                </h3>
-                
-                <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-                  Our first active beta testers who are diligently helping us identify and fix any kinks in NexGuard. 
-                  Their dedication to testing and feedback is helping shape the future of Discord moderation.
-                </p>
-                
-                <div className="flex justify-center items-center space-x-4 mb-6">
-                  <div className="px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full border border-cyan-500/30">
-                    <span className="text-cyan-400 font-semibold">Beta Testers</span>
-                  </div>
-                  <div className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full border border-green-500/30">
-                    <span className="text-green-400 font-semibold">Active Community</span>
-                  </div>
-                </div>
-                
-                <p className="text-[hsl(var(--nexguard-cyan))] font-semibold text-lg group-hover:text-cyan-300 transition-colors duration-300">
-                  "Thank you for helping us build a better Discord experience!"
-                </p>
-              </div>
-            </a>
-          </div>
         </div>
       </div>
       </div>
