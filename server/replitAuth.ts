@@ -4,7 +4,6 @@ import { Strategy, type VerifyFunction } from "openid-client/passport";
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
-import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
@@ -12,15 +11,21 @@ if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
 
-const getOidcConfig = memoize(
-  async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
-  },
-  { maxAge: 3600 * 1000 }
-);
+let _oidcConfig: Awaited<ReturnType<typeof client.discovery>> | null = null;
+let _oidcConfigTime = 0;
+const OIDC_CACHE_TTL = 3600 * 1000;
+
+const getOidcConfig = async () => {
+  if (_oidcConfig && Date.now() - _oidcConfigTime < OIDC_CACHE_TTL) {
+    return _oidcConfig;
+  }
+  _oidcConfig = await client.discovery(
+    new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+    process.env.REPL_ID!
+  );
+  _oidcConfigTime = Date.now();
+  return _oidcConfig;
+};
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
