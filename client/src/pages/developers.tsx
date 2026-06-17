@@ -9,7 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle, User, Mail, MapPin, Calendar, Award, Code, Briefcase, GraduationCap, Globe, MessageSquare } from "lucide-react";
-import { SiDiscord, SiGithub, SiX, SiLinkedin, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiDocker, SiTypescript } from "react-icons/si";
+import { SiDiscord, SiGithub, SiX, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiDocker, SiTypescript } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa6";
 import type { Developer } from "@shared/schema";
 import devAvatar from "@assets/Devavatar_1752722055445.png";
 
@@ -128,7 +129,7 @@ const Developers = memo(function Developers() {
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-[hsl(var(--nexguard-cyan))] transition-colors"
                         >
-                          <SiLinkedin size={24} />
+                          <FaLinkedin size={24} />
                         </a>
                       )}
                       {developer.discord && (
